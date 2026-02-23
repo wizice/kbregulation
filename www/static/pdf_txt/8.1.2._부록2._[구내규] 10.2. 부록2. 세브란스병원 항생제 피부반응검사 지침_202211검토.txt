@@ -1,0 +1,30 @@
+10.2. 부록2 제정일:
+개정일: 2012.11/2015.2/2015.12.
+검토일: 2019.3/2021.3/2022.11.
+기안부서: 약물관리위원회 세브란스병원 항생제 피부반응검사 지침
+
+1. 피부반응검사를 시행하는 항생제 Penicillin, Cephalosporin, Carbapenem, Monobactam (단, Cephalosporin, Carbapenem, Monobactam은 항생제 과민반응 과거력이 있는 경우 시행한다.)
+
+2. 시험 방법
+1) 주사용 증류수나 N/S 로 희석해서 합성 Penicillin, Cephalosporin, Carbapenem, Monobactam 은 2mg/ml, 천연 Penicillin은 1만 unit/ml의 농도로 0.02ml~0.05ml를 전완 안쪽에 피내주사한다.
+
+2) 대조액으로 N/S 0.02ml~0.05ml를 반대쪽 대칭 부위 또는 동일한 전완 시험부위로부터 3cm정 도 떨어진 부위에 피내주사하고 15분 후 비교한다.
+
+3. 판정 방법 대조액 주사부위와 비교하여 시험약 주사부위의 팽진 직경이 3mm 이상인 경우 양성으로 판정한다.
+
+4. 세파 항생제 피부반응 검사결과가 음성인 환자의 경우에도 지속적인 관찰이 필요하다.
+* 대조액: N/S 0.02ml~0.05ml * 관찰시간: 15분 후 성분명(약품명) 희석농도 투여량 희석 방법 천연 Penicillins ① 120만 unit/V에 WFI 또는 N/S 3ml mix(40만 unit/ml)
+
+② 0.1ml 취해 총량 1ml로 희석 Benzathine Penicillin G (4만 unit/ml) (Benzetacil®)
+
+③ 0.25ml 취해 총량 1ml로 희석 0.02~ (1만 unit/ml) 1만unit/ml 0.05ml ① 500만 unit/V에 WFI 또는 N/S 5ml mix(100만 unit/ml) Penicillin G Potassium ② 0.1ml 취해 총량 1ml로 희석 (Pfizerpen®) (10만 unit/ml)
+
+③ 0.1ml 취해 총량 1ml로 희석 (1만 unit/ml) 합성 Penicillins Nafcillin (Nafcillin®) Ampicillin+Sulbactam (Ambactam®, Ubacillin®) Amoxicillin+Clavulanate (Amocla®) Piperacillin+Tazobactam (Tazoperan®,Tazolactam®) Ampicillin (Penbrex®) Cephalosporins Cefazolin (Cefazolin®), Cefepime (Maxipime®) Ceftezole (Cetrazole®) ① 항생제 1g당 WFI 또는 N/S Cefbuperazone (Tomiporan®) 5ml mix(0.5g/V:2.5ml, 1g/V:5ml, Cefotiam (Cefotiam®, Fontiam®) 2g/V:10ml mix) (200mg/ml) C e e f f m ote in ta o n x ( ( Y M a e m ic a e t l e i t n a ® n ) ® , , C T e e f t o a x n i t k in it ( P in a j c ® e ) tin®) 2 mg/ml 0 .
+.
+~ m l
+
+② 0.1ml 취해 총량 1ml로 희석 (20mg/ml) Cefoperazone+Sulbactam (Peratam®)
+
+③ 0.1ml 취해 총량 1ml로 희석 Ceftolozane+tazobactam (Zerbaxa®) Cefotaxim (Cefotaxim Na®) (2mg/ml) Cefuroxime(Cefuroxime®) Ceftazidime (Tazim®, Ceftazidime®) Ceftriaxone (Ceftriaxone®, Triaxone®) Ceftizoxime (Epocelin®), Flomoxef (Flumarin®) Carbapenems Ertapenem (Invanz®) Imipenem+Cilastatin (Prepenem®) Meropenem (Meropen®, Pospenem®)
+
+10.2. 부록2 Monobactam Aztreonam (Mezactam®)

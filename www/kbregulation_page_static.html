@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KB신용정보 내규 - 상세보기</title>
+    <link href="/static/lib/all.min.css" rel="stylesheet">
+    <!-- favicon removed -->
+    <link rel="stylesheet" href="/static/css/kbregulation.css">
+    <style>
+        body {
+            background-color: #fff;
+            padding: 20px;
+        }
+
+        .page-header {
+            border-bottom: 1px solid #e7e6e6;
+            padding: 20px;
+            position: relative;
+        }
+
+        .page-header h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .page-header .breadcrumb {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .page-actions {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: none;
+            background: white;
+            color: #2786dd;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            font-size: 14px !important;
+        }
+
+        .action-btn:hover {
+            background: #2786dd;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(21,101,192,0.3);
+        }
+
+        .action-btn.active {
+            background: #ffc107 !important;
+            color: #212529 !important;
+        }
+
+        .action-btn.active:hover {
+            background: #ffb300 !important;
+            color: #212529 !important;
+        }
+
+        /* 툴팁 */
+        .action-btn::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s;
+            pointer-events: none;
+        }
+
+        .action-btn:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #f44336;
+        }
+
+        /* 인쇄용 테이블 - 화면에서는 숨김 */
+        .print-layout {
+            display: none !important;
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        @media screen {
+            .print-layout {
+                display: none !important;
+            }
+        }
+
+        .confidential-badge {
+            display: inline-block;
+            color: #dc3545;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border: 1px solid #dc3545;
+            border-radius: 3px;
+        }
+
+        @media print {
+            /* 화면용 레이아웃 숨김 */
+            .screen-layout {
+                display: none !important;
+            }
+
+            /* 인쇄용 테이블 표시 */
+            .print-layout {
+                display: table !important;
+                width: 100%;
+            }
+
+            .print-layout thead {
+                display: table-header-group; /* 매 페이지마다 반복 */
+            }
+
+            .print-layout tbody {
+                display: table-row-group;
+            }
+
+            .print-header-cell {
+                text-align: right;
+                padding: 10px 20px;
+                border-bottom: none;
+            }
+
+            .print-body-cell {
+                padding: 0 20px;
+            }
+
+            .print-title-section {
+                padding: 15px 0;
+                border-bottom: 1px solid #e0e0e0;
+                margin-bottom: 20px;
+            }
+
+            .print-breadcrumb {
+                color: #666;
+                font-size: 12px;
+                margin-bottom: 8px;
+            }
+
+            .print-page-title {
+                font-size: 18px;
+                margin: 0;
+                color: #333;
+            }
+
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+
+            .container {
+                box-shadow: none;
+                max-width: none;
+            }
+
+            /* 페이지 나누기 제어 */
+            .regulation-meta-table {
+                page-break-inside: avoid;
+            }
+
+            .appendix-section {
+                page-break-inside: avoid;
+            }
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 4px;
+            display: none;
+            z-index: 1000;
+        }
+        .toast.show {
+            display: block;
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp {
+            from { transform: translateX(-50%) translateY(100%); }
+            to { transform: translateX(-50%) translateY(0); }
+        }
+
+        /* 검색어 하이라이트 스타일 */
+        .match-content-preview {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 4px;
+            line-height: 1.4;
+            padding: 4px 0;
+        }
+        .search-highlight-red {
+            background-color: #fff3cd;
+            color: #d32f2f;
+            font-weight: 600;
+            padding: 1px 2px;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 화면용 레이아웃 -->
+    <div class="screen-layout">
+        <div class="page-header">
+            <div class="page-actions">
+                <!-- 글꼴 크기 조절 버튼 추가 -->
+                <button class="action-btn" onclick="decreaseFontSize()" data-tooltip="글꼴 작게">
+                    <i class="fas fa-minus"></i>
+                </button>
+                <button class="action-btn" onclick="increaseFontSize()" data-tooltip="글꼴 크게">
+                    <i class="fas fa-plus"></i>
+                </button>
+                <button class="action-btn" onclick="resetFontSize()" data-tooltip="글꼴 원래대로">
+                    <i class="fas fa-redo"></i>
+                </button>
+                <button class="action-btn" id="newPrintBtn" onclick="printRegulation()" data-tooltip="인쇄">
+                    <i class="fas fa-print"></i>
+                </button>
+                <button style="display:none;" class="action-btn " onclick="toggleFavorite(currentRegulation, currentChapter)" data-tooltip="즐겨찾기">
+                    <i class="fas fa-star"></i>
+                </button>
+                <button style="display:none;"  class="action-btn print-btn" onclick="printRegulation()" title="인쇄">
+                    <i class="fas fa-print"></i>
+                </button>
+            </div>
+            <div class="breadcrumb" id="pageBreadcrumb">로딩 중...</div>
+            <h1 id="pageTitle">내규 상세보기</h1>
+        </div>
+
+        <div class="content">
+            <div id="loadingMessage" class="loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>내규 정보를 불러오는 중입니다...</p>
+            </div>
+
+            <div id="errorMessage" class="error" style="display: none;">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>내규 정보를 불러올 수 없습니다.</p>
+            </div>
+
+            <div id="regulationContent" style="display: none;">
+                <!-- 내규 상세 내용이 여기에 표시됩니다 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 인쇄용 테이블 레이아웃 -->
+    <table class="print-layout">
+        <thead>
+            <tr>
+                <th class="print-header-cell">
+                    <span class="confidential-badge">대외비</span>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="print-body-cell">
+                    <div class="print-title-section">
+                        <div class="print-breadcrumb" id="printBreadcrumb"></div>
+                        <h1 class="print-page-title" id="printPageTitle"></h1>
+                    </div>
+                    <div class="print-content" id="printContent">
+                        <!-- 인쇄용 내규 내용 -->
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // 전역 변수
+        let currentRegulation = null;
+        let currentChapter = null;
+        let currentSearchTerm = ''; // 검색어 저장용
+        let favoriteRegulations = JSON.parse(localStorage.getItem('favoriteRegulations') || '[]');
+        let hospitalRegulations = {};
+
+        // URL 파싱 - /kbregulation/1장/1.1.1 형식 지원
+        function parseURL() {
+            const path = window.location.pathname;
+            const match = path.match(/\/kbregulation\/([^\/]+)\/([^\/]+)/);
+
+            // URL 파라미터에서 searchTerm 및 autoPrint 추출
+            const params = new URLSearchParams(window.location.search);
+            const searchTerm = params.get('searchTerm') || '';
+            const autoPrint = params.get('autoPrint') === 'true';
+
+            if (match) {
+                return {
+                    chapter: decodeURIComponent(match[1]),
+                    code: decodeURIComponent(match[2]),
+                    searchTerm: searchTerm,
+                    autoPrint: autoPrint
+                };
+            }
+
+            // URL 파라미터 fallback
+            return {
+                chapter: params.get('chapter') || '1장',
+                code: params.get('code') || '1.1.1',
+                searchTerm: searchTerm,
+                autoPrint: autoPrint
+            };
+        }
+
+        // 키보드 단축키
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                window.close();
+            }
+            if (e.ctrlKey && e.key === 'p') {
+                e.preventDefault();
+
+                // 인쇄 허용 도메인 체크
+                if (isPrintAllowed()) {
+                    window.print();
+                } else {
+                    alert('이 도메인에서는 인쇄 기능을 사용할 수 없습니다.\n\n허용된 도메인:\n- policy.wizice.com\n- policy-internal.yuhs.ac');
+                    console.warn('[Domain Control] 인쇄 단축키가 차단되었습니다.');
+                }
+            }
+        });
+
+        // 페이지 로드 시 인쇄 버튼 표시/숨김 처리 및 내규 데이터 로드
+        document.addEventListener('DOMContentLoaded', function() {
+            // 기존 인쇄 버튼 제어
+            const printButton = document.querySelector('.print-btn');
+            if (printButton) {
+                if (!isPrintAllowed()) {
+                    // 인쇄가 허용되지 않은 도메인: 버튼 숨김
+                    printButton.style.display = 'none';
+                    console.log('[Domain Control] 기존 인쇄 버튼이 숨겨졌습니다.');
+                } else {
+                    console.log('[Domain Control] 기존 인쇄 버튼이 활성화되었습니다.');
+                }
+            }
+
+            // 새로운 인쇄 버튼 제어
+            const newPrintBtn = document.getElementById('newPrintBtn');
+            if (newPrintBtn) {
+                if (!isPrintAllowed()) {
+                    // 인쇄가 허용되지 않은 도메인: 버튼 숨김
+                    newPrintBtn.style.display = 'none';
+                    console.log('[Domain Control] 새로운 인쇄 버튼이 숨겨졌습니다.');
+                } else {
+                    console.log('[Domain Control] 새로운 인쇄 버튼이 활성화되었습니다.');
+                }
+            }
+
+            // 기존 로직: URL 파싱 및 내규 데이터 로드
+            const urlData = parseURL();
+
+            // 검색어가 있으면 전역 변수에 설정
+            if (urlData.searchTerm) {
+                currentSearchTerm = urlData.searchTerm;
+            }
+
+            // 내규 데이터 로드
+            loadRegulationData(urlData.chapter, urlData.code);
+
+            // 자동 인쇄가 요청되면 페이지 로드 후 인쇄 다이얼로그 실행
+            if (urlData.autoPrint && isPrintAllowed()) {
+                // 내규 내용이 완전히 로드된 후 인쇄 (약간의 지연)
+                setTimeout(() => {
+                    console.log('[Auto Print] 자동 인쇄를 실행합니다.');
+                    window.print();
+                }, 1500); // 1.5초 후 자동 인쇄
+            }
+        });
+
+        async function loadRegulationData(chapter, regulationCode) {
+            try {
+                // Summary JSON 데이터 로드
+                const response = await fetch('/static/file/summary_kbregulation.json');
+                if (!response.ok) {
+                    throw new Error('데이터를 불러올 수 없습니다.');
+                }
+
+                // hospitalRegulations 전역 변수에 데이터 저장
+                hospitalRegulations = await response.json();
+
+                // 해당 챕터와 내규 찾기
+                if (!hospitalRegulations[chapter]) {
+                    throw new Error('해당 챕터를 찾을 수 없습니다.');
+                }
+
+                const chapterData = hospitalRegulations[chapter];
+                const regulation = chapterData.regulations.find(reg => reg.code === regulationCode);
+
+                if (!regulation) {
+                    throw new Error('해당 내규를 찾을 수 없습니다.');
+                }
+
+                // 내규 상세 내용 표시
+                await displayRegulationDetail(regulation, chapter, chapterData.title);
+
+            } catch (error) {
+                console.error('내규 데이터 로드 실패:', error);
+                showError(error.message);
+            }
+        }
+
+        // 내규 상세 내용 표시
+        async function displayRegulationDetail(regulation, chapter, chapterTitle) {
+            console.log('displayRegulationDetail called with:', { regulation, chapter, chapterTitle });
+
+            // 전역 변수에 현재 내규 정보 저장
+            currentRegulation = regulation;
+            currentChapter = chapter;
+
+            // 헤더 업데이트
+            document.getElementById('pageTitle').textContent = `${regulation.code}. ${regulation.name}`;
+            document.getElementById('pageBreadcrumb').textContent = `${chapter}. ${chapterTitle}`;
+
+            // 내규 내용 생성
+            const regulationContent = await generateRegulationContent(regulation, chapter, chapterTitle);
+
+            // 내용 표시
+            document.getElementById('loadingMessage').style.display = 'none';
+            document.getElementById('regulationContent').innerHTML = regulationContent;
+            document.getElementById('regulationContent').style.display = 'block';
+
+            // 인쇄용 콘텐츠 업데이트
+            document.getElementById('printBreadcrumb').textContent = `${chapter}. ${chapterTitle}`;
+            document.getElementById('printPageTitle').textContent = `${regulation.code}. ${regulation.name}`;
+            document.getElementById('printContent').innerHTML = regulationContent;
+
+            // 즐겨찾기 버튼 상태 업데이트
+            updateFavoriteButtonState();
+
+            // 저장된 글꼴 크기 적용
+            setTimeout(() => {
+                loadSavedFontSize();
+            }, 100);
+
+            // 검색어가 있으면 첫 번째 하이라이트 위치로 스크롤
+            if (currentSearchTerm && currentSearchTerm.trim() !== '') {
+                setTimeout(() => {
+                    scrollToFirstHighlight();
+                }, 300);
+            }
+        }
+
+        // 개별 규정 상세 데이터 로드 함수 (로깅 포함)
+        async function loadRegulationDetail(fileName) {
+            try {
+                // 🆕 FastAPI 로깅 API 사용 (자동 조회 로그 기록)
+                // 상대 경로 사용하여 도메인 독립적으로 작동
+                const response = await fetch(`/api/v1/json-file/${fileName}`);
+                if (!response.ok) {
+                    throw new Error(`규정 파일을 불러올 수 없습니다: ${fileName}`);
+                }
+                const data = await response.json();
+                console.log(`✅ JSON loaded with logging: ${fileName}`);
+                return data;
+            } catch (error) {
+                console.error('규정 파일 로드 실패:', error);
+                return null;
+            }
+        }
+
+        // 텍스트 내 검색어 하이라이트 (빨간색 강조)
+        function highlightText(text, searchTerm) {
+            if (!text || !searchTerm || searchTerm.trim() === '') {
+                return text;
+            }
+
+            const searchLower = searchTerm.trim().toLowerCase();
+            const textLower = text.toLowerCase();
+
+            // 검색어가 텍스트에 없으면 원본 반환
+            if (!textLower.includes(searchLower)) {
+                return text;
+            }
+
+            // 대소문자 구분 없이 모든 매치를 찾아서 빨간색으로 강조
+            let result = '';
+            let lastIndex = 0;
+            let index = textLower.indexOf(searchLower);
+
+            while (index !== -1) {
+                // 매치 이전 텍스트
+                result += text.substring(lastIndex, index);
+                // 매치된 텍스트 (빨간색 강조)
+                result += `<span class="search-highlight-red">${text.substring(index, index + searchTerm.length)}</span>`;
+
+                lastIndex = index + searchTerm.length;
+                index = textLower.indexOf(searchLower, lastIndex);
+            }
+
+            // 나머지 텍스트
+            result += text.substring(lastIndex);
+
+            return result;
+        }
+
+        // 첫 번째 하이라이트 위치로 스크롤
+        function scrollToFirstHighlight() {
+            const firstHighlight = document.querySelector('.search-highlight-red');
+            if (firstHighlight) {
+                // 요소가 화면 중앙에 오도록 스크롤
+                firstHighlight.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+
+                // 추가 시각적 효과 (옵션)
+                firstHighlight.style.transition = 'all 0.3s';
+                firstHighlight.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    firstHighlight.style.transform = 'scale(1)';
+                }, 500);
+            }
+        }
+
+        // 내규 내용 HTML 생성
+        async function generateRegulationContent(regulation, chapter, chapterTitle) {
+            let contentHtml = '';
+            let appendixHtml = '';
+
+            // 파일명이 있으면 상세 데이터 로드
+            console.log('Checking for file loading, regulation:', regulation);
+            if (regulation.detail && regulation.detail.documentInfo && regulation.detail.documentInfo.파일명) {
+                console.log('Loading detail file:', regulation.detail.documentInfo.파일명);
+                const detailData = await loadRegulationDetail(regulation.detail.documentInfo.파일명);
+                if (detailData) {
+                    console.log('Detail data loaded:', detailData);
+                    // 기존 regulation 객체에 상세 데이터 병합
+                    regulation.detailData = detailData;
+                }
+            }
+
+            // 부록 정보 가져오기
+            const safeAppendixArray = getSafeAppendixArray(regulation);
+
+            // 부록 HTML 생성 - 제거 (조문에서 직접 처리)
+
+            // 내규 상세 내용 생성
+            if (regulation.detailData && regulation.detailData.조문내용) {
+                // 새로운 데이터 구조로 조문 내용 렌더링
+                const articles = regulation.detailData.조문내용;
+
+                if (articles && Array.isArray(articles) && articles.length > 0) {
+                    let previousArticle = null;
+
+                    articles.forEach(article => {
+                        if (!article) return;
+
+                        // 레벨 0 항목 제외
+                        if (article.레벨 === 0) return;
+
+                        // 제5조 다음에 오는 제1조(내규의 제정 및 시행)인지 확인
+                        if (previousArticle && previousArticle.번호 === '제5조' &&
+                            article.번호 === '제1조' && article.내용 && article.내용.includes('내규의 제정')) {
+                            // 제개정 이력 제목 추가
+                            contentHtml += `<div style="padding-left: 0px; text-align: center; font-size: 1.3rem !important; padding-top: 40px;">내규의 제·개정 이력</div>`;
+                        }
+
+                        // 레벨에 따른 스타일 적용
+                        let style = '';
+                        let paddingLeft = 0;
+
+                        // 레벨 3 이상에서 레벨 2로 변경될 때 추가 여백
+                        let additionalMarginTop = '';
+                        if (previousArticle && previousArticle.레벨 >= 3 && article.레벨 === 2) {
+                            additionalMarginTop = 'margin-top: 25px;';
+                        }
+
+                        switch(article.레벨) {
+                            case 1: // 제1조, 제2조 등
+                                style = 'color: #1565c0; font-size: 16px; font-weight: 600; margin: 20px 0 10px 0; border-bottom: 1px solid #e3f2fd; padding-bottom: 8px;';
+                                paddingLeft = 0;
+                                break;
+                            case 2: // 1., 2. 등
+                                style = `margin: 10px 0; font-weight: 500; ${additionalMarginTop}`;
+                                paddingLeft = 20;
+                                break;
+                            case 3: // 가., 나. 등
+                                style = 'margin: 8px 0;';
+                                paddingLeft = 50;
+                                break;
+                            case 4: // 1), 2) 등
+                                style = 'margin: 6px 0; color: #555;';
+                                paddingLeft = 80;
+                                break;
+                            case 5: // ⅰ), ⅱ) 등
+                                style = 'margin: 5px 0; color: #666;';
+                                paddingLeft = 100;
+                                break;
+                            case 6: // 레벨 6 항목
+                                style = 'margin: 4px 0; color: #777;';
+                                paddingLeft = 130;
+                                break;
+                            default:
+                                style = 'margin: 5px 0; color: #666;';
+                                paddingLeft = 130;
+                        }
+
+                        // 번호와 내용 표시
+                        let displayText = article.번호 ? `${article.번호} ${article.내용}` : article.내용;
+
+                        // 검색어가 있으면 하이라이트 적용
+                        if (currentSearchTerm && currentSearchTerm.trim() !== '') {
+                            displayText = highlightText(displayText, currentSearchTerm);
+                        }
+
+                        // '내규의 제·개정 이력' 여부 확인 (레벨 1)
+                        const isHistorySection = article.레벨 === 1 && article.내용 && article.내용.includes('내규의 제·개정 이력');
+
+                        if (article.레벨 === 2) {
+                            contentHtml += `<div style="${style} padding-left: 35px; text-indent: -15px;">${displayText}</div>`;
+                        } else if (article.레벨 === 3) {
+                            contentHtml += `<div style="${style} padding-left: 70px; text-indent: -20px;">${displayText}</div>`;
+                        } else if (article.레벨 === 4) {
+                            contentHtml += `<div style="${style} padding-left: 100px; text-indent: -20px;">${displayText}</div>`;
+                        } else if (article.레벨 === 5) {
+                            contentHtml += `<div style="${style} padding-left: 130px; text-indent: -20px;">${displayText}</div>`;
+                        } else if (article.레벨 === 6) {
+                            contentHtml += `<div style="${style} padding-left: 160px; text-indent: -20px;">${displayText}</div>`;
+                        } else if (isHistorySection) {
+                            // 내규의 제·개정 이력은 특별한 스타일 적용
+                            contentHtml += `<div style="padding-left: 0px; text-align: center; font-size: 1.3rem !important; padding-top: 40px; padding-bottom: 8px; font-weight: 600; color: #1565c0; border-bottom: 1px solid #e3f2fd;">${displayText}</div>`;
+                        } else {
+                            contentHtml += `<div style="${style} padding-left: ${paddingLeft}px;">${displayText}</div>`;
+                        }
+
+                        // 관련 이미지가 있으면 표시
+                        if (article.관련이미지 && article.관련이미지.length > 0) {
+                            // 이미지 컨테이너 시작 (flexbox로 가로 배치)
+                            contentHtml += `<div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 10px 0; padding-left: ${paddingLeft + 20}px;">`;
+
+                            article.관련이미지.forEach(img => {
+                                // img는 객체 형태: {seq, file_name, file_path, title}
+                                console.log('Image data:', img, 'Type:', typeof img);
+
+                                let imgPath;
+                                if (typeof img === 'object' && img.file_path) {
+                                    imgPath = img.file_path;
+                                    console.log('Using file_path:', imgPath);
+                                } else if (typeof img === 'string') {
+                                    imgPath = img;
+                                    console.log('Using string:', imgPath);
+                                } else {
+                                    console.error('Invalid image data:', img);
+                                    return;
+                                }
+
+                                // file_path는 절대 경로이므로 웹 경로로 변환
+                                if (imgPath.includes('/static/extracted_images/')) {
+                                    const originalPath = imgPath;
+                                    // /home/wizice/regulation/www/static/... → /static/...
+                                    imgPath = imgPath.replace(/.*\/www\/static\//, '/static/');
+                                    console.log('Path converted:', originalPath, '→', imgPath);
+                                } else if (imgPath.includes('/www/static/')) {
+                                    const originalPath = imgPath;
+                                    imgPath = imgPath.replace(/.*\/www(\/static\/.*)/, '$1');
+                                    console.log('Path converted (alt):', originalPath, '→', imgPath);
+                                }
+
+                                // 각 이미지를 flex-item으로 추가
+                                // max-width: 400px로 제한하여 작은 이미지는 가로로 배치되도록 함
+                                contentHtml += `
+                                    <div style="flex: 0 1 auto; max-width: 400px;">
+                                        <img src="${imgPath}"
+                                             style="width: 100%; height: auto; border: 1px solid #e0e0e0; border-radius: 4px;"
+                                             loading="lazy">
+                                    </div>`;
+                            });
+
+                            // 이미지 컨테이너 종료
+                            contentHtml += `</div>`;
+                        }
+
+                        // 현재 article을 이전 article로 저장
+                        previousArticle = article;
+                    });
+                }
+            } else {
+                contentHtml = '<div class="no-content">조문 내용을 불러올 수 없습니다.</div>';
+            }
+
+            // 문서 정보 테이블
+            console.log('Building meta table, regulation object:', regulation);
+            const detail = regulation.detailData || regulation.detail;
+            // detailData는 문서정보 사용, detail은 documentInfo 사용
+            const docInfo = regulation.detailData?.문서정보 || detail?.documentInfo;
+
+            console.log('Detail object:', detail);
+            console.log('DocInfo object:', docInfo);
+            console.log('Specific fields - 규정명:', docInfo?.규정명, '제정일:', docInfo?.제정일);
+
+            const modalMetaHTML = `
+                <div class="regulation-meta" style="margin-bottom: 30px; padding: 0 20px;">
+                    <table class="regulation-meta-table">
+                        <tr>
+                            <th class="header-cell">제정일</th>
+                            <td class="content-cell" style="text-align:center;">${docInfo?.제정일 || '-'}</td>
+                            <th class="header-cell" style="border-left:1px solid #000">최종개정일</th>
+                            <td class="content-cell" style="text-align:center;">${docInfo?.최종개정일 || '-'}</td>
+                            <th class="header-cell" style="border-left:1px solid #000">최종검토일</th>
+                            <td class="content-cell" style="text-align:center;">${docInfo?.최종검토일 || '-'}</td>
+                        </tr>
+                        <tr>
+                            <th class="header-cell">담당부서</th>
+                            <td class="content-cell" colspan="5">${docInfo?.담당부서 || '-'}</td>
+                        </tr>
+                        <tr>
+                            <th class="header-cell">유관부서</th>
+                            <td class="content-cell" colspan="5">${docInfo?.유관부서 || '-'}</td>
+                        </tr>
+                    </table>
+
+                    <table class="regulation-meta-table">
+                        <tr>
+                            <th class="header-cell">관련기준</th>
+                            <td class="content-cell long-content">
+                                ${docInfo?.관련기준 ?
+                                    (Array.isArray(docInfo.관련기준) ?
+                                        docInfo.관련기준.join('<br>') :
+                                        docInfo.관련기준) :
+                                    '-'}
+                            </td>
+                        </tr>
+                    </table>
+
+                    <table class="regulation-meta-table">
+                        <tr>
+                            <th class="header-cell">부록</th>
+                            <td class="content-cell">
+                                <span class="">${safeAppendixArray.length}건</span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            `;
+
+            return `
+                <div class="regulation-content-wrapper">
+                    ${modalMetaHTML}
+                    <div style="line-height: 1.5; font-size: 14px; padding: 0 20px;">
+                        ${contentHtml}
+                    </div>
+                    ${appendixHtml}
+                </div>
+            `;
+        }
+
+        // 유틸리티 함수들
+        function getSafeAppendixArray(regulation) {
+            let appendixArray = [];
+
+            if (regulation.appendix) {
+                if (Array.isArray(regulation.appendix)) {
+                    appendixArray = regulation.appendix;
+                } else if (typeof regulation.appendix === 'string') {
+                    appendixArray = [regulation.appendix];
+                }
+            }
+
+            return appendixArray;
+        }
+
+        function showError(message) {
+            document.getElementById('loadingMessage').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'block';
+            document.getElementById('errorMessage').querySelector('p').textContent = message;
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show';
+
+            setTimeout(() => {
+                toast.className = 'toast';
+            }, 3000);
+        }
+
+        function updateFavoriteButtonState() {
+            if (!currentRegulation || !currentChapter) return;
+
+            const favoriteKey = `${currentChapter}|${currentRegulation.code}|${currentRegulation.name}`;
+            const isFavorite = favoriteRegulations.some(fav => fav.key === favoriteKey);
+            const favoriteBtn = document.querySelector('.action-btn[data-tooltip="즐겨찾기"]');
+
+            if (favoriteBtn) {
+                if (isFavorite) {
+                    favoriteBtn.classList.add('active');
+                } else {
+                    favoriteBtn.classList.remove('active');
+                }
+            }
+        }
+
+        function toggleFavorite(regulation, chapter) {
+            if (!regulation || !chapter) return;
+
+            const favoriteKey = `${chapter}|${regulation.code}|${regulation.name}`;
+            const index = favoriteRegulations.findIndex(fav => fav.key === favoriteKey);
+            const favoriteBtn = document.querySelector('.action-btn[data-tooltip="즐겨찾기"]');
+
+            if (index > -1) {
+                // 즐겨찾기에서 제거
+                favoriteRegulations.splice(index, 1);
+                if (favoriteBtn) favoriteBtn.classList.remove('active');
+                showToast(`"${regulation.name}"이(가) 즐겨찾기에서 제거되었습니다.`, 'info');
+            } else {
+                // 즐겨찾기에 추가
+                const favoriteItem = {
+                    key: favoriteKey,
+                    chapter: chapter,
+                    chapterTitle: getChapterTitle(chapter),
+                    code: regulation.code,
+                    name: regulation.name,
+                    dateAdded: new Date().toISOString(),
+                    department: (regulation.detailData?.문서정보?.담당부서 || regulation.detail?.documentInfo?.담당부서) || '담당부서 미지정'
+                };
+                favoriteRegulations.push(favoriteItem);
+                if (favoriteBtn) favoriteBtn.classList.add('active');
+                showToast(`"${regulation.name}"이(가) 즐겨찾기에 추가되었습니다.`, 'success');
+            }
+
+            // localStorage에 저장
+            localStorage.setItem('favoriteRegulations', JSON.stringify(favoriteRegulations));
+
+            // 부모 창이 있다면 즐겨찾기 목록 업데이트 요청
+            try {
+                if (window.opener && !window.opener.closed) {
+                    window.opener.postMessage({
+                        type: 'FAVORITES_UPDATED',
+                        favoriteRegulations: favoriteRegulations
+                    }, '*');
+                }
+            } catch (e) {
+                console.log('부모 창 통신 실패:', e);
+            }
+        }
+
+        function getChapterTitle(chapter) {
+            if (hospitalRegulations && hospitalRegulations[chapter]) {
+                return hospitalRegulations[chapter].title;
+            }
+            return '';
+        }
+
+        function increaseFontSize() {
+            const content = document.getElementById('regulationContent');
+            if (!content) return;
+
+            const currentSize = parseInt(window.getComputedStyle(content).fontSize);
+            const newSize = Math.min(24, currentSize + 2);
+            content.style.fontSize = newSize + 'px';
+
+            // 크기 저장
+            localStorage.setItem('regulationFontSize', newSize);
+            showToast(`글꼴 크기: ${newSize}px`);
+        }
+
+        function decreaseFontSize() {
+            const content = document.getElementById('regulationContent');
+            if (!content) return;
+
+            const currentSize = parseInt(window.getComputedStyle(content).fontSize);
+            const newSize = Math.max(12, currentSize - 2);
+            content.style.fontSize = newSize + 'px';
+
+            // 크기 저장
+            localStorage.setItem('regulationFontSize', newSize);
+            showToast(`글꼴 크기: ${newSize}px`);
+        }
+
+        function resetFontSize() {
+            const content = document.getElementById('regulationContent');
+            if (!content) return;
+
+            content.style.fontSize = '14px';
+            localStorage.setItem('regulationFontSize', 14);
+            showToast('글꼴 크기가 원래대로 설정되었습니다');
+        }
+
+        // ========== 도메인별 기능 제어 설정 ==========
+        const DOMAIN_CONFIG = {
+            // 인쇄 기능이 허용된 도메인 목록
+            printAllowedDomains: [
+                'policy.wizice.com',
+                'policy-internal.yuhs.ac',
+                'localhost',           // 개발 환경
+                '127.0.0.1'           // 개발 환경
+            ]
+        };
+
+        // 현재 도메인 확인
+        function getCurrentDomain() {
+            return window.location.hostname;
+        }
+
+        // 도메인에서 인쇄 기능 사용 가능 여부 체크
+        function isPrintAllowed() {
+            const currentDomain = getCurrentDomain();
+            const isAllowed = DOMAIN_CONFIG.printAllowedDomains.includes(currentDomain);
+            console.log(`[Domain Control] 현재 도메인: ${currentDomain}, 인쇄 허용: ${isAllowed}`);
+            return isAllowed;
+        }
+
+        // 인쇄 함수 - PDF 파일 인쇄 방법 (static/pdf/print 폴더의 PDF 사용)
+        async function printRegulation() {
+            // 도메인 체크
+            if (!isPrintAllowed()) {
+                alert('이 도메인에서는 인쇄 기능을 사용할 수 없습니다.\n\n허용된 도메인:\n- policy.wizice.com\n- policy-internal.yuhs.ac');
+                console.warn('[Domain Control] 인쇄 기능이 차단되었습니다.');
+                return false;
+            }
+
+            if (!currentRegulation || !currentChapter) {
+                showToast('인쇄할 내규가 선택되지 않았습니다.', 'error');
+                return;
+            }
+
+            // 내규 코드로 print PDF 파일 검색
+            const regCode = currentRegulation.code;
+            console.log('[Print] 내규 코드:', regCode);
+
+            try {
+                // API 호출하여 PDF 파일명 찾기
+                const response = await fetch(`/api/v1/pdf/print-file/${regCode}`);
+                const result = await response.json();
+
+                if (!result.success) {
+                    showToast(result.error || '해당 내규의 PDF 파일을 찾을 수 없습니다.', 'error');
+                    console.warn('[Print] PDF 파일을 찾을 수 없습니다:', regCode, result.error);
+                    return;
+                }
+
+                // PDF 뷰어 URL 생성
+                const pdfViewerUrl = `/static/viewer/web/viewer.html?file=${encodeURIComponent(result.path)}`;
+                console.log('[Print] PDF 인쇄 URL:', pdfViewerUrl);
+
+                // 새창으로 PDF 열기
+                const printWindow = window.open(pdfViewerUrl, '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes');
+
+                if (!printWindow) {
+                    alert('팝업이 차단되었습니다. 브라우저 설정에서 팝업을 허용해주세요.');
+                    return;
+                }
+            } catch (error) {
+                console.error('[Print] API 호출 오류:', error);
+                showToast('PDF 파일을 찾는 중 오류가 발생했습니다.', 'error');
+            }
+        }
+
+        function loadSavedFontSize() {
+            const savedSize = localStorage.getItem('regulationFontSize');
+            if (savedSize) {
+                const content = document.getElementById('regulationContent');
+                if (content) {
+                    content.style.fontSize = savedSize + 'px';
+                }
+            }
+        }
+    </script>
+
+    <!-- 내규 조회 로그 기록 스크립트 (25.12.04 추가) -->
+    <script src="/static/js/regulation-view-logger.js"></script>
+    <script src="/static/js/regulation-view-logger-wrapper.js"></script>
+</body>
+</html>

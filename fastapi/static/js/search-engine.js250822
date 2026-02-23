@@ -1,0 +1,281 @@
+// search-engine.js - Elasticsearch 검색 엔진 관리
+
+const SearchEngine = {
+    // 색인 상태 데이터
+    indexStatus: {
+        totalDocs: 156,
+        indexedDocs: 152,
+        pendingDocs: 4,
+        lastIndexed: '2024-01-15 14:23',
+        indexHealth: 'green'
+    },
+
+    // 검색 통계
+    searchStats: {
+        todaySearches: 1234,
+        avgResponseTime: 0.8,
+        accuracy: 85
+    },
+
+    // 인기 검색어
+    popularKeywords: [
+        { keyword: '인사규정', count: 234 },
+        { keyword: '휴가', count: 189 },
+        { keyword: '연명의료', count: 156 },
+        { keyword: '정보보안', count: 123 },
+        { keyword: '재무관리', count: 98 }
+    ],
+
+    // 상태 로드
+    loadStatus() {
+        this.renderIndexStatus();
+        this.renderSearchStats();
+        this.renderPopularKeywords();
+    },
+
+    // 색인 상태 렌더링
+    renderIndexStatus() {
+        const statusDiv = document.getElementById('indexStatus');
+        if (!statusDiv) return;
+
+        const progressPercent = Math.round((this.indexStatus.indexedDocs / this.indexStatus.totalDocs) * 100);
+
+        statusDiv.innerHTML = `
+            <div>
+                <span>전체 문서:</span>
+                <strong>${this.indexStatus.totalDocs}개</strong>
+            </div>
+            <div>
+                <span>색인된 문서:</span>
+                <strong style="color: #28a745;">${this.indexStatus.indexedDocs}개</strong>
+            </div>
+            <div>
+                <span>대기중:</span>
+                <strong style="color: #ffc107;">${this.indexStatus.pendingDocs}개</strong>
+            </div>
+            <div>
+                <span>마지막 색인:</span>
+                <strong>${this.indexStatus.lastIndexed}</strong>
+            </div>
+        `;
+
+        // 진행률 바 업데이트
+        const progressBar = document.getElementById('indexProgress');
+        if (progressBar) {
+            progressBar.style.width = `${progressPercent}%`;
+            progressBar.style.background = this.getHealthColor(this.indexStatus.indexHealth);
+        }
+    },
+
+    // 검색 통계 렌더링
+    renderSearchStats() {
+        const statsDiv = document.getElementById('searchStats');
+        if (!statsDiv) return;
+
+        statsDiv.innerHTML = `
+            <div class="stat-card">
+                <div class="stat-value">${this.searchStats.todaySearches.toLocaleString()}</div>
+                <div class="stat-label">오늘 검색 수</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" style="color: #28a745;">${this.searchStats.avgResponseTime}초</div>
+                <div class="stat-label">평균 응답 시간</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" style="color: #17a2b8;">${this.searchStats.accuracy}%</div>
+                <div class="stat-label">검색 정확도</div>
+            </div>
+        `;
+    },
+
+    // 인기 검색어 렌더링
+    renderPopularKeywords() {
+        const keywordsDiv = document.getElementById('popularKeywords');
+        if (!keywordsDiv) return;
+
+        keywordsDiv.innerHTML = this.popularKeywords
+            .map(item => `
+                <span class="status-badge status-active">
+                    ${item.keyword} (${item.count})
+                </span>
+            `).join('');
+    },
+
+    // 전체 재색인
+    async reindexAll() {
+        if (!confirm('전체 재색인을 시작하시겠습니까? 시간이 걸릴 수 있습니다.')) {
+            return;
+        }
+
+        const button = event.target;
+        button.disabled = true;
+        button.textContent = '재색인 중...';
+
+        try {
+            // 재색인 시뮬레이션
+            await this.simulateReindex();
+            
+            // 실제 API 호출
+            // const response = await fetch('/api/elasticsearch/reindex', {
+            //     method: 'POST'
+            // });
+
+            this.indexStatus.pendingDocs = 0;
+            this.indexStatus.indexedDocs = this.indexStatus.totalDocs;
+            this.indexStatus.lastIndexed = new Date().toLocaleString('ko-KR');
+            
+            this.renderIndexStatus();
+            this.showNotification('재색인이 완료되었습니다.', 'success');
+        } catch (error) {
+            console.error('재색인 오류:', error);
+            this.showNotification('재색인 중 오류가 발생했습니다.', 'error');
+        } finally {
+            button.disabled = false;
+            button.textContent = '전체 재색인';
+        }
+    },
+
+    // 재색인 시뮬레이션
+    simulateReindex() {
+        return new Promise((resolve) => {
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                const progressBar = document.getElementById('indexProgress');
+                if (progressBar) {
+                    progressBar.style.width = `${progress}%`;
+                }
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    resolve();
+                }
+            }, 200);
+        });
+    },
+
+    // 검색 테스트
+    async testSearch() {
+        const query = document.getElementById('testSearchInput').value;
+        if (!query) {
+            alert('검색어를 입력하세요');
+            return;
+        }
+
+        const resultsDiv = document.getElementById('searchTestResults');
+        resultsDiv.innerHTML = '<div class="spinner"></div> 검색 중...';
+
+        try {
+            // 검색 시뮬레이션
+            await this.delay(1000);
+
+            // 실제 API 호출
+            // const response = await fetch(`/api/elasticsearch/search?q=${encodeURIComponent(query)}`);
+            // const results = await response.json();
+
+            // 시뮬레이션 결과
+            const results = this.generateMockResults(query);
+            
+            resultsDiv.innerHTML = results.length > 0 
+                ? this.renderSearchResults(results)
+                : '<p style="text-align: center; color: #6c757d;">검색 결과가 없습니다.</p>';
+
+            // 통계 업데이트
+            this.searchStats.todaySearches++;
+            this.addToPopularKeywords(query);
+            this.renderSearchStats();
+
+        } catch (error) {
+            console.error('검색 오류:', error);
+            resultsDiv.innerHTML = '<p style="color: #dc3545;">검색 중 오류가 발생했습니다.</p>';
+        }
+    },
+
+    // 검색 결과 렌더링
+    renderSearchResults(results) {
+        return results.map(result => `
+            <div style="padding: 10px; background: #f8f9fa; border-radius: 4px; margin-bottom: 10px;">
+                <strong>${result.title}</strong> (${result.score}% 일치)
+                <p style="font-size: 12px; color: #6c757d; margin-top: 5px;">
+                    ${result.highlight}
+                </p>
+                <div style="font-size: 11px; color: #adb5bd; margin-top: 5px;">
+                    ${result.department} | ${result.date}
+                </div>
+            </div>
+        `).join('');
+    },
+
+    // 모의 검색 결과 생성
+    generateMockResults(query) {
+        const mockData = [
+            {
+                title: '인사관리규정',
+                score: 98,
+                highlight: `...제5조(승진기준) <mark>${query}</mark> 관련 내용...`,
+                department: '인사팀',
+                date: '2024-01-15'
+            },
+            {
+                title: '휴가관리규정',
+                score: 85,
+                highlight: `...제3조(휴가종류) <mark>${query}</mark> 관련 내용...`,
+                department: '인사팀',
+                date: '2024-03-01'
+            },
+            {
+                title: '정보보안규정',
+                score: 72,
+                highlight: `...제7조(보안조치) <mark>${query}</mark> 관련 내용...`,
+                department: 'IT팀',
+                date: '2024-02-20'
+            }
+        ];
+
+        // 검색어가 포함된 결과만 반환
+        return mockData.filter(item => 
+            item.title.includes(query) || 
+            Math.random() > 0.3 // 랜덤하게 일부 결과 포함
+        ).slice(0, 5);
+    },
+
+    // 인기 검색어에 추가
+    addToPopularKeywords(keyword) {
+        const existing = this.popularKeywords.find(k => k.keyword === keyword);
+        if (existing) {
+            existing.count++;
+        } else {
+            this.popularKeywords.push({ keyword: keyword, count: 1 });
+        }
+        
+        // 상위 5개만 유지
+        this.popularKeywords.sort((a, b) => b.count - a.count);
+        this.popularKeywords = this.popularKeywords.slice(0, 5);
+        
+        this.renderPopularKeywords();
+    },
+
+    // 색인 상태에 따른 색상
+    getHealthColor(health) {
+        switch(health) {
+            case 'green': return '#28a745';
+            case 'yellow': return '#ffc107';
+            case 'red': return '#dc3545';
+            default: return '#6c757d';
+        }
+    },
+
+    // 지연 함수
+    delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    },
+
+    // 알림 표시
+    showNotification(message, type) {
+        if (typeof RegulationEditor !== 'undefined' && RegulationEditor.showNotification) {
+            RegulationEditor.showNotification(message, type);
+        } else {
+            alert(message);
+        }
+    }
+};

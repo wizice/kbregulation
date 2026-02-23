@@ -1,0 +1,314 @@
+// department-manager.js - 부서 관리 모듈
+
+const DepartmentManager = {
+    // 부서 데이터
+    departments: [
+        { code: 'HR001', name: '인사팀', parent: '경영지원본부', category: '인사', count: 23 },
+        { code: 'FIN001', name: '재무팀', parent: '경영지원본부', category: '재무', count: 15 },
+        { code: 'MED001', name: '완화의료센터', parent: '의료본부', category: '의료', count: 12 },
+        { code: 'IT001', name: 'IT팀', parent: '경영지원본부', category: 'IT', count: 8 },
+        { code: 'NURS001', name: '간호부', parent: '의료본부', category: '의료', count: 20 },
+        { code: 'QM001', name: '품질관리팀', parent: '경영지원본부', category: '품질', count: 12 }
+    ],
+
+    // 상위 부서 목록
+    parentDepartments: ['경영지원본부', '의료본부', '교육연구본부', '대외협력본부'],
+
+    // 카테고리 목록
+    categories: ['인사', '재무', '의료', 'IT', '품질', '교육', '연구', '기타'],
+
+    // 초기화
+    init() {
+        this.loadDepartments();
+    },
+
+    // 부서 목록 로드
+    loadDepartments() {
+        // 실제 구현시 API 호출
+        // const response = await fetch('/api/departments');
+        // this.departments = await response.json();
+        
+        this.renderDepartmentTable();
+    },
+
+    // 부서 테이블 렌더링
+    renderDepartmentTable() {
+        const tbody = document.getElementById('departmentList');
+        if (!tbody) return;
+        
+        tbody.innerHTML = '';
+        
+        this.departments.forEach(dept => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${dept.code}</td>
+                <td>${dept.name}</td>
+                <td>${dept.parent}</td>
+                <td><span class="status-badge status-active">${dept.category}</span></td>
+                <td>${dept.count}</td>
+                <td>
+                    <button class="action-btn btn-primary" onclick="DepartmentManager.editDepartment('${dept.code}')">편집</button>
+                    <button class="action-btn btn-danger btn-sm" onclick="DepartmentManager.deleteDepartment('${dept.code}')">삭제</button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        this.updateStats();
+    },
+
+    // 부서 추가
+    addDepartment() {
+        // 모달 HTML 생성
+        const modalHtml = `
+            <div class="modal active" id="departmentModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>부서 추가</h2>
+                        <button class="modal-close" onclick="DepartmentManager.closeModal()">✕</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label class="form-label">부서코드 <span class="required">*</span></label>
+                            <input type="text" class="form-input" id="deptCode" placeholder="예: HR002">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">부서명 <span class="required">*</span></label>
+                            <input type="text" class="form-input" id="deptName" placeholder="부서명 입력">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">상위부서 <span class="required">*</span></label>
+                            <select class="form-select" id="deptParent">
+                                <option value="">선택하세요</option>
+                                ${this.parentDepartments.map(parent => 
+                                    `<option value="${parent}">${parent}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">카테고리 <span class="required">*</span></label>
+                            <select class="form-select" id="deptCategory">
+                                <option value="">선택하세요</option>
+                                ${this.categories.map(cat => 
+                                    `<option value="${cat}">${cat}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="DepartmentManager.closeModal()">취소</button>
+                        <button class="btn btn-primary" onclick="DepartmentManager.saveDepartment()">저장</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // 기존 모달 제거 후 새 모달 추가
+        const existingModal = document.getElementById('departmentModal');
+        if (existingModal) existingModal.remove();
+        
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+    },
+
+    // 부서 편집
+    editDepartment(deptCode) {
+        const dept = this.departments.find(d => d.code === deptCode);
+        if (!dept) return;
+
+        // 편집 모달 HTML 생성
+        const modalHtml = `
+            <div class="modal active" id="departmentModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>부서 편집</h2>
+                        <button class="modal-close" onclick="DepartmentManager.closeModal()">✕</button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="editMode" value="true">
+                        <input type="hidden" id="originalCode" value="${dept.code}">
+                        <div class="form-group">
+                            <label class="form-label">부서코드</label>
+                            <input type="text" class="form-input" id="deptCode" value="${dept.code}" readonly style="background: #f8f9fa;">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">부서명 <span class="required">*</span></label>
+                            <input type="text" class="form-input" id="deptName" value="${dept.name}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">상위부서 <span class="required">*</span></label>
+                            <select class="form-select" id="deptParent">
+                                ${this.parentDepartments.map(parent => 
+                                    `<option value="${parent}" ${dept.parent === parent ? 'selected' : ''}>${parent}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">카테고리 <span class="required">*</span></label>
+                            <select class="form-select" id="deptCategory">
+                                ${this.categories.map(cat => 
+                                    `<option value="${cat}" ${dept.category === cat ? 'selected' : ''}>${cat}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="DepartmentManager.closeModal()">취소</button>
+                        <button class="btn btn-primary" onclick="DepartmentManager.saveDepartment()">저장</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // 기존 모달 제거 후 새 모달 추가
+        const existingModal = document.getElementById('departmentModal');
+        if (existingModal) existingModal.remove();
+        
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+    },
+
+    // 부서 저장
+    saveDepartment() {
+        const isEditMode = document.getElementById('editMode')?.value === 'true';
+        const code = document.getElementById('deptCode').value;
+        const name = document.getElementById('deptName').value;
+        const parent = document.getElementById('deptParent').value;
+        const category = document.getElementById('deptCategory').value;
+
+        // 유효성 검사
+        if (!code || !name || !parent || !category) {
+            alert('모든 필수 항목을 입력해주세요.');
+            return;
+        }
+
+        if (isEditMode) {
+            // 편집 모드
+            const originalCode = document.getElementById('originalCode').value;
+            const deptIndex = this.departments.findIndex(d => d.code === originalCode);
+            
+            if (deptIndex > -1) {
+                this.departments[deptIndex] = {
+                    ...this.departments[deptIndex],
+                    name: name,
+                    parent: parent,
+                    category: category
+                };
+                
+                this.showNotification(`"${name}" 부서 정보가 수정되었습니다.`, 'success');
+            }
+        } else {
+            // 추가 모드
+            // 코드 중복 확인
+            if (this.departments.some(d => d.code === code)) {
+                alert('이미 존재하는 부서코드입니다.');
+                return;
+            }
+
+            this.departments.push({
+                code: code,
+                name: name,
+                parent: parent,
+                category: category,
+                count: 0
+            });
+
+            this.showNotification(`"${name}" 부서가 추가되었습니다.`, 'success');
+        }
+
+        this.renderDepartmentTable();
+        this.closeModal();
+        
+        // 백엔드 API 호출
+        this.saveDepartmentToServer({code, name, parent, category});
+    },
+
+    // 부서 삭제
+    deleteDepartment(deptCode) {
+        const dept = this.departments.find(d => d.code === deptCode);
+        if (!dept) return;
+
+        if (dept.count > 0) {
+            alert(`"${dept.name}" 부서에 ${dept.count}개의 규정이 연결되어 있어 삭제할 수 없습니다.`);
+            return;
+        }
+
+        if (!confirm(`"${dept.name}" 부서를 삭제하시겠습니까?`)) {
+            return;
+        }
+
+        const index = this.departments.findIndex(d => d.code === deptCode);
+        if (index > -1) {
+            this.departments.splice(index, 1);
+            this.renderDepartmentTable();
+            this.showNotification(`"${dept.name}" 부서가 삭제되었습니다.`, 'warning');
+            
+            // 백엔드 API 호출
+            this.deleteDepartmentFromServer(deptCode);
+        }
+    },
+
+    // 모달 닫기
+    closeModal() {
+        const modal = document.getElementById('departmentModal');
+        if (modal) {
+            modal.remove();
+        }
+    },
+
+    // 통계 업데이트
+    updateStats() {
+        const totalDepts = this.departments.length;
+        const totalRegulations = this.departments.reduce((sum, dept) => sum + dept.count, 0);
+        
+        // 통계 표시 영역이 있다면 업데이트
+        const statsArea = document.getElementById('departmentStats');
+        if (statsArea) {
+            statsArea.innerHTML = `
+                <div>전체 부서: <strong>${totalDepts}</strong>개</div>
+                <div>전체 규정: <strong>${totalRegulations}</strong>개</div>
+            `;
+        }
+    },
+
+    // 부서별 규정 목록 가져오기
+    getRegulationsByDepartment(deptCode) {
+        // 실제 구현시 API 호출
+        // return await fetch(`/api/departments/${deptCode}/regulations`);
+        
+        const dept = this.departments.find(d => d.code === deptCode);
+        return dept ? dept.count : 0;
+    },
+
+    // 부서 목록 가져오기 (select box용)
+    getDepartmentOptions() {
+        return this.departments.map(dept => ({
+            value: dept.name,
+            text: `${dept.name} (${dept.code})`
+        }));
+    },
+
+    // 알림 표시
+    showNotification(message, type = 'success') {
+        if (typeof RegulationEditor !== 'undefined' && RegulationEditor.showNotification) {
+            RegulationEditor.showNotification(message, type);
+        } else {
+            alert(message);
+        }
+    },
+
+    // API 호출 메서드 (실제 구현시 백엔드 연동)
+    async saveDepartmentToServer(dept) {
+        console.log('부서 저장:', dept);
+        // const response = await fetch('/api/departments', {
+        //     method: 'POST',
+        //     headers: {'Content-Type': 'application/json'},
+        //     body: JSON.stringify(dept)
+        // });
+    },
+
+    async deleteDepartmentFromServer(deptCode) {
+        console.log('부서 삭제:', deptCode);
+        // await fetch(`/api/departments/${deptCode}`, {
+        //     method: 'DELETE'
+        // });
+    }
+};

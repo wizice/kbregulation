@@ -1,0 +1,1314 @@
+{% extends "common/base.html" %}
+{% block title %}연혁 상세 - {{ rule.wzname }}{% endblock %}
+
+{% block styles %}
+<style>
+    * { box-sizing: border-box; }
+
+    body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+        min-height: 100vh;
+    }
+
+    .page-wrapper {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 24px;
+    }
+
+    /* 상단 헤더 카드 */
+    .header-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        border-radius: 16px;
+        padding: 28px 32px;
+        color: white;
+        margin-bottom: 24px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+    }
+
+    .header-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 400px;
+        height: 400px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+    }
+
+    .header-card::after {
+        content: '';
+        position: absolute;
+        bottom: -30%;
+        left: -10%;
+        width: 300px;
+        height: 300px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 50%;
+    }
+
+    .header-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        position: relative;
+        z-index: 1;
+    }
+
+    .header-title {
+        flex: 1;
+    }
+
+    .header-title h1 {
+        font-size: 24px;
+        font-weight: 700;
+        margin: 0 0 8px 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .header-title .pub-no {
+        background: rgba(255,255,255,0.2);
+        padding: 4px 12px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .header-title .status-badge {
+        background: rgba(255,255,255,0.25);
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        backdrop-filter: blur(10px);
+    }
+
+    .header-subtitle {
+        font-size: 14px;
+        opacity: 0.9;
+        margin-top: 4px;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 10px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .header-btn {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.3);
+        padding: 10px 18px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+        backdrop-filter: blur(10px);
+    }
+
+    .header-btn:hover {
+        background: rgba(255,255,255,0.3);
+        transform: translateY(-2px);
+    }
+
+    /* 요약 정보 카드들 */
+    .summary-cards {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-top: 24px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .summary-card {
+        background: rgba(255,255,255,0.15);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        padding: 16px;
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .summary-card .label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        opacity: 0.8;
+        margin-bottom: 6px;
+    }
+
+    .summary-card .value {
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+    /* 메인 컨텐츠 영역 */
+    .detail-content {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 24px;
+    }
+
+    /* 사이드바 */
+    .sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .nav-card {
+        background: white;
+        border-radius: 12px;
+        padding: 8px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+
+    .sidebar-nav-btn {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+        background: transparent;
+        width: 100%;
+        text-align: left;
+        font-size: 14px;
+        color: #555;
+    }
+
+    .sidebar-nav-btn:hover {
+        background: #f8f9fa;
+    }
+
+    .sidebar-nav-btn.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .sidebar-nav-btn .icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        background: #f0f0f0;
+    }
+
+    .sidebar-nav-btn.active .icon {
+        background: rgba(255,255,255,0.2);
+    }
+
+    .sidebar-nav-btn .text {
+        font-weight: 500;
+    }
+
+    /* 액션 카드 */
+    .action-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+
+    .action-card h4 {
+        font-size: 13px;
+        color: #888;
+        margin: 0 0 16px 0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .action-btn {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        padding: 12px 16px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.2s;
+        margin-bottom: 10px;
+    }
+
+    .action-btn:last-child {
+        margin-bottom: 0;
+    }
+
+    .action-btn.danger {
+        background: #fff5f5;
+        color: #dc3545;
+        border: 1px solid #ffebeb;
+    }
+
+    .action-btn.danger:hover {
+        background: #dc3545;
+        color: white;
+    }
+
+    /* 컨텐츠 패널 */
+    .content-panel {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+        overflow: hidden;
+    }
+
+    .panel-header {
+        background: #f8f9fa;
+        padding: 20px 24px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .panel-header h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .panel-body {
+        padding: 24px;
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    /* 기본정보 그리드 */
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    .info-group {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 16px 20px;
+        border: 1px solid #eee;
+    }
+
+    .info-group.full-width {
+        grid-column: span 2;
+    }
+
+    .info-group label {
+        display: block;
+        font-size: 12px;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+        font-weight: 600;
+    }
+
+    .info-group input,
+    .info-group select {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 14px;
+        background: white;
+        transition: all 0.2s;
+    }
+
+    .info-group input:focus,
+    .info-group select:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .info-group input:read-only {
+        background: #f0f0f0;
+        color: #666;
+    }
+
+    /* 파일 섹션 */
+    .files-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .file-box {
+        background: linear-gradient(145deg, #f8f9fa, #fff);
+        border-radius: 16px;
+        padding: 24px;
+        border: 2px solid #eee;
+        transition: all 0.3s;
+    }
+
+    .file-box:hover {
+        border-color: #667eea;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+    }
+
+    .file-box-header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 20px;
+    }
+
+    .file-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+    }
+
+    .file-icon.pdf {
+        background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+        color: white;
+    }
+
+    .file-icon.docx {
+        background: linear-gradient(135deg, #4dabf7, #339af0);
+        color: white;
+    }
+
+    .file-box-title h4 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .file-box-title span {
+        font-size: 12px;
+        color: #888;
+    }
+
+    .file-status {
+        background: white;
+        border-radius: 10px;
+        padding: 14px 16px;
+        margin-bottom: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid #eee;
+    }
+
+    .file-status .name {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: #333;
+    }
+
+    .file-status .name .check {
+        color: #22c55e;
+        font-weight: bold;
+    }
+
+    .file-status .no-file {
+        color: #999;
+        font-style: italic;
+    }
+
+    /* 수정 이력파일 목록 스타일 */
+    #historyFileList {
+        display: block !important;
+        flex-direction: column;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    #historyFileList .history-file-item:last-child {
+        border-bottom: none;
+    }
+
+    .file-status .download-btn {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .file-status .download-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .file-upload-zone {
+        border: 2px dashed #ddd;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        position: relative;
+    }
+
+    .file-upload-zone:hover {
+        border-color: #667eea;
+        background: #f8f9ff;
+    }
+
+    .file-upload-zone.selected {
+        border-color: #22c55e;
+        background: #f0fdf4;
+    }
+
+    .file-upload-zone input {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        cursor: pointer;
+    }
+
+    .file-upload-zone .upload-icon {
+        font-size: 28px;
+        margin-bottom: 8px;
+    }
+
+    .file-upload-zone .upload-text {
+        font-size: 13px;
+        color: #666;
+    }
+
+    .file-upload-zone.selected .upload-text {
+        color: #22c55e;
+        font-weight: 500;
+    }
+
+    /* 저장 버튼 영역 */
+    .save-section {
+        margin-top: 24px;
+        padding-top: 24px;
+        border-top: 1px solid #eee;
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+    }
+
+    .save-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 14px 40px;
+        border-radius: 10px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .save-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    }
+
+    .save-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* 진행 표시 */
+    .progress-box {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 16px 20px;
+        margin-top: 20px;
+        border: 1px solid #e9ecef;
+    }
+
+    .progress-bar-wrapper {
+        height: 12px;
+        background: #e0e0e0;
+        border-radius: 6px;
+        overflow: hidden;
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #667eea, #764ba2, #667eea);
+        background-size: 200% 100%;
+        border-radius: 6px;
+        transition: width 0.3s ease-out;
+        animation: progressShine 1.5s ease-in-out infinite;
+    }
+
+    .progress-bar-fill.complete {
+        background: linear-gradient(90deg, #22c55e, #16a34a);
+        animation: none;
+    }
+
+    .progress-bar-fill.error {
+        background: linear-gradient(90deg, #ef4444, #dc2626);
+        animation: none;
+    }
+
+    @keyframes progressShine {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+
+    .progress-text {
+        text-align: center;
+        margin-top: 12px;
+        font-size: 14px;
+        color: #555;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    /* 업로드 스피너 */
+    .upload-spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid #667eea;
+        border-top-color: transparent;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* 퍼센트 강조 */
+    .progress-text span:last-child {
+        font-weight: 700;
+        color: #667eea;
+        font-size: 15px;
+    }
+
+    /* 반응형 */
+    @media (max-width: 900px) {
+        .detail-content {
+            grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+            flex-direction: row;
+            overflow-x: auto;
+        }
+
+        .nav-card {
+            display: flex;
+            gap: 8px;
+            min-width: max-content;
+        }
+
+        .summary-cards {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .files-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .info-group.full-width {
+            grid-column: span 1;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .summary-cards {
+            grid-template-columns: 1fr;
+        }
+
+        .header-top {
+            flex-direction: column;
+            gap: 16px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-wrapper">
+    <!-- 상단 헤더 카드 -->
+    <div class="header-card">
+        <div class="header-top">
+            <div class="header-title">
+                <h1>
+                    <span class="pub-no">{{ rule.wzpubno }}</span>
+                    {{ rule.wzname }}
+                    <span class="status-badge">📚 연혁</span>
+                </h1>
+                <div class="header-subtitle">담당: {{ rule.wzmgrdptnm or '-' }} {% if rule.wzreldptnm %}| 유관: {{ rule.wzreldptnm }}{% endif %}</div>
+            </div>
+            <div class="header-actions">
+                <a href="/regulations/history" class="header-btn">← 목록</a>
+                <button class="header-btn" onclick="deleteRegulation()">🗑️ 삭제</button>
+            </div>
+        </div>
+
+        <div class="summary-cards">
+            <div class="summary-card">
+                <div class="label">제정일</div>
+                <div class="value">{{ rule.wzestabdate or '-' }}</div>
+            </div>
+            <div class="summary-card">
+                <div class="label">개정일</div>
+                <div class="value">{{ rule.wzlastrevdate or '-' }}</div>
+            </div>
+            <div class="summary-card">
+                <div class="label">시행일</div>
+                <div class="value">{{ rule.wzexecdate or '-' }}</div>
+            </div>
+            <div class="summary-card">
+                <div class="label">상태</div>
+                <div class="value">{{ rule.wznewflag or '연혁' }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 메인 컨텐츠 -->
+    <div class="detail-content">
+        <!-- 사이드바 -->
+        <div class="sidebar">
+            <div class="nav-card">
+                <button class="sidebar-nav-btn active" onclick="switchTab('basic', this)">
+                    <span class="icon">📝</span>
+                    <span class="text">기본정보</span>
+                </button>
+                <button class="sidebar-nav-btn" onclick="switchTab('files', this)">
+                    <span class="icon">📁</span>
+                    <span class="text">파일관리</span>
+                </button>
+            </div>
+
+            <div class="action-card">
+                <h4>빠른 작업</h4>
+                <button class="action-btn danger" onclick="deleteRegulation()">
+                    🗑️ 연혁 삭제
+                </button>
+            </div>
+        </div>
+
+        <!-- 컨텐츠 패널 -->
+        <div class="content-panel">
+            <!-- 기본정보 탭 -->
+            <div id="basicTab" class="tab-content active">
+                <div class="panel-header">
+                    <h3>📝 기본정보 수정</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="info-grid">
+                        <div class="info-group">
+                            <label>분류번호 *</label>
+                            <input type="text" id="editPubNo" value="{{ rule.wzpubno or '' }}" />
+                        </div>
+                        <div class="info-group">
+                            <label>내규명 *</label>
+                            <input type="text" id="editRuleName" value="{{ rule.wzname or '' }}" />
+                        </div>
+                        <div class="info-group">
+                            <label>소관부서</label>
+                            <input type="text" value="{{ rule.wzmgrdptnm or '' }}" readonly />
+                        </div>
+                        <div class="info-group">
+                            <label>제정일</label>
+                            <input type="date" id="editEstabDate" value="{{ rule.wzestabdate or '' }}" />
+                        </div>
+                        <div class="info-group">
+                            <label>개정일</label>
+                            <input type="date" id="editLastRevDate" value="{{ rule.wzlastrevdate or '' }}" />
+                        </div>
+                        <div class="info-group">
+                            <label>시행일</label>
+                            <input type="date" id="editExecDate" value="{{ rule.wzexecdate or '' }}" />
+                        </div>
+                        <div class="info-group">
+                            <label>상태</label>
+                            <select id="editNewFlag">
+                                <option value="현행" {% if rule.wznewflag == '현행' %}selected{% endif %}>현행</option>
+                                <option value="연혁" {% if rule.wznewflag == '연혁' %}selected{% endif %}>연혁</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="save-section">
+                        <button class="save-btn" onclick="saveBasicInfo()">💾 저장하기</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 파일관리 탭 -->
+            <div id="filesTab" class="tab-content">
+                <div class="panel-header">
+                    <h3>📁 파일 관리</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="files-grid">
+                        <!-- PDF 파일 박스 -->
+                        <div class="file-box">
+                            <div class="file-box-header">
+                                <div class="file-icon pdf">📕</div>
+                                <div class="file-box-title">
+                                    <h4>PDF 파일</h4>
+                                    <span>인쇄용 문서</span>
+                                </div>
+                            </div>
+                            <div class="file-status">
+                                {% if rule.wzfilepdf %}
+                                {% set pubno = (rule.wzpubno or '')|replace('.', '_')|trim('_') %}
+                                {% set name = (rule.wzname or 'regulation')|replace(' ', '_')|replace('/', '_') %}
+                                {% set date = ((rule.wzlastrevdate or rule.wzclosedate or '')|replace('.', '')|replace('-', ''))[:8] %}
+                                {% set display_name = pubno ~ '_' ~ name ~ ('_' ~ date if date else '') ~ '.pdf' %}
+                                <span class="name">
+                                    <span class="check">✓</span>
+                                    {{ display_name }}
+                                </span>
+                                <button class="download-btn" onclick="downloadFile('pdf')">다운로드</button>
+                                {% else %}
+                                <span class="no-file">파일 없음</span>
+                                {% endif %}
+                            </div>
+                            <div class="file-upload-zone" id="pdfZone">
+                                <input type="file" id="pdfFile" accept=".pdf" onchange="handleFileSelect('pdf', this.files[0])">
+                                <div class="upload-icon">📤</div>
+                                <div class="upload-text" id="pdfText">새 PDF 파일 선택</div>
+                            </div>
+                        </div>
+
+                        <!-- DOCX 파일 박스 -->
+                        <div class="file-box">
+                            <div class="file-box-header">
+                                <div class="file-icon docx">📄</div>
+                                <div class="file-box-title">
+                                    <h4>DOCX 파일</h4>
+                                    <span>편집용 문서</span>
+                                </div>
+                            </div>
+                            <div class="file-status">
+                                {% if rule.wzfiledocx %}
+                                {% set pubno_docx = (rule.wzpubno or '')|replace('.', '_')|trim('_') %}
+                                {% set name_docx = (rule.wzname or 'regulation')|replace(' ', '_')|replace('/', '_') %}
+                                {% set date_docx = ((rule.wzlastrevdate or rule.wzclosedate or '')|replace('.', '')|replace('-', ''))[:8] %}
+                                {% set display_name_docx = pubno_docx ~ '_' ~ name_docx ~ ('_' ~ date_docx if date_docx else '') ~ '.docx' %}
+                                <span class="name">
+                                    <span class="check">✓</span>
+                                    {{ display_name_docx }}
+                                </span>
+                                <button class="download-btn" onclick="downloadFile('docx')">다운로드</button>
+                                {% else %}
+                                <span class="no-file">파일 없음</span>
+                                {% endif %}
+                            </div>
+                            <div class="file-upload-zone" id="docxZone">
+                                <input type="file" id="docxFile" accept=".docx" onchange="handleFileSelect('docx', this.files[0])">
+                                <div class="upload-icon">📤</div>
+                                <div class="upload-text" id="docxText">새 DOCX 파일 선택</div>
+                            </div>
+                        </div>
+
+                        <!-- 수정 이력파일 박스 (여러 파일 지원) -->
+                        <div class="file-box">
+                            <div class="file-box-header">
+                                <div class="file-icon pdf" style="background: linear-gradient(135deg, #17a2b8, #138496);">📋</div>
+                                <div class="file-box-title">
+                                    <h4>수정 이력파일</h4>
+                                    <span>개정 이력 문서 (여러 파일 등록 가능)</span>
+                                </div>
+                            </div>
+                            <div class="file-status" id="historyFileList">
+                                <!-- 파일 목록은 JavaScript에서 로드 -->
+                                <span class="no-file">로딩 중...</span>
+                            </div>
+                            <div class="file-upload-zone" id="historyZone">
+                                <input type="file" id="historyFile" onchange="handleFileSelect('history', this.files[0])">
+                                <div class="upload-icon">📤</div>
+                                <div class="upload-text" id="historyText">새 수정 이력파일 추가</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="uploadProgress" class="progress-box" style="display: none;">
+                        <div class="progress-bar-wrapper">
+                            <div class="progress-bar-fill" id="progressBar" style="width: 0%;"></div>
+                        </div>
+                        <div class="progress-text" id="progressText">준비 중...</div>
+                    </div>
+
+                    <div class="save-section">
+                        <button class="save-btn" id="uploadBtn" onclick="uploadFiles()" disabled>📤 파일 업로드</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const ruleId = {{ rule.wzruleseq }};
+const ruleName = "{{ rule.wzname }}";
+let selectedFiles = { pdf: null, docx: null, history: null };
+
+function switchTab(tabName, btn) {
+    document.querySelectorAll('.sidebar-nav-btn').forEach(item => item.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+    btn.classList.add('active');
+    document.getElementById(tabName + 'Tab').classList.add('active');
+}
+
+function downloadFile(fileType, filename = null) {
+    if (fileType === 'history') {
+        // 수정 이력파일은 공개 API 사용
+        const url = filename
+            ? `/api/v1/rule-public/history-file/${ruleId}/download?filename=${encodeURIComponent(filename)}`
+            : `/api/v1/rule-public/history-file/${ruleId}/download`;
+        window.location.href = url;
+    } else {
+        window.location.href = `/api/v1/regulations/history/${ruleId}/download/${fileType}`;
+    }
+}
+
+function handleFileSelect(fileType, file) {
+    if (!file) return;
+
+    selectedFiles[fileType] = file;
+
+    const zone = document.getElementById(fileType + 'Zone');
+    const text = document.getElementById(fileType + 'Text');
+
+    zone.classList.add('selected');
+    text.textContent = '✅ ' + file.name;
+
+    checkUploadButton();
+}
+
+function checkUploadButton() {
+    const hasFile = selectedFiles.pdf || selectedFiles.docx || selectedFiles.history;
+    const btn = document.getElementById('uploadBtn');
+    btn.disabled = !hasFile;
+}
+
+// 전체 화면 업로드 오버레이
+function showUploadOverlay(title) {
+    hideUploadOverlay();
+    const overlay = document.createElement('div');
+    overlay.id = 'uploadOverlay';
+    overlay.innerHTML = `
+        <style>
+            #uploadOverlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.7);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 99999;
+            }
+            .upload-modal {
+                background: white;
+                padding: 40px 50px;
+                border-radius: 16px;
+                text-align: center;
+                min-width: 400px;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            }
+            .upload-spinner-large {
+                width: 60px;
+                height: 60px;
+                border: 5px solid #e0e0e0;
+                border-top-color: #667eea;
+                border-radius: 50%;
+                animation: spinOverlay 1s linear infinite;
+                margin: 0 auto 24px;
+            }
+            @keyframes spinOverlay {
+                to { transform: rotate(360deg); }
+            }
+            .upload-title {
+                font-size: 20px;
+                font-weight: 700;
+                color: #333;
+                margin-bottom: 8px;
+            }
+            .upload-subtitle {
+                font-size: 14px;
+                color: #666;
+                margin-bottom: 24px;
+            }
+            .upload-progress-wrap {
+                background: #e0e0e0;
+                border-radius: 10px;
+                height: 16px;
+                overflow: hidden;
+                margin-bottom: 12px;
+            }
+            .upload-progress-bar {
+                height: 100%;
+                background: linear-gradient(90deg, #667eea, #764ba2);
+                border-radius: 10px;
+                transition: width 0.3s ease;
+                width: 0%;
+            }
+            .upload-percent {
+                font-size: 28px;
+                font-weight: 700;
+                color: #667eea;
+            }
+        </style>
+        <div class="upload-modal">
+            <div class="upload-spinner-large"></div>
+            <div class="upload-title" id="uploadOverlayTitle">${title}</div>
+            <div class="upload-subtitle">잠시만 기다려주세요...</div>
+            <div class="upload-progress-wrap">
+                <div class="upload-progress-bar" id="uploadOverlayBar"></div>
+            </div>
+            <div class="upload-percent"><span id="uploadOverlayPercent">0</span>%</div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+}
+
+function updateUploadOverlay(percent, title) {
+    const bar = document.getElementById('uploadOverlayBar');
+    const pct = document.getElementById('uploadOverlayPercent');
+    const titleEl = document.getElementById('uploadOverlayTitle');
+    if (bar) bar.style.width = percent + '%';
+    if (pct) pct.textContent = percent;
+    if (title && titleEl) titleEl.textContent = title;
+}
+
+function hideUploadOverlay() {
+    const overlay = document.getElementById('uploadOverlay');
+    if (overlay) overlay.remove();
+}
+
+function showUploadComplete(msg) {
+    const modal = document.querySelector('.upload-modal');
+    if (modal) {
+        modal.innerHTML = `
+            <div style="font-size: 60px; margin-bottom: 16px;">✅</div>
+            <div class="upload-title" style="color: #22c55e;">${msg}</div>
+        `;
+        setTimeout(hideUploadOverlay, 1500);
+    }
+}
+
+async function uploadFiles() {
+    if (!selectedFiles.pdf && !selectedFiles.docx && !selectedFiles.history) {
+        alert('업로드할 파일을 선택해주세요.');
+        return;
+    }
+
+    const uploadBtn = document.getElementById('uploadBtn');
+    uploadBtn.disabled = true;
+
+    const totalFiles = (selectedFiles.pdf ? 1 : 0) + (selectedFiles.docx ? 1 : 0) + (selectedFiles.history ? 1 : 0);
+    let currentFile = 0;
+
+    try {
+        if (selectedFiles.pdf) {
+            currentFile++;
+            showUploadOverlay(`PDF 파일 업로드 중 (${currentFile}/${totalFiles})`);
+            await uploadSingleFileWithProgress('pdf', selectedFiles.pdf, (percent) => {
+                updateUploadOverlay(percent);
+            });
+        }
+
+        if (selectedFiles.docx) {
+            currentFile++;
+            showUploadOverlay(`DOCX 파일 업로드 중 (${currentFile}/${totalFiles})`);
+            await uploadSingleFileWithProgress('docx', selectedFiles.docx, (percent) => {
+                updateUploadOverlay(percent);
+            });
+        }
+
+        if (selectedFiles.history) {
+            currentFile++;
+            showUploadOverlay(`수정 이력파일 업로드 중 (${currentFile}/${totalFiles})`);
+            await uploadHistoryFileWithProgress(selectedFiles.history, (percent) => {
+                updateUploadOverlay(percent);
+            });
+        }
+
+        showUploadComplete('파일 업로드 완료!');
+        setTimeout(() => window.location.reload(), 1500);
+
+    } catch (error) {
+        hideUploadOverlay();
+        alert('업로드 실패: ' + error.message);
+        uploadBtn.disabled = false;
+    }
+}
+
+// 수정 이력파일 업로드 (별도 API 사용)
+function uploadHistoryFileWithProgress(file, onProgress) {
+    return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        const formData = new FormData();
+        formData.append('history_file', file);
+
+        xhr.upload.addEventListener('progress', (event) => {
+            if (event.lengthComputable) {
+                const percent = Math.round((event.loaded / event.total) * 100);
+                onProgress(percent);
+            }
+        });
+
+        xhr.addEventListener('load', () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                    const result = JSON.parse(xhr.responseText);
+                    resolve(result);
+                } catch (e) {
+                    resolve({ success: true });
+                }
+            } else {
+                try {
+                    const errorResult = JSON.parse(xhr.responseText);
+                    reject(new Error(errorResult.detail || '업로드 실패'));
+                } catch (e) {
+                    reject(new Error('업로드 실패: ' + xhr.status));
+                }
+            }
+        });
+
+        xhr.addEventListener('error', () => {
+            reject(new Error('네트워크 오류'));
+        });
+
+        xhr.addEventListener('timeout', () => {
+            reject(new Error('업로드 시간 초과'));
+        });
+
+        xhr.open('POST', `/api/v1/rule/upload-history-file/${ruleId}`);
+        xhr.withCredentials = true;
+        xhr.timeout = 300000;
+        xhr.send(formData);
+    });
+}
+
+// XMLHttpRequest를 사용한 실제 진행률 표시 업로드
+function uploadSingleFileWithProgress(fileType, file, onProgress) {
+    return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        const formData = new FormData();
+        formData.append('file', file);
+
+        // 업로드 진행률 이벤트
+        xhr.upload.addEventListener('progress', (event) => {
+            if (event.lengthComputable) {
+                const percent = Math.round((event.loaded / event.total) * 100);
+                onProgress(percent);
+            }
+        });
+
+        // 완료 이벤트
+        xhr.addEventListener('load', () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                    const result = JSON.parse(xhr.responseText);
+                    resolve(result);
+                } catch (e) {
+                    resolve({ success: true });
+                }
+            } else {
+                try {
+                    const errorResult = JSON.parse(xhr.responseText);
+                    reject(new Error(errorResult.detail || '업로드 실패'));
+                } catch (e) {
+                    reject(new Error('업로드 실패: ' + xhr.status));
+                }
+            }
+        });
+
+        // 에러 이벤트
+        xhr.addEventListener('error', () => {
+            reject(new Error('네트워크 오류'));
+        });
+
+        // 타임아웃 이벤트
+        xhr.addEventListener('timeout', () => {
+            reject(new Error('업로드 시간 초과'));
+        });
+
+        // 요청 설정 및 전송
+        xhr.open('POST', `/api/v1/regulations/history/${ruleId}/upload/${fileType}`);
+        xhr.withCredentials = true;
+        xhr.timeout = 300000; // 5분 타임아웃
+        xhr.send(formData);
+    });
+}
+
+async function saveBasicInfo() {
+    const data = {
+        wzpubno: document.getElementById('editPubNo').value,
+        wzname: document.getElementById('editRuleName').value,
+        wzestabdate: document.getElementById('editEstabDate').value,
+        wzlastrevdate: document.getElementById('editLastRevDate').value,
+        wzexecdate: document.getElementById('editExecDate').value,
+        wznewflag: document.getElementById('editNewFlag').value
+    };
+
+    try {
+        const response = await fetch(`/api/v1/regulations/history/${ruleId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+            credentials: 'include'
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            alert('저장되었습니다.');
+            window.location.reload();
+        } else {
+            alert('저장 실패: ' + (result.detail || result.message));
+        }
+    } catch (error) {
+        alert('저장 중 오류: ' + error.message);
+    }
+}
+
+async function deleteRegulation() {
+    if (!confirm(`'${ruleName}' 연혁을 삭제하시겠습니까?\n\n되돌릴 수 없습니다.`)) return;
+
+    try {
+        const response = await fetch(`/api/v1/regulations/history/${ruleId}?delete_files=true`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            alert('삭제되었습니다.');
+            window.location.href = '/regulations/history';
+        } else {
+            alert('삭제 실패: ' + (result.detail || result.message));
+        }
+    } catch (error) {
+        alert('삭제 중 오류: ' + error.message);
+    }
+}
+
+// 수정 이력파일 목록 로드
+async function loadHistoryFiles() {
+    const container = document.getElementById('historyFileList');
+    try {
+        const response = await fetch(`/api/v1/rule-public/history-file/${ruleId}`, {
+            method: 'GET',
+            credentials: 'include'
+        });
+        const result = await response.json();
+
+        if (result.success && result.has_file && result.files.length > 0) {
+            container.innerHTML = result.files.map((file, index) => `
+                <div class="history-file-item" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; gap: 10px;">
+                    <span class="name" style="flex: 1; min-width: 0; display: flex; align-items: center; gap: 5px;">
+                        <span class="check" style="color: #28a745; flex-shrink: 0;">✓</span>
+                        <span style="font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${file.filename}">${file.filename}</span>
+                        <span style="color: #888; font-size: 11px; flex-shrink: 0;">(${file.size_str})</span>
+                    </span>
+                    <div style="display: flex; gap: 5px; flex-shrink: 0;">
+                        <button class="download-btn" onclick="downloadFile('history', '${file.filename}')" style="padding: 4px 10px; font-size: 12px;">다운로드</button>
+                        <button class="delete-btn" onclick="deleteHistoryFile('${file.filename}')" style="padding: 4px 10px; font-size: 12px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">삭제</button>
+                    </div>
+                </div>
+            `).join('');
+
+            // 파일 개수 표시
+            const header = container.previousElementSibling;
+            if (header) {
+                const countBadge = header.querySelector('.file-count-badge');
+                if (countBadge) {
+                    countBadge.textContent = result.total_files;
+                } else {
+                    const titleSpan = header.querySelector('.file-box-title span');
+                    if (titleSpan) {
+                        titleSpan.innerHTML = `개정 이력 문서 <span class="file-count-badge" style="background: #17a2b8; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px; margin-left: 5px;">${result.total_files}개</span>`;
+                    }
+                }
+            }
+        } else {
+            container.innerHTML = '<span class="no-file">파일 없음</span>';
+        }
+    } catch (error) {
+        console.error('수정 이력파일 로드 오류:', error);
+        container.innerHTML = '<span class="no-file" style="color: #dc3545;">로드 실패</span>';
+    }
+}
+
+// 수정 이력파일 삭제
+async function deleteHistoryFile(filename) {
+    if (!confirm(`'${filename}' 파일을 삭제하시겠습니까?`)) return;
+
+    try {
+        const response = await fetch(`/api/v1/rule/history-file/${ruleId}?filename=${encodeURIComponent(filename)}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            alert(result.message);
+            loadHistoryFiles(); // 목록 새로고침
+        } else {
+            alert('삭제 실패: ' + (result.detail || result.message));
+        }
+    } catch (error) {
+        alert('삭제 중 오류: ' + error.message);
+    }
+}
+
+// 페이지 로드 시 수정 이력파일 목록 로드
+document.addEventListener('DOMContentLoaded', function() {
+    loadHistoryFiles();
+});
+</script>
+{% endblock %}

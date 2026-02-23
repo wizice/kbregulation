@@ -1,0 +1,13 @@
+7.2.1. 부록 2.
+FMEA(Failure Mode and Effect Analysis) Methodology 담당부서 의료질향상 및 환자안전위원회 제정일 2014.04. 최종개정일 2018.10. 최종검토일 2025.03.
+
+FMEA (Failure Mode and Effect Analysis) Methodology 사고발생이 가능한 것에 대해 전향적으로 구조를 평가하는 체계적인 방법 A systematic method for prospectively evaluating the structure of a process which may possibly result in an accident Step 1: 프로세스 선정 – 기존 완료된 FMEA 중 복잡한 프로세스의 일부분, 근접오류(Near-misses), 흔히 보고되는 “주제” Select a process – Part of a complicated process which had been, Near-misses, “Subjects” which are commonly reported Step 2: 팀 구성 Team composition Step 3: 프로세스 도형화, 프로세스 또는 하위 프로세스 각 단계 순서 정하기 Diagram the process. Decide the order of the process or the sub-process Step 4: Hazard Analysis 수행 Conduct Hazard Analysis A. 사고유형 확인: 가능한 사고유형(Potential Failure Mode) 확인 (사고 유형은 잘못되면 사고가 발생할 수 있는 프로세스의 하위 단계를 지칭) Identify the potential failure mode: Verify the potential failure modes (Failure mode refers to the sub-steps of a process which can turn into an accident) B. 사고유형 평가:
+Evaluate the failure mode
+
+- 중증도(Severity)와 가능성(Probability) 판단 Evaluate the severity and probability
+
+- Hazard Score Matrix를 사용하여 위험도 점수화 Using the Hazard Score Matrix, determine the score of the risk level
+
+- FMEA Decision Tree를 사용하여 각 사고유형에 대해 평가를 진행할지 결정 Using the FMEA Decision Tree, decide how to evaluate each accident type
+
+- 각 사고유형 중 “진행”으로 결정된 경우 근본원인 확인 Of the accident types, verify the root cause of those “in process” Step 5: 행동 및 결과 확인 각 근본원인의 대책행위(CA; Corrective Actions)를 선정, 대책행위(CA)의 효과성 검정 Verify the actions and results: Decide the CA(Corrective Actions) of each root cause Verify the effectiveness of the CA

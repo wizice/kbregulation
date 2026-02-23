@@ -1,0 +1,207 @@
+항암약물요법 투여 시 주의사항 및 부작용 발생 시 대처방안 제정일: 2018.9.
+개정일: 2023.3.
+검토일: 2021.3./2024.3./2025.03.
+기안부서: 약무국 일반명 상품명 함량 규격 계열 Extravasation 투여시 주의 사항 모니터링 부작용 및 발생시 대처방안 Decontamination Elimination CBC, serum creatinine, serum transaminases and total bilirubin, urinalysis with urine cell counts, urine protein to creatinine ratio, ECG, TSH, aPTT, signs/symptoms of infection, annual human papillomavirus screening, latent 1 Alemtuzumab LEMTRADA(비재고) 12mg/1.2ml/V rhMab(anti CD52) 흔들지 말것, 단회 사용 infection screening, signs/symptoms of progressive 과량투여시, 이 약의 투여를 중단하고 부가적인 치료를 중단 multifocal leukoencephalopathy and hemophagocytic lymphohistiocytosis, signs/symptoms of thrombotic thrombocytopenic purpura, signs and symptoms of autoimmune encephalitis, baseline and annual skin EGFR, MET 표적으 1. 유량 조절기와 in-line 무균, 무발열성, 저단백질 PES 필터 EGFR exon 20 insertion mutation status, pregnancy 로 하는 이중 특이 (0.2㎛)를 끼운 주입세트를 이용하여 희석 용액을 정맥 내 투 status, signs/symptoms of dermatologic toxicity, ocular 과량투여 발생시 이 약 투여를 중단하고, 임상적인 독성이 감소 또는 2 Amivantamab RYBREVANT 350mg/7ml/V 성 항체(bispecific 여 toxicity, signs/symptoms of infusion reactions during 해결될 때까지 일반적인 보조요법을 시행 antibody) 2. 투여 세트의 재질: 폴리우레탄(PU), 폴리부타디엔(PBD), infusion, HBV screening, Cardiovascular monitoring 3 Aflibercept ZALTRAP 100mg/4ml/V rhMab(anti VEGF) 1. 1hr(IVF) CBC , Urine protein, Blood pressure, Diarrhea and 과량투여시 적절한 처치, 특히 고혈압과 단백뇨를 모니터링하고 치료 200mg/8ml/V 2. IV push불가, 유리체내 주사 불가(고삼투압) dehydration, Pregnancy test, Signs & symptoms of 해야 하며, 이상반응을 모니터링하기 위한 면밀한 의학적 관리가 필요 즉시 chelation therapy
+
+- INHALATION EXPOSURE: 노출된 약으로부 터 환자 격리하고 24시간 urine 검사하여 irritant, Serum electrolytes, Hematologic and coagulation 4 Arsenic Trioxide TRISENOX 12mg/6ml/V Arsenic Trioxide 2시간에 걸쳐 IVF 과량 투여시 즉시 chelation therapy : BAL, succimer chelate 여부 판단 혈액투석 고려 냉찜질 profiles, Glucose levels, Hepatic profiles, Creatinine, ECG
+
+- DERMAL EXPOSURE: 다른 부위 접촉을 피해 철저하게 세척, 국소 steroid cream
+
+- EYE EXPOSURE: 대량의 물로 irrigation, 안과 5 Atezolizumab TECENTRIQ 840mg/14ml/V Anti-PD-L1 60min(IVF) Monitor liver function tests (AST, ALT, and bilirubin; at 1,200mg/20ml/V Monoclonal bolus 투여 및 IVH 금지, 첫 주입에 내약성 보이는 경우 30분 baseline and periodically during treatment), thyroid Cardiovascular events, Hyperglycemia, Diabetes, Liver IVF enzymes, Serum creatinine, Infusion-related Anti-PD-L1
+
+1. IV push 불가 reactions(pyrexia, chills, flushing, hypotension, dyspnea, 과량투여시, 약물이상반응의 징후나 증상에 대해 환자를 면밀히 모니 6 Avelumab BAVENCIO 200mg/10ml/V Monoclonal
+
+2. 투여시 0.2 μm 크기의 멸균, 비발열성, 저단백결합 인라인 wheezing, back pain, abdominal pain, and urticarial), 터링하고, 적절한 대증치료를 실시해야 한다.
+Antibody 필터 사용 Underlying immune-mediated adverse reactions, Thyroid function, Transplant-related complications
+
+1. IVF
+- 10~40분에 걸쳐 주입
+
+- 조제후 실온 1시간내에 투여 완료 CBC, Measurable residual disease (MRD), Liver
+
+- D5W, 헤스판 및 중탄산염 함유용액 혼합금기(불안정) chemistries, Renal function, including a serum creatinine 과량투여시 적절한 혈구수인지 모니터하고 필요하다면 보존적 치료 필 7 Azacitidine AZALID 150mg/V(P) Pyrimidine - IV 투여시 혈액학적 독성 증가하나 투여 가능 and electrolytes, Serum bicarbonate level, Tumor lysis 요 피부노출시 비누와 물로 세척, 점막에 노출 시 analogue syndrome, Pregnancy test 물로 씻어냄
+
+2. SC
+- 4ml이상 용량은 2개의 시린지에 나누어 투여
+
+1. IVF CBC, serum bicarbonate, hepatic function, renal function 1.Hypotensive episode: IV 0.9% NaCl at 10 mL to 20 mL/kg, VIDAZA 100mg/V(P) Early hemodialysis 효과적
+- IV 투여시 혈액학적 독성 증가하나 투여 가능 tests and signs of renal toxicity dopamine, norepinephrine.
+30min(IVF) 피부접촉시 물과 세제로 세척, 점막에 노출 시 8 Belotecan CAMTOBELL 2mg/V(P) S phase, Plant 주사시 차광, 투여 권장 안정성 4 hr 물로 씻어냄 9 Bendamustine BENCORD 25mg/V(P) Alkylating Irritant 30-60min(IVF) Leukocytes, platelets, Hb, neutrophil counts, blood 혈액학적 이상반응을 관리하는 효과적인 대처법은 골수 이식 및 수혈 접촉한 신체부위는 비누 및 물로 조심해서 헹 100mg/V(P) (vesicant-like properties) chemistries, signs and symptoms of tumor lysis (혈소판, 농축적혈구) 또는 혈액성장인자 투여 궈내야 하며 눈은 생리식염수로 헹궈냄 10 Bevacizumab AVASTIN 100mg/4ml/V rhMab(anti VEGF) IV push불가 Proteinuria, blood pressure, infusion reation Severe hypertension: nitroprusside 투여 ONBEVZI 400mg/16ml/V IV, IVF, IM, SC G2,M phase, Irritant, 1. Test dose(1-2unit), D5W 희석시 24시간내 10-16%손실, 유 Chest roentgenograms, renal function, pulmonary Hypotension : IV 0.9% NaCl, dopamine, norepinephrine 피부접촉시 물과 비누로 세척, 점막에 노출 시 11 Bleomycin BLEOMYCIN 15mg/V(P) Antibiotic 냉찜질 리병( PVC bag장기간주입 피할것) diffusion capacity for carbon dioxide Bleomycin-induced pulmonary toxicity: Corticosteroid 물로 씻어냄
+
+2. 400mg (pulmonary toxicity)
+
+1. IVSS주입하여 infusion bag으로 만듬. CBC, AST,ALT, gamma-glutamyl transferase, and total
+
+2. 1cycle:(D1-7):9µg/day,(D8-28)28µg/day 2cycle:28µg/day blood bilirubin, neurotoxicity, DIC, capillary leak 12 Blinatumomab BLINCYTO 35µg/V(P) Bispecific Antibody
+
+3. 0.2-1.2 μm 크기의 무균,비발열성,저단백결합 인라인 필터사syndrome, and hemophagocytic 용 lymphohistiocytosis/macrophage activation syndrome 13 Bortezomib VELCADE 3.5mg/V(P) Proteasome Irritant, 연속 투여 시 적어도 72시간의 간격 필요 CBC, platelet count, hepatic function, blood glucose Hypotensive episode: IV 0.9% NaCl, dopamine, norepinephrine VELKIN 2.5mg/V(P) Inhibitor 냉찜질 1. IV: 3~5초 IV injection levels, signs and symptoms of peripheral neuropathy, Irritant, 1. 1회 최대용량 180mg CBC, Liver funtion, Peripheral neuropathy, tumor lysis 14 Brentuximab ADCETRIS 50mg/V(P) CD30-directed ADC 냉찜질 2. IVF(30min이상) syndrome, Symptoms of CNS system abnormalities
+
+1. IVF(2hr) Irritant CBC, Serum transaminases, alkaline phosphatase, Hemodialysis or 15 Busulfan BUSULFEX 60mg/10ml/V Alkylating, CCNS 2. Polycarbonate syringes or polycarbonate filter needle 사 Seizure: IV benzodiazepines, barbiturates 피부나 점막에 접촉되면 즉시 물로 세척 냉찜질 bilirubin, Seizures, Symptoms of cardiac tamponade hemoperfusion 고려 용금지 1. Nausea/vomiting, diarrhea: IV fluids, antidiarrheals (eg, high-dose IVF(1hr이상) loperamide, diphenoxylate) and antiemetics.
+Hemodialysis, Vesicants 1. 0.22 마이크로미터인 직렬필터 사용 2. Hypersensitivity reaction:
+피부접촉시 비누와 물로 세척, 점막에 노출 시 hemoperfusion and 16 Cabazitaxel JEVTANA 60mg/1.5ml/V Mitotic Inhibitor (Non-DNA-binding), 2. Premedicate with an antihistamine, a corticosteroid, and CBC with differential, signs of hypersensitivity reaction - MILD/MODERATE: Antihistamines with or without inhaled beta 물로 씻어냄 plasmapheresis 권장되지 온찜질 an H2 antagonist at least 30 minutes prior to infusion. agonists, corticosteroids or epinephrine.
+않음
+
+3. 조제시 PVC재질 용기 사용금지 - SEVERE: Oxygen, aggressive airway management, antihistamines, CARBOPLATIN 600mg/60ml/V Irritant, 1. 주사시 차광 e1p. Nineepphhrrointeo,x iccoitryti:c NosSt e3r~o6id Ls,/ dEaCyG로 m 적on극it적ori인ng I, Va nfldu iIdV rfelusuidssc.itation(목 피부접촉시 비누와 물로 세척, 눈에 노출 시 물 17 Carboplatin NEOPLATIN 150mg/15ml/V Alkylating 냉찜질 2. Al과 반응하여 침전(Al함유의료기기 사용 금지) CBC(including differential) 표 urine output: 1 to 3 mL/kg/hr) 로 씻어냄 응급 혈액투석 실시 450mg/45ml/V 3. S포함하는 아미노산 수액과 배합금기 2. Hypersensitivity reaction:
+
+CBC, serum creatinine, serum transaminases and total bilirubin, urinalysis with urine cell counts, urine protein to creatinine ratio, ECG, TSH, aPTT, signs/symptoms of infection, annual human papillomavirus screening, latent 1 Alemtuzumab LEMTRADA(비재고) 12mg/1.2ml/V rhMab(anti CD52) 흔들지 말것, 단회 사용 infection screening, signs/symptoms of progressive 과량투여시, 이 약의 투여를 중단하고 부가적인 치료를 중단 multifocal leukoencephalopathy and hemophagocytic lymphohistiocytosis, signs/symptoms of thrombotic thrombocytopenic purpura, signs and symptoms of autoimmune encephalitis, baseline and annual skin CBC with differential and platelets (monitor frequently throughout therapy), serum potassium levels regularly during treatment, renal function, pulmonary function (with new or worsening pulmonary symptoms), liver 2nd gen. 1. 거품주의(흔들지말것) function tests, blood pressure. Signs/symptoms of 18 Carfilzomib KYPROLIS 30mg/V(P) Proteasome Non-vesicants 2. BSA > 2.2인 경우 2.2 기준 투여.
+infusion-related reactions, congestive heart failure, Inhibitor Regimen및 Cycle에 따른 투여용량 유의할것 tumor lysis syndrome, peripheral neuropathy, posterior reversible encephalopathy syndrome, thrombocytopenic thrombotic purpura/hemolytic uremic syndrome, and venous thromboembolic events. Monitor for evidence of Vesicants Hematocrit, platelet count, total leukocyte count with Localize by applying dry cold compresses for 20 minutes 4 times 피부노출 시 일시적인 hyperpigmentation 유발 19 Carmustine CARMSPAL-P* 100mg/V(P) Alkylating (DNA binding), 최대 주입 속도(3 mg/m(2)/min)로 투여시, 천천히 적어도 2 differential, renal function, liver enzymes, and respiratory daily for 1 to 2 days. Avoid alcohol compresses. Elevate the limb.
+가능. 노출 시 즉시 비누와 물로 완전히 세척 냉찜질 hours 이상 IV infusion status Administer analgesia if needed
+
+1. Hypotensive episode: 0.9% IV NaCl, dopamine, norepinephrine -Mild hypotension: SC epinephrine
+
+1. IV push or bolus 투여 금지 Serum electrolytes, CBC, ECG, hepatic enzyme, signs of -Severe hypotension : IV epinephrine 20 Cetuximab ERBITUX 100mg/20ml/V rhMab (anti EGFR)
+
+2. 0.22-micrometer inline filter 사용하여 투여 severe infusion reactions 2. Anaphylaxis
+- Bronchospasm: Oxygen, antihistamines, inhaled beta agonists 21 Cisplatin(DDP) CISPLAN 10mg/20ml/V Alkylating 유사 Irritant, 1. 주사시 차광 CBC, hepatic function, renal function, audiometric -A nUtpidpoetre a: iSrwodaiyu med ethmioas: uSlCfa teepinephrine 피부접촉시 비누와 물로 세척, 점막에 노출 시 1-2시간 이내 sodium 50mg/100ml/V (DNA cross-linking 냉찜질 2. Al와 반응하여 침전(Al함유의료기기 사용 금지) testing, neurologic exam, symptoms of anaphylactic 1. Nephrotoxicity: 물로 씻어냄 thiosulfate 투여. large CBC with differential, serum electrolytes, hepatic Antimetabolite, S 1. 0.22 micron filter 사용 enzymes and renal function, signs and symptoms of 22 Cladribine LEUSTATIN 10mg/10ml/V Non-vesicants phase 2. 조제 후 투여 지연되는 경우 냉장 8hr까지만 보관가능 tumor lysis syndrome, fever and signs of infection, peripheral neuropathy CBC and platelets, hepatic and renal function, cardiac 1. Hypotensive episode: IV 0.9% saline (성인: 1~1.5 L, 소아: 20
+
+1. Cytarabine과 병용 시 evoltra 투여 후 4시간 후에 투약 function, signs and symptoms of venoocclusive disease mL/kg). 대랑의 IV fluids는 오히려 capillary leak syndrome 악화.
+
+2. Na 70.77mg (3.08mmol)함유, Na 식이조절 환자 고려 23 Clofarabine EVOLTRA 20mg/20ml/V Antimetabolite Non-vesicants of liver, infection, tumor lysis syndrome, cytokine releas, hypotension 지속시 vasopressors 투여.
+
+3. 치료 5일 동안 continuous IV fluids infusion systemic inflammatory response syndrome and capillary 2. Systemic inflammatory response syndrome: Hydrocortisone 100
+
+4. 0.22㎛ in-line filter를 연결한 후 희석수액병에 주입 leak syndrome mg/m(2) for 3 days is recommended.
+
+1. Bladder toxicity: hydration, MESNA투여, formalin 5-10%의 방광내 irritant, IV, IVF 피부접촉시 비누와 물로 세척, 눈에 노출 시 물 24 Cyclophosphamide ENDOXAN 500mg/V(P) Alkylating, CCNS CBC, cardiotoxicity, urinary sediment 주입, hyperbaric oxygen therapy 투석가능 (20% to 50%) 냉찜질 25℃ 이하에서 보관 로 씻어냄
+
+2. SIADH: fluid restriction, furosemide 25 Cytarabine C Y T T A A R R A A B B I I N N E E (Faulding) 1 2 2 0 0 0 1 0 0 0 0 0 0 0 0 m m m m g g g g / / / / 1 2 4 2 0 0 0 m m m m l/ l l l V / / / V V V a A n n a t l P i o m y g r p e u im h t e a a , i b s d S e o i n l p i e t h e a , s S e Irritan 냉 t o 찜 r 질 neutral, I I H T V e , o p I n V a l r F y i , n ( 1 S - 배 C 5 , m 합 IT i 불 n 천 가 천히) C co B n C c , e r n e t n r a a l t i a o n n d s, h n e e p u a r t o i l c o g fu ic n c a t n io d n G , s I e f r u u n m ct i u o r n ic acid 1 - e - . v M P e D r r i o i y l a d g r 4 r r t e h o h s e s o m a i u v : o e rs , d u e fo r n a r c t o 2 e 4 n ( t G h ro o ra l u l d e r d e s) : 1 o ~ c 2 tr ) e w ot it id h e o , u I t V i n fl f u e i c d t s io , n a : n l d o p a e n r t a ib m io id ti e c ( s 2 mg 피 로 부 씻 접 어 촉 냄 시 비누와 물로 세척, 눈에 노출 시 물 Early hemodialysis 효과적 Liposomal irritant, 1. 보존제 미함유로 조제 후 4시간 안에 사용, Hematopoietic system, neurotoxicity, especially within 5 2. Seizure: IV benzodiazepines, barbiturates cytarabine DEPOCYTE* 50mg/5ml/V Anti-SLAMF7 냉찜질 2. In line 필터 사용금지. days of administration 3. Acute lung injury: Maintain adequate ventilation and oxygenation
+
+3. 5일간 dexamethasone 4mg bid 투여 4. Intrathecal injection:
+26 Dacarbazine DTI 100mg/V(P) Alkylating, CCNS Irritant, 1. IVF(30min이상) CBC 1. Seizure: IV benzodiazepines, barbiturates 200mg/V(P) 냉찜질 2. 주사시 차광 2. Anaphylaxis:
+27 Daratumumab DARZALEX 100mg/5ml/V Mab(anti CD38) 투여시 0.2-0.22 μm 크기의 멸균,비발열성,저단백결합 인라인 Blood screen and type testing, CBC, Signs and symptoms 400mg/20ml/V PES필터 사용 of infusion reactions 냉찜질: Localize by applying drug cold compresses for 20 minutes 4 가루나 증기를 흡입하거나 피부 또는 눈과 같 Vesicant, IV, IVF times daily for 1 to 2 days. Avoid alcohol compresses. Elevate the 은 점막에 닿았을 때 눈의 경우 즉시 15분 이상 28 Dactinomycin DACTINOMYCIN 0.5mg/V(P) Antibiotic Renal and hepatic function, bone marrow function 냉찜질 6개월 미만 소아 사용 금지 limb and administer analgesia if needed 충분한 물로 씻어낸 후 안과진찰, 피부 접촉시 Seizure: IV benzodiazepines, barbiturates 15분 이상 충분한 물로 씻어낸 후 진찰 Cardiomyopathy 예방 및 extravasation 치료: Dexrazoxane Vesicant, IV, IVF 피부접촉시 비누와 물로 세척, 눈에 노출 시 물 Early Plasma exchange 고 29 Daunorubicin DAUNOCIN 20mg/V(P) Antibiotic CBC, hepatic, renal, cardiac function Remove cold compress at least 15 minutes prior to dexrazoxane 냉찜질 주사시 차광, 뇨적색 로 씻어냄 려. 투석 권장하지 않음 administration IVF(1hr) CBC, liver function test, serum creatinine, symptoms of 30 Decitabine DACOGEN 50mg/V(P) Pyrimidine 희석 후 15분 이내 사용, 7hr까지 냉장보관가능 infection 과량투여의 경우 표준 보조 수단: 호중구감소증과 혈소판감소증을 포 analogue CBC, Platelet count, Liver function tests, Pregnancy test, 함한 골수억제의 증가와 관련 Decitabine DECILID 40mg/V(P) IVF(1hr) Serum creatinine CBC, serum electrolytes, oxygen saturation, signs/symptoms of infusion reactions, pain, peripheral
+
+1. 1% human albumin을 포함한 0.9% NS에 희석 neuropathy, capillary leak syndrome, infection/sepsis, 31 Dinutuximab beta QARZIBA* 20mg/4.5ml/V Anti-GD2
+
+2. 0.22 μm 인라인 필터 사용, direct sunlight, heat 노출금지 hemolytic uremic syndrome, ocular toxicity, urinary retention, transverse myelitis, and/or reversible posterior 20mg/1ml/V leukoencephalopathy syndrome Antidote: Hyaluronidase DITAXEL1-VIAL 80mg/4ml/V Antimicrotubule irritants, IVF(1hr) CBC, hepatic function, ECG, hypersensitivity reactions, Inject 150 to 900 international units subQ around the extravasation 피부접촉시 비누와 물로 세척, 점막에 노출 시 32 Docetaxel 120mg/6ml/V 1. in-line filter set 사용 불필요 area 투석 권장하지 않음 (M phase) 냉찜질 preexisting effusion exacerbation 물로 씻어냄 TAXOTERE ONE 20mg/1ml/V 2. PVC 용기사용 불가(DEHP용출) 1. Myalgias: Initially treat with NSAIDs 33 Doxorubicin ADRIAMYCIN PFS 5 8 1 0 m m m g g g / / / 2 4 5 5 m m m l l / / l/ V V V S phase, Antibiotic Vesicant, I 1 V . F S ( C 1h /I r M ), I 금 V 기, Heparin 배합금기 CBC, hepatic function, blood uric acid, creatinine levels, C R 2. e a H r m d y o i p o v e m e r s y c e o o n p l s d a i t t p h iv a y it c y 예 k r a 방 e t a : c l e d t a i e o s x n t r : a 1 z 5 o m xa i n n e u t 투 es 여 prior to dexrazoxane 피부접촉시 비누와 물로 세척, 눈에 노출 시 물 e 설 a 증 rly 가 h 시 em 킴 o . p 투 erf 석 us i 권 on 장 이 하 배 지 AD MYCIN 5 1 0 m m g g / / 2 5 5 m m l/ l/ V V 냉찜질 2 3 . . 뇨 55 적 0m 색 g/m2 (IVH, w/o RT) cardiac function(LVEF) administration 로 씻어냄 않음
+
+CBC, serum creatinine, serum transaminases and total bilirubin, urinalysis with urine cell counts, urine protein to creatinine ratio, ECG, TSH, aPTT, signs/symptoms of infection, annual human papillomavirus screening, latent 1 Alemtuzumab LEMTRADA(비재고) 12mg/1.2ml/V rhMab(anti CD52) 흔들지 말것, 단회 사용 infection screening, signs/symptoms of progressive 과량투여시, 이 약의 투여를 중단하고 부가적인 치료를 중단 multifocal leukoencephalopathy and hemophagocytic lymphohistiocytosis, signs/symptoms of thrombotic thrombocytopenic purpura, signs and symptoms of autoimmune encephalitis, baseline and annual skin IVF(60min이상), 주입 완료까지 차광
+
+1. 연속 투여 시 본제 먼저 투여 후 Paclitaxel 투여 CBC, hepatic function tests, blood uric acid, potassium, Apply cold pack for 15 to 20 minutes at least 4 times a day for first Doxorubicin HCl Irritant, 피부노출시 비누와 물로 세척, 눈에 노출 시 물 Early hemoperfusion 고려.
+34 CAELYX 20mg/10ml/V S phase, Antibiotic 2. In line filter 사용 금지 calcium, phosphate, and creatinine levels, left ventricular 24 hours liposomal 냉찜질 로 씻어냄 Dialysis 권장되지 않음
+
+3. IV/SC/IM 금기, Heparin 배합금기 ejection fraction Cardiomyopathy 예방: dexrazoxane 투여
+
+4. 한계누적량 550mg/m2 35 Durvalumab IMFINZI 120mg/2.4ml/V Anti-PD-L1 IVF(60min) Chemistry, Liver function, Thyroid function, Blood 과량투여 사건의 경우, 의사는 일반적인 보조 조치를 따라야 하며 대증 500mg/10ml/V Monoclonal 투여시 0.2-0.22 μm 크기의 멸균,저단백결합 인라인 필터 사용glucose, Renal function, Signs or symptoms 치료를 실시해야 한다.
+36 Elotuzumab EMPLICITI* 300mg/V(P) Anti-SLAMF7 1. 0.2-0.22 μm 크기의 멸균,저단백결합 인라인 필터 사용 Liver enzymes, periodically, Signs and symptoms of 400mg/V(P) 2. 재구성 시 세게 흔들지 말것. 용해 후 5분 방치 infection, Development of second primary malignancies Hypersensitivity reaction:
+IV, IVF -MILD/MODERATE: Antihistamines with or without inhaled beta Dialysis, hemoperfusion, CBC, serum electrolytes, renal function, liver enzymes, 피부노출시 비누와 물로 세척, 눈에 노출 시 물 37 Eribulin mesylate HALAVEN 1mg/2ml/V Mitotic Inhibitor Non-vesicants 1. D5W에 희석 불가 agonists, corticosteroids or epinephrine plasmapheresis 권장되지 ECG, peripheral motor or sensory neuropathy 로 씻어냄
+
+2. syringe에서 실온 4hr, 냉장 24hr 안정 -SEVERE: Oxygen, aggressive airway management, antihistamines, 않음 e1p. Hinyeppohtreinnes,i ocno:rticosteroids, ECG monitoring, IV fluids -MILD TO MODERATE: IV fluids -Severe: IV fluids, vasopressor
+
+2. Hypersensitivity reaction:
+- MILD/MODERATE: Antihistamines with or without inhaled beta Irritant, agonists, corticosteroids or epinephrine 피부노출시 비누와 물로 세척, 점막에 노출 시 38 Etoposide(VP-16) E.P.S 100mg/5ml/V G2 phase, Plant 30∼60분에 걸쳐 천천히 점적 정맥주사 CBC 투석은 권장하지 않음 온찜질 - SEVERE: Oxygen, aggressive airway management, antihistamines, 물로 씻어냄 epinephrine, corticosteroids, ECG monitoring, and IV fluids.
+
+3. Drug-induced dystonia:
+- ADULT: Benztropine 1 to 2 mg IV or diphenhydramine 1 mg/kg/dose IV over 2 minutes.
+
+- CHILD: Diphenhydramine 1 mg/kg/dose IV over 2 minutes
+
+1. IV push 불가 CBC, left ventricular ejection fraction, pregnancy status, Anti-HER2 Fam-trastuzumab 2. 투여시 0.2 - 0.22 μm 크기의 PES 또는 PS 인라인 필터 사 monitor for signs/symptoms of interstitial lung 39 ENHERTU 100mg/V(P) +TopoisomeraseⅠ deruxtecan-nxki 용 disease/pneumonitis, infusion reactions, cardiovascular inhibitor
+
+3. 흔들지 말것, 단회 사용 monitoring, HBV screening Antimetabolite, S CBC, signs and symptoms of tumor lysis syndrome, signs Hemolytic anemia: prednisone 2 mg/kg/day(단, steroids가 효과적인 피부나 점막에 접촉되었을 경우에는 물과 비누 40 Fludarabine FLUDARA 50mg/V(P) Non-vesicants IVF phase and symptoms of infection 지는 명확하지 않음) 로 완전히 씻어냄 250mg/5ml/V Antimetabolite, Irritant, WBC with differentia, serum glucose in diabetic patients, 1. Diarrhea:
+41 Fluorouracil 5-FU 500mg/10ml/V IV, IVF, IA, 주사시 차광 - Uncomplicated mild to moderate diarrhea (Grade 1~2) without 피부노출시 비누와 물로 세척 투석 비효과적 SG1G2 냉찜질 electrolytes, renal function, and hepatic enzymes 1000mg/20ml/V signs of infection: loperamide 2 mg every 4 hours for 24 hours.
+GEMCIBINE 200mg/V(P) 1g/V(P) CBC with differential and platelet count; renal function 42 Gemcitabine GEMZAR LIQUID 200mg/V Antimetabolite Non-vesicants 1. IVF(30min이상), VS tests; hepatic function tests 피부나 점막에 접촉되었을 경우에는 물과 비누 초기 혈액투석 효과적 1g/V 2. 60분 이상 주입은 독성 증가 로 완전히 씻어냄 GEMTAN SOL 200mg/5.26ml/V hemolytic uremic syndrome, cardiac monitoring(ECG) 1g/26.3ml/V ALT, AST, total bilirubin, and alkaline phosphatase, Blood
+
+1. 조제부터 투여까지 12hr내 완료 Gemtuzumab irritants, counts, Electrolytes, Veno-occlusive disease, Vital signs 권장되는 치료: 과량투여의 경우 일반적인 지지요법을 실시. 혈압과 혈 43 MYLOTARG* 4.5mg/V(P) rhMab(anti CD33) 2. 주사시 차광(line은 불필요) 투석되지 않음 ozogamicin 냉찜질 and infusion-related reactions, Bleeding, ECG, QT-interval구수를 주의 깊게 관찰
+
+3. 0.2 micron polyethersulfone(PES) filter 사용 prolongation 가루나 증기를 흡입하거나 피부 또는 눈과 같 IV, IVF Dialysis, hemoperfusion 또 Vesicant, 은 점막에 닿았을 때 눈의 경우 즉시 15분 이상 44 Idarubicin HCl ZAVEL 5mg/V(P) Antibiotic 1. 주사시 차광(line은 불필요) cardiac function, hepatic and renal function Extravasation 또는 과량투여시 dexrazoxane 투여 는 plasmapheresis은 효과 냉찜질 충분한 물로 씻어낸 후 안과진찰, 피부 접촉시
+
+2. Heparin과 배합금기 적이지 않음 15분 이상 충분한 물로 씻어낸 후 진찰
+
+1. Bladder toxicity: hydration, diuresis, MESNA WBC with differential, platelet count, and Hb, glomerular
+
+2. Syndrome of inappropriate vasopressin secretion: 1 L/day 이하로 Irritant, and tubular kidney function, urinalysis, serum and urine 피부노출시 비누와 물로 세척, 눈에 노출 시 물 초기 혈액투석 효과적, 45 Ifosfamide HOLOXAN 1g/V(P) Alkylating, CCNS 적어도 30분 이상 천천히 IV infusion fluid 제한. Furosemide 고려 냉찜질 chemistries, including phosphorous and potassium, 로 씻어냄 hemoperfusion
+
+3. Toxic encephalopathy: methylene blue pulmonary toxicity signs and symptoms Hepatic venoocclusive disease, including total bilirubin and liver function tests (LFTs), signs and symptoms of Inotuzumab IVF(1hr) 과량 투여 시 주입을 일시적으로 중단, 환자의 간 및 혈액학적 독성에 46 BESPONSA 1mg/V(P) CD22-directed ADC Non-vesicants infection, bleeding or hemorrhage, QTc interval, CBC, ozogamicin 주사시 차광(line 차광) 대해 모니터링 Infusion related reactions (including symptoms such as fever, chills, rash, or breathing problems), ECG Human cytotoxic IVF(90min) clinical chemistries , liver function tests, thyroid function T-lymphocyte 4 1. 투여시 IV 라인 0.9% NS or 5% DW 로 flush tests, signs of immune-mediated enterocolitis, bowel 47 Ipilimumab YERVOY 50mg/10ml/V (CTLA-4)-blocking 2. Sterile, non-pyrogenic, low-protein-binding in-line filter perforation such as ileus, of immune-mediated 48 Irinotecan C A M LM P T T O O P 1 4 4 0 0 0 0 m m m g g g / / / 2 2 5 m m m l l / / l/ V V V Topo a is n o ti m bo e d ra y se Ⅰ Irritant, 사I 1 2 V . . F용 주 C (9 h 사 0 o m l 시 in in e 이 차 rg 상 i 광 c ) symptoms 또는 early onset diarrhea 예방, 치 e W n B d C o c w ri i n th o p d a i t ff h e ie re s ntial, hemoglobin, and platelet count, 1 2 . . E La a t r e ly d d i i a a r r r r h h e e a a : : l 2 o 4 p 시 era 간 m 이 ide 내 발생. Atropine 투여 즉시 접촉 부위를 비누와 물로 세척하고 점막 100mg/5ml/V inhibitor, S phase 냉찜질 1 료 . 비 위 리 해 포 a 좀 tro 화 p in 이 e 리 0. 노 25 테 ~1 칸 m 과 g 상 IV 호 o r 대 Su 체 b 해 Q 서 고 려 사용할 수 없다. diarrhea(early and late onset) 3. Fluid and electrolyte therapy 고려 부위를 대량의 물로 씻어냄 Irinotecan liposome ONIVYDE 43.3mg/10ml/V
+
+2. 인라인 필터사용 금지
+
+1. IM투여 1. Anaphylaxis:
+ERWINASE 2. Syringe에서 실온 4hr 안정 Vital signs (including body temperature), fluid and - Mild: antihistamines 1. 눈에 접촉시 즉시 대량의 water, normal
+
+3. E. coli derived asparaginase hypersensitivity 환자 투여가능electrolyte balance, blood glucose, CBC with differential - Severe: airway management, epinephrine, ECG monitoring, IV saline, or balanced salt ophthalmologic 49 L-asparaginase 1만IU/V(P) Enzyme, G1 phase and platelet count, serum ammonia concentration, fluids. solution으로 15분간 irrigation.
+lipase, liver enzymes and renal function. 2. Body temperature 상승: measures with water and fans, control 2. 피부 접촉시 즉시 비누와 물로 세척.
+agitation with benzodiazepines.
+
+CBC, serum creatinine, serum transaminases and total bilirubin, urinalysis with urine cell counts, urine protein to creatinine ratio, ECG, TSH, aPTT, signs/symptoms of infection, annual human papillomavirus screening, latent 1 Alemtuzumab LEMTRADA(비재고) 12mg/1.2ml/V rhMab(anti CD52) 흔들지 말것, 단회 사용 infection screening, signs/symptoms of progressive 과량투여시, 이 약의 투여를 중단하고 부가적인 치료를 중단 multifocal leukoencephalopathy and hemophagocytic lymphohistiocytosis, signs/symptoms of thrombotic 1. Anaphylaxis:
+tVhitraolm sbigoncsy t(oinpcelundici npgu rbpoudrya , t esmigpnesr aatnudr es)y, mflupitdo mansd of - Mild: antihistamines 1. 눈에 접촉시 즉시 대량의 water, normal 49 L-asparaginase 1만IU/V(P) Enzyme, G1 phase IM, IVF, ID(skin test) aeuletcotirmolmytuen bea elanncceep, hballoitoisd, gblausceolisnee, CanBdC awninthu adli fsfkeirnential - Severe: airway management, epinephrine, ECG monitoring, IV saline, or balanced salt ophthalmologic
+
+1. Skin test : 2U/0.1ml (30 분 이상 관찰) and platelet count, serum ammonia concentration, fluids. solution으로 15분간 irrigation.
+LEUNASE 2. IM: 2ml 초과시 여러부위에 나누어 투여 lipase, liver enzymes and renal function. 2. Body temperature 상승: measures with water and fans, control 2. 피부 접촉시 즉시 비누와 물로 세척.
+
+3. IV: 1hr 이상 IV infousion 1 ag . S it e a i t z io u n re s w : i I t V h b e n n z z o o d d i i a a z z e e p p i i n n e e s s . . 지속 또는 재발 시 barbiturates or propofol
+
+2. Hypersensitivity reaction:
+Irritant, 1. 중심정맥 투여 50 Melphalan MELPSPAL 50mg/V(P) Alkylating, CCNS CBC - MILD/MODERATE: Antihistamines(inhaled beta agonists, 즉시 Plasmapheresis 고려 냉찜질 2. D5W희석불가, 90분안에 조제투약 완료 corticosteroids, epinephrine 추가가능)
+
+- SEVERE: Oxygen, aggressive airway management, antihistamines, 51 Methotrexate MTX 50mg/2ml/V Antimetabolite Non-vesicants 1. IV, IVF, IM, IT, SC CBC with differential and platelets, hepatic function, e1p. Mineapnhagrienme, ecnotr toicf otsotxeircoitiyd:s 가, E능CG한 m 즉on시it oIVri nlgeu, cIVo vfoluriidns. .IV fluids. Antidote: 1. High flux hemodialysis , 500mg/20ml/V (S,G1,G2 phase) 2. IT 투여 시 max dose=15mg renal function, renal function by assessing urinary bicarbonate infusion으로 뇨알칼리화 - Leucovorin : 가능한 빨리 노출 1시간 안에 charcoal hemoperfusion 효 Vesicant, D5W 희석시 사용하면 안정성 : 실온 1~2hr, CBC with differential, renal function tests, Localize by applying cold compresses for 20 minutes 4 times daily - 피부에 접촉되었을 경우에는 즉시 8.4% 탄산 혈액투석이 효과적인지는 52 Mitomycin C MITOMYCIN-C 10mg/V(P) Antibiotic 냉찜질 pH 가 낮은 용액에서는 역가 저하 liver enzymes, serum electrolytes for 1 to 2 days. Avoid alcohol compresses. Elevate the limb and 수소나트륨용액으로 여러 번 씻고 비누와 물로 알려져있지 않음
+
+1. Seizures: IV benzodiazepines; 지속 또는 재발시 barbiturates or propofol
+
+1. IVF(3min이상) CBC (including platelets), hepatic function tests, serum 2. Hypersensitivity reaction: 피부에 접촉되었을 때에는 따뜻한 물로 충분히 TopoisomeraseⅡ Irritant, 53 Mitoxantrone HCl MITRON 20mg/10ml/V 2. intra-arterial, IM, subQ, IV bolus 불가 uric acid levels, signs and symptoms of tumor lysis - MILD/MODERATE: Antihistamines with or without inhaled beta 씻고, 눈에 접촉되었을 때에는 표준 세척방법을 inhibitor (S phase) 냉찜질
+
+3. 뇨변색(청록색), Heparin 배합금기 syndrome, cardiac function agonists, corticosteroids or epinephrine. 따름
+- SEVERE: Oxygen, aggressive airway management, antihistamines, e1p. Sineeizpuhrrein:e, corticosteroids, ECG monitoring, and IV fluids.
+
+- First line: IV benzodiazepines and/or barbiturates Hyperuricemia of tumor lysis syndrome(TLS) 예방조치 실시 CBC(regularly), signs and symptoms of tumor lysis - Refractory seizures: Continuous infusion of propofol, midazolam 54 Nelarabine ATRIANCE* 250mg/50ml/V Antimetabolite Non-vesicants (eg, hydration, urine alkalinization, and prophylaxis with 노출된 피부를 세척하고 눈은 irrigation syndrome or pentobarbital allopurinol)
+
+2. Hypotensive episode: IV NS 10 to 20 mL/kg. 적절한 수분 보급 후 55 Nivolumab OPDIVO 20mg/2ml/V Anti-PD1 1. IVF(30min) Liver function tests, Serum creatinine levels, Serum 저혈압 지속시 dopamine or norepinephrine 사용. Sepsis 여부 평가 실 100mg/10ml/V monoclonal 2. 투여시 0.2-1.2 μm 크기의 무균,비발열성,저단백결합 인라인creatinine levels,Thyroid function, Signs and symptoms of Hepatitis B infection, •Liver function, Tumor lysis CLL 환자 첫번째 투여시 100mg 먼저 투여, 문제 없을 경우 syndrome, Blood counts, Infusion reactions, Signs or 혈구수에 대한 정기적인 모니터링의 필요, B-세포가 고갈된 환자에서 56 Obinutuzumab GAZYVA 1000mg/40ml/V rhMab(anti CD20) 900mg 연속으로 투여하고 IRR 발생시 반드시 다음날 투여 symptoms of developing infection/thrombocytopenia or 의 감염 위험성 증가에 대해 고려 hemorrhagic events ELOXATIN 1 5 0 m m g g / / 1 2 0 0 m m l/ l/ V V 1. Al과 반응하여 침전(Al함유의료기기 사용 금지) 냉 for 찜 fi 질 rst : A 24 p p h ly o u c r o s ld pack for 15 to 20 minutes at least 4 times a day 50mg/10ml/V irritants, 2. 주입동안 cold temperatures 피함 CBC, liver function tests, serum creatinine, neurologic *treat using a warm compress to avoid the risk of paraesthesia 피부 또는 점막에 묻은 경우, 즉시 물로 철저하 Plasma pheresis or plasma 57 Oxaliplatin OXALITIN 100mg/20ml/V Alkylating 3. 다른 약 투여 전 infusion line을 D5W로 flush exchange 고려. 혈액투석은 냉or온찜질 examination which can be precipitated by cold 게 씻어냄 150mg/30ml/V 4. NaCl을 포함한 모든 농도의 Chloride 물질 및 염기성약물 권장하지 않음 OXAPLA 1 5 0 0 m m g g / / 1 2 0 0 m m l/ l/ V V (5-FU,folinic acid)이나 용액과 배합금기 온 4 t 찜 im 질 es : L d o a c il a y l iz fo e r b 1 y t a o p 2 p ly d a d y r s u . g E l w ev a a r t m e t c h o e m l p im re b s s a e n s d f o a r d 1 m 5 i - n 2 i 0 s t m er inutes TAXOL 30mg/5ml/V Hyaluronidase: Inject 150 to 900 international units subQ around the 30mg/5ml/V 1. 즉시 접촉 부위를 비누와 물로 세척하고 점막부위를 대량의 extravasation area 과량투여 초기라면, PADEXOL 100mg/16.66ml/V Antimicrotubule(M Irritant (usually) 물로 씻어냄 CBC, vital signs(especially during first hour of infusion), 냉찜질: Apply cold pack for 15 to 20 minutes at least 4 times a day 즉시 접촉 부위를 비누와 물로 세척하고 점막 plasmapheresis or plasma 58 Paclitaxel 200mg/33.32ml/V Vesicant (rare), 2. 0.22 microns 이하의 in-line filter 통해 주입 cardiac function, infusion site, liver enzymes, bilirubin, phase),Plant for first 24 hours 부위를 대량의 물로 씻어냄 exchange은 이론상 효과적 300mg/50ml/V 냉or온찜질 3. DEHP-함유(PVC) 셋트 사용금지 renal function, fluid status and electrolytes GENEXOL 10 3 0 m m g g / / 1 5 6 m .7 l m /V l/V 4. in-line filter set 사용 온 tim 찜 e 질 s d : a D il i y s p f e o r r s e 1 b to y 2 a p d p a l y y s in . g E le w v a a r t m e t c h o e m l p im re b s s a e n s d f o a r d 2 m 0 i n m is i t n e u r tes 4 일 수 있음
+
+1. Hypersensitivity reaction: MILD/MODERATE: Antihistamines with or without inhaled beta agonists, corticosteroids or epinephrine.
+CBC, Hepatic function, Signs and symptoms of Paclitaxel Antimicrotubule (M Irritant, SEVERE: Oxygen, aggressive airway management, antihistamines, Activated charcoal and/or gastric lavage are 59 ABRAXANE 100mg/V(P) in-line filter set 사용 불필요 pneumonitis, Infusion site infiltration and possible (Albumin 안정제) phase), Plant 냉찜질 epinephrine, corticosteroids, ECG monitoring, and IV fluids. generally not indicated, ingestion is unlikely extravasation
+
+2. Airway management: Consider orotracheal intubation in patients with significant CNS depression or respiratory failure.
+
+1. Hypotensive episode: IV 0.9% NaCl, dopamine, or norepinephrine.
+
+2. Allergic rection :
+Coagulation factors, hepatotoxicity, serum glucose, - MILD/MODERATE: Antihistamines; inhaled beta agonists for
+
+1. L-aspa hypersensitivity 환자에 투여가능 serious allergic reaction or anaphylaxis(for 1 hour after bronchospasm; corticosteroids; epinephrine for severe bronchospasm 60 PEG-asparaginase ONCASPAR 3750IU/5ml/V Enzyme, G1 phase 2. IM: 2ml 초과시 여러부위에 나누어 투여 administration), pancreatitis in patients with severe or angioedema.
+
+3. IVF: 1~2hr에 걸쳐 투여(IVF시 100ml혼합) abdominal pain - SEVERE: Oxygen, aggressive airway management, antihistamines, epinephrine, ECG monitoring, and IV fluids.
+
+3. Seizure: IV benzodiazepines, barbiturates.
+PD-1 blocking IVF(30min) Liver function, Thyroid function, Hyperglycemia, Renal 61 Pembrolizumab KEYTRUDA 100mg/4ml/V antibody 투여시 0.2-5 μm 크기의 멸균,비발열성,저단백결합 필터 사용 function ALIMTA 100mg/V(P) Antimetabolite(anti IVF(10min이상) CBC, renal function, hepatic function, plasma 1. Severe hematologic toxicity : Leucovorin 100 mg/m2 IV, followed 피부에 닿을 경우 즉시 비누와 물로 피부를 완 62 Pemetrexed PEMED S 10 5 0 0 m m g g /4 /V 0m (P) l/V folate), S phase Non-vesicants 1 2 . . V 피 it 부 B 발 12 진 , f o 예 lic 방 a : c 경 id 구 pr e d m ex e a d m ic e a t t h io a n so 필 ne 요 homocysteine levels by 50 mg/m2 IV every 6 hours for 8 days 전히 씻어냄 혈액투석 권장하지 않음
+
+1. D5W로 희석 금지 Anaphylaxis:
+Vital signs and fluid status, left ventricular ejection
+
+2. 840mg은 60분이상, 420mg은 30~60분 이상 -MILD: Antihistamines 피부노출시 비누와 물로 세척, 눈에 노출 시 물 Hemodialysis 권장되지 않 63 Pertuzumab PERJETA 420mg/14ml/V rhMab (anti-HER2) fraction, ECG, infusion reactions; 60 minutes after first IV infusion( IV push or IV bolus 금기) -SEVERE: Airway management, epinephrine, cardiac monitoring, IV 로 씻어냄 음 infusion and 30 minutes after subsequent infusions
+
+3. 연속 투여 시 본제 먼저 투여 후 Docetaxel 투여 fluids
+
+CBC, serum creatinine, serum transaminases and total bilirubin, urinalysis with urine cell counts, urine protein to creatinine ratio, ECG, TSH, aPTT, signs/symptoms of infection, annual human papillomavirus screening, latent 1 Alemtuzumab LEMTRADA(비재고) 12mg/1.2ml/V rhMab(anti CD52) 흔들지 말것, 단회 사용 infection screening, signs/symptoms of progressive 과량투여시, 이 약의 투여를 중단하고 부가적인 치료를 중단 multifocal leukoencephalopathy and hemophagocytic lymphohistiocytosis, signs/symptoms of thrombotic thrombocytopenic purpura, signs and symptoms of autoimmune encephalitis, baseline and annual skin CBC, LFTs, pregnancy status, monitor during infusion and
+
+1. 투여시 무균, 비발열성, 저단백질 결합 인라인 또는 애드온 for at least 90 minutes after the first infusion, monitor Anti-CD79B- 필터 (0.2또는 0.22 μm) 및 카테터가 장착된 전용 주입 라인 64 Polatuzumab vedotinPOLIVY* 140mg/V(P) for signs of neuropathy, tumor lysis syndrome, directed ADC 사용 signs/symptoms of progressive multifocal
+
+2. 재구성 및 희석 시 흔들지 말고 부드럽게 조제 leukoencephalopathy and infection, HBV screening 1. High flux hemodialysis and charcoal hemoperfusion은 MTX 제 Antimetabolite CBC, renal function tests, serum chemistry tests, signs MANAGEMENT OF SEVERE TOXICITY: 가능한 빨리 IV leucovorin 피부에 닿을 경우 즉시 비누와 물로 피부를 완 65 Pralatrexate FOLOTYN* 20mg/1ml/V (antifolate) Vit B12, folic acid premedication 필요 and symptoms of tumor lysis syndrome 전히 씻어냄 거에 도움(특히 신기능 장 애 환자)
+
+2. 과량투여 초기에는 혈액 66 Ramucirumab CYRAMZA 100mg/10ml/V VEGF-2 receptor IVF(60min이상) Proteinuria, Thyroid function•Blood pressure; at least 투석 가장 효과적 500mg/50ml/V targeted antibody 1. 투여시 0.22㎛ filter사용권장 every 2 weeks, Signs and symptoms of infusion-related MABTHERA 100mg/10ml/V 1. IV push, bolus 금지 CBC, renal function, signs and symptoms of tumor lysis Hypersensitivity reaction: Monitor airway.
+TRUXIMA 500mg/50ml/V 2. First infusion syndrome, fluid balance, infusion reaction, especially with - MILD/MODERATE: antihistamines with or without inhaled beta 피부노출시 비누와 물로 세척, 눈에 노출 시 물 Tumor lysis syndrome 관련 67 Rituximab rhMab (anti CD20) 1. 주사기로 옮긴 후에는 실온 8hr, 냉장 48hr 안정 agonists, corticosteroids or epinephrine. acute renal failure 발생환 first infusion and in patients with cardiac or pulmonary 로 씻어냄 MABTHERA SC 1,400mg/11.7ml/V 2. 체표면적과 관계없이 1400mg을 5분간 피하주사. 첫주기에 - SEVERE: Oxygen, aggressive airway management, antihistamines, 자는 투석 고려 conditions 정맥제제 투여 완료 후 이후 주기부터 피하주사 투여해야 함. epinephrine, corticosteroids, ECG monitoring, and IV fluids.
+
+1. 조제전 실온방치, 흔들지 않고 천천히 재구성 및 희석 Anti-Trop2 Blood counts, pregnancy status, monitor for neutropenic Sacituzumab 2. 수액부피 500mL 초과하지 않음 68 TRODELVY(비재고) 200mg/V(P) +TopoisomeraseⅠ fever, hypersensitivity reactions, and infusion-related govitecan-hziy 3. IV push 불가, 주사시 차광, 주입완료 후 20ml NS로 주입라 inhibitor reactions, HBV screening 인 flush IVF(1hr) rhMab(anti-IL6 1. 희석 후 6시간 이내 주입완료 69 Siltuximab SYLVANT 100mg/V Absolute neutrophil/platelet count, Infection receptor) 2. 0.2 micron PES(폴리에테르설폰) 필터가 포함된, PVC, PU(폴리우레탄) 또는 PE 투여세트를 사용 Irritant, 피부에 닿을 경우 즉시 비누와 물로 피부를 완 70 Streptozocin ZANOSAR* 1g/V(P) Alkylating Acute insulin release → bed side D50W syringe 비치 CBC, hepatic function, renal function 냉찜질 전히 씻어냄 Tertomotide HCl 0.97 mg/V(P) Cancer immune 71 RIAVAX* Riavax 투여 10~15분 전 Leukine(GM-CSF) 75mcg피내 투여 [Tertomotide] [0.84mg/V(P)] therapy 72 Thiotepa TEPADINA 15mg/V(P) Alkylating Non-vesicants IV, IVF, VS, IP, IT CBC, platelet count, and fluid and electrolyte status, vital 피부에 닿을 경우 즉시 비누와 물로 피부를 완 혈액투석 100mg/V(P) 투여시 0.22㎛ filter 사용 signs 전히 씻어냄 Topoisomerase Ⅰ Irritant, CBC, signs and symptoms of interstitial lung disease, 즉시 접촉 부위를 비누와 물로 세척하고 점막 73 Topotecan HYCAMTIN 4mg/V(P) IVF(30min이상), IT inhibitor (S phase) 냉찜질 fluid and electrolytes and respiratory function 부위를 대량의 물로 씻어냄 CBC, total bilirubin, ALT, AST, alkaline phosphatase, renal IVF(24hr) function, CPK, pregnancy status, LVEF, Monitor for Vesicants, 1. Central-line투여 권장(500ml 이상) 피부, 눈 또는 점막과 접촉했을 경우에는 즉시 74 Trabectedin YONDELIS(비재고) 1mg//V(P) Alkylating signs/symptoms of capillary leak syndrome and 냉찜질 2. 말초투여는 적어도 1000ml 이상 희석 다량의 물로 처치 hypersensitivity reactions, monitor infusion site for
+
+3. Dexamethasone premedication필요 75 Trastuzumab HERCEPTIN SC 6 4 0 4 0 m g g /5 /V m (P l/ ) V rhMab (anti-HER2) 체 없 중 으 과 면 관 30 계 분 없 이 이 상 6 0 주 0m 입 g 을 가 능 2-5분간 SC c in a f r u d s i i a o c n d r y e s a f c u t n io ct n i s o , n p , u h l y m p o e n rs a e r n y s t it o iv x i i t c y it y reactions, potential a - n d SE I V V E f R lu E i : d A s. irway management, epinephrine, cardiac monitoring 로 씻어냄 혈액투석 비효과적 주사기로 옮긴 후에는 냉장 48hr 안정, 실온 6hr안정 2. Airway management: Intubate if patient is unable to protect 76 Trastuzumab KADCYLA 100mg/V rhMab (anti-HER2) Non-vesicants 1. 0.22μm polyethersulfone(PES) 필터사용 Hepatic function, platelet counts, infusion-related Infusion related reactions(flushing, chills, pyrexia, dyspnea, emtansine 160mg/V + antimicrotubule 2. 첫 주입은 90분 이상, 이후에는 30분 이상 reactions, left ventricular ejection fraction hypotension, wheezing, bronchospasm, tachycardia)발생 monitoring 77 Treosulfan TRECONDI* 1 5 g / / V V ( ( P P ) ) Alkylating Vesicants, filter needle사용 (polytetrafluoroethylen filter) CBC with differential Hemorrhagic cystitis: 주입 후 24시간 동안 fluid intake TREOSULFAN* 5g/V(P) 냉찜질
+
+1. Seizure: IV benzodiazepnes. 지속시 propofol 또는 barbiturate 추가 Vesicant plasmapheresis 또는 Antimicrotubule (M IV signs and symptoms of extravasation, CBC(mainly WBC), 2. Paralytic ileus: Bowel stimulants, Enema 피부노출시 비누와 물로 세척, 눈에 노출 시 물 78 Vinblastine VELBASTINE 10mg/10ml/V (Non-DNA-binding), exchange transfusion 고려.
+phase), Plant 보존제 benzylalcohol 함유 ECG 3. Syndrome of inappropriate vasopressin secretion: fluid restriction, 로 씻어냄 온찜질 혈액투석은 권장하지 않음 3% NaCl solution 고려 79 Vincristine VINCRISTINE 1mg/1ml/V M phase, Plant Vesicant IV, IVF serum uric acid levels, blood pressure, CBC 1. Seizure: IV benzodiazepnes. 지속시 propofol 또는 barbiturate Plasmapheresis 또는 2mg/2ml/V (Non-DNA-binding), 1. L-asparaginase와 병용 시 12-24hr 전에 투약 2. Paralytic ileus: Bowel stimulants, Enema exchange transfusion 고려.
+80 Vinorelbine NAVELBINE 10mg/1ml/V Antimicrotubule (M Vesicant 1. IV use only: IV(6-10min) up to 30min CBC with differential, neuro status. Serum electrolytes Syndrome of inappropriate vasopressin secretion: fluid 제한. 피부노출시 비누와 물로 세척, 눈에 노출 시 물 Hemodialysis 권장되지 않 50mg/5ml/V phase) (Non-DNA-binding), 2. Intrathecal (IT) 금기 Fluid, electrolytes close monitoring 로 씻어냄 음
+
+* : 원내 비입고 항암제, P : powder Reference: Drug information handbook for oncology, Micromedex, UpToDate, NHS Elimination 혈액투석 고려
+
+CBC, serum creatinine, serum transaminases and total bilirubin, urinalysis with urine cell counts, urine protein to creatinine ratio, ECG, TSH, aPTT, signs/symptoms of infection, annual human papillomavirus screening, latent 1 Alemtuzumab LEMTRADA(비재고) 12mg/1.2ml/V rhMab(anti CD52) 흔들지 말것, 단회 사용 infection screening, signs/symptoms of progressive 과량투여시, 이 약의 투여를 중단하고 부가적인 치료를 중단 multifocal leukoencephalopathy and hemophagocytic lymphohistiocytosis, signs/symptoms of thrombotic thrombocytopenic purpura, signs and symptoms of autoimmune encephalitis, baseline and annual skin Early hemodialysis 효과적 Hemodialysis or hemoperfusion 고려 Hemodialysis, hemoperfusion and plasmapheresis 권장되지 않음 응급 혈액투석 실시 1-2시간 이내 sodium thiosulfate 투여. large 투석가능 (20% to 50%) Early hemodialysis 효과적 Early Plasma exchange 고
+
+려. 투석 권장하지 않음 early hemoperfusion이 배 설증가시킴. 투석 권장하지 않음 Early hemoperfusion 고려.
+Dialysis 권장되지 않음 투석, hemoperfusion or plasmapheresis 권장되지 Dialysis, hemoperfusion, plasmapheresis 권장되지 않음 투석은 권장하지 않음 투석 비효과적
+
+CBC, serum creatinine, serum transaminases and total bilirubin, urinalysis with urine cell counts, urine protein to creatinine ratio, ECG, TSH, aPTT, signs/symptoms of infection, annual human papillomavirus screening, latent 1 Alemtuzumab LEMTRADA(비재고) 12mg/1.2ml/V rhMab(anti CD52) 흔들지 말것, 단회 사용 infection screening, signs/symptoms of progressive 과량투여시, 이 약의 투여를 중단하고 부가적인 치료를 중단 multifocal leukoencephalopathy and hemophagocytic lymphohistiocytosis, signs/symptoms of thrombotic thrombocytopenic purpura, signs and symptoms of autoimmune encephalitis, baseline and annual skin 투석 비효과적 초기 혈액투석 효과적 투석되지 않음 Dialysis, hemoperfusion 또 는 plasmapheresis은 효과 적이지 않음 초기 혈액투석 효과적, hemoperfusion 즉시 Plasmapheresis 고려
+
+1. High flux hemodialysis , charcoal hemoperfusion 효 혈액투석이 효과적인지는 알려져있지 않음 Plasma pheresis or plasma exchange 고려. 혈액투석은 권장하지 않음 과량투여 초기라면, plasmapheresis or plasma exchange은 이론상 효과적 일 수 있음 혈액투석 권장하지 않음 Hemodialysis 권장되지 않
+
+1. High flux hemodialysis and charcoal hemoperfusion은 MTX 제 거에 도움(특히 신기능 장 애 환자)
+
+2. 과량투여 초기에는 혈액 투석 가장 효과적 Tumor lysis syndrome 관련 acute renal failure 발생환 자는 투석 고려 Hemodialysis 권장되지 않
+
+CBC, serum creatinine, serum transaminases and total bilirubin, urinalysis with urine cell counts, urine protein to creatinine ratio, ECG, TSH, aPTT, signs/symptoms of infection, annual human papillomavirus screening, latent 1 Alemtuzumab LEMTRADA(비재고) 12mg/1.2ml/V rhMab(anti CD52) 흔들지 말것, 단회 사용 infection screening, signs/symptoms of progressive 과량투여시, 이 약의 투여를 중단하고 부가적인 치료를 중단 multifocal leukoencephalopathy and hemophagocytic lymphohistiocytosis, signs/symptoms of thrombotic thrombocytopenic purpura, signs and symptoms of autoimmune encephalitis, baseline and annual skin 혈액투석 비효과적 plasmapheresis 또는 exchange transfusion 고려.
+혈액투석은 권장하지 않음 Plasmapheresis 또는 exchange transfusion 고려.
+혈액투석 권장하지 않음 Hemodialysis 권장되지 않 음

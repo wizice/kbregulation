@@ -1,0 +1,766 @@
+{% extends "common/base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="/static/styles.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    /* 단색 깔끔한 디자인 */
+    body {
+        background: #f8f9fa;
+        margin: 0;
+        padding: 0;
+    }
+
+    .page-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+        background: white;
+    }
+
+    .toolbar {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .search-box {
+        flex: 1;
+        min-width: 250px;
+        position: relative;
+    }
+
+    .search-box input {
+        width: 100%;
+        padding: 10px 40px 10px 15px;
+        border: 2px solid #e1e8ed;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.3s;
+    }
+
+    .search-box input:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+
+    .search-box i {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #999;
+    }
+
+    .table-container {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    thead {
+        background: #f7fafc;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    th {
+        padding: 15px;
+        text-align: left;
+        font-weight: 600;
+        color: #2d3748;
+        font-size: 14px;
+    }
+
+    td {
+        padding: 15px;
+        border-bottom: 1px solid #e2e8f0;
+        font-size: 14px;
+    }
+
+    tr:hover {
+        background: #f7fafc;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .badge-important {
+        background: #fed7d7;
+        color: #c53030;
+    }
+
+    .badge-active {
+        background: #c6f6d5;
+        color: #22543d;
+    }
+
+    .badge-inactive {
+        background: #e2e8f0;
+        color: #718096;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 1000;
+        animation: fadeIn 0.3s;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .modal-content {
+        background: white;
+        max-width: 700px;
+        margin: 50px auto;
+        border-radius: 15px;
+        overflow: hidden;
+        max-height: 90vh;
+        overflow-y: auto;
+        animation: slideUp 0.3s;
+    }
+
+    @keyframes slideUp {
+        from {
+            transform: translateY(50px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .modal-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-header h2 {
+        font-size: 20px;
+        margin: 0;
+    }
+
+    .modal-close {
+        background: rgba(255,255,255,0.2);
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s;
+    }
+
+    .modal-close:hover {
+        background: rgba(255,255,255,0.3);
+        transform: rotate(90deg);
+    }
+
+    .modal-body {
+        padding: 25px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #2d3748;
+        font-size: 14px;
+    }
+
+    .form-group input[type="text"],
+    .form-group textarea {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.3s;
+        font-family: inherit;
+    }
+
+    .form-group input[type="text"]:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 120px;
+    }
+
+    .file-upload-area {
+        border: 2px dashed #cbd5e0;
+        border-radius: 8px;
+        padding: 30px;
+        text-align: center;
+        background: #f7fafc;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+
+    .file-upload-area:hover {
+        border-color: #667eea;
+        background: #edf2f7;
+    }
+
+    .file-upload-area.drag-over {
+        border-color: #667eea;
+        background: #e6f0ff;
+    }
+
+    .file-upload-area i {
+        font-size: 48px;
+        color: #a0aec0;
+        margin-bottom: 15px;
+    }
+
+    .file-info {
+        margin-top: 15px;
+        padding: 10px;
+        background: #e6fffa;
+        border-radius: 8px;
+        display: none;
+    }
+
+    .file-info.show {
+        display: block;
+    }
+
+    .modal-footer {
+        padding: 20px 25px;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #a0aec0;
+    }
+
+    .empty-state i {
+        font-size: 64px;
+        margin-bottom: 20px;
+    }
+
+    .loading {
+        text-align: center;
+        padding: 40px;
+    }
+
+    .loading i {
+        font-size: 48px;
+        color: #667eea;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 768px) {
+        .toolbar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .search-box {
+            width: 100%;
+        }
+
+        table {
+            font-size: 13px;
+        }
+
+        th, td {
+            padding: 10px;
+        }
+
+        .modal-content {
+            margin: 20px;
+            max-height: 95vh;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <h2 style="margin-bottom: 2rem;"><i class="fas fa-bullhorn"></i> 공지사항 관리</h2>
+
+    <!-- 검색 및 작성 도구바 -->
+    <div class="toolbar">
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="제목 또는 내용으로 검색...">
+            <i class="fas fa-search"></i>
+        </div>
+        <button class="btn btn-primary" onclick="openCreateModal()">
+            <i class="fas fa-plus"></i> 새 공지사항
+        </button>
+    </div>
+
+    <!-- 공지사항 목록 -->
+    <div class="table-container">
+        <div id="loadingState" class="loading">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>공지사항을 불러오는 중...</p>
+        </div>
+        <table id="noticesTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th style="width: 60px;">번호</th>
+                    <th>제목</th>
+                    <th style="width: 100px;">작성자</th>
+                    <th style="width: 120px;">작성일</th>
+                    <th style="width: 80px;">조회수</th>
+                    <th style="width: 100px;">중요</th>
+                    <th style="width: 100px;">상태</th>
+                    <th style="width: 180px;">관리</th>
+                </tr>
+            </thead>
+            <tbody id="noticesBody">
+            </tbody>
+        </table>
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <i class="fas fa-inbox"></i>
+            <h3>등록된 공지사항이 없습니다</h3>
+            <p>새 공지사항 버튼을 눌러 첫 공지사항을 등록하세요</p>
+        </div>
+    </div>
+</div>
+
+<!-- 공지사항 작성/수정 모달 -->
+<div id="noticeModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalTitle">새 공지사항</h2>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <form id="noticeForm" onsubmit="saveNotice(event)">
+            <div class="modal-body">
+                <input type="hidden" id="noticeId" value="">
+
+                <div class="form-group">
+                    <label for="title">제목 *</label>
+                    <input type="text" id="title" required maxlength="500">
+                </div>
+
+                <div class="form-group">
+                    <label for="content">내용 *</label>
+                    <textarea id="content" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="createdBy">작성자</label>
+                    <input type="text" id="createdBy" value="관리자" maxlength="100">
+                </div>
+
+                <div class="form-group">
+                    <div class="checkbox-group" style="display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" id="isImportant" style="width: 18px; height: 18px; cursor: pointer;">
+                        <label for="isImportant" style="margin-bottom: 0; cursor: pointer;">중요 공지사항</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>첨부파일</label>
+                    <div class="file-upload-area" id="fileUploadArea" onclick="document.getElementById('fileInput').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>파일을 선택하거나 여기로 드래그하세요</p>
+                        <p style="font-size: 12px; color: #a0aec0; margin-top: 10px;">최대 10MB</p>
+                    </div>
+                    <input type="file" id="fileInput" style="display: none;" onchange="handleFileSelect(event)">
+                    <div id="fileInfo" class="file-info"></div>
+                    <div id="currentAttachment" style="margin-top: 10px; display: none;">
+                        <p><strong>현재 첨부파일:</strong> <span id="currentFileName"></span></p>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="removeAttachment()">
+                            <i class="fas fa-trash"></i> 파일 삭제
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">취소</button>
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save"></i> 저장
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 공지사항 관리 JavaScript
+
+let allNotices = [];
+let currentNoticeId = null;
+let selectedFile = null;
+let removeCurrentAttachment = false;
+
+// 페이지 로드 시 실행
+document.addEventListener('DOMContentLoaded', () => {
+    loadNotices();
+    setupFileUploadEvents();
+    setupSearchEvent();
+});
+
+// 공지사항 목록 불러오기
+async function loadNotices() {
+    try {
+        const response = await fetch('/api/notices/');
+        if (!response.ok) throw new Error('공지사항 로드 실패');
+
+        allNotices = await response.json();
+        renderNotices(allNotices);
+    } catch (error) {
+        console.error('Error:', error);
+        showError('공지사항을 불러오는데 실패했습니다.');
+    }
+}
+
+// 공지사항 렌더링
+function renderNotices(notices) {
+    const loadingState = document.getElementById('loadingState');
+    const tableElement = document.getElementById('noticesTable');
+    const emptyState = document.getElementById('emptyState');
+    const tbody = document.getElementById('noticesBody');
+
+    loadingState.style.display = 'none';
+
+    if (notices.length === 0) {
+        tableElement.style.display = 'none';
+        emptyState.style.display = 'block';
+        return;
+    }
+
+    tableElement.style.display = 'table';
+    emptyState.style.display = 'none';
+
+    tbody.innerHTML = notices.map(notice => {
+        const attachmentIcon = notice.attachment_name ?
+            `<i class="fas fa-paperclip" style="color: #667eea; margin-left: 5px;" title="첨부파일: ${notice.attachment_name}"></i>` : '';
+
+        return `
+        <tr>
+            <td>${notice.notice_id}</td>
+            <td>
+                ${notice.title}
+                ${attachmentIcon}
+            </td>
+            <td>${notice.created_by || '-'}</td>
+            <td>${formatDate(notice.created_at)}</td>
+            <td>${notice.view_count}</td>
+            <td>
+                ${notice.is_important ? '<span class="badge badge-important">중요</span>' : '-'}
+            </td>
+            <td>
+                ${notice.is_active ? '<span class="badge badge-active">활성</span>' : '<span class="badge badge-inactive">비활성</span>'}
+            </td>
+            <td>
+                <button class="btn btn-sm btn-primary" onclick="editNotice(${notice.notice_id})" title="수정">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="deleteNotice(${notice.notice_id}, '${notice.title.replace(/'/g, "\\'")}' )" title="삭제">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        </tr>
+        `;
+    }).join('');
+}
+
+// 날짜 포맷팅
+function formatDate(dateStr) {
+    if (!dateStr) return '-';
+    const date = new Date(dateStr);
+    return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}.`;
+}
+
+// 검색 이벤트 설정
+function setupSearchEvent() {
+    const searchInput = document.getElementById('searchInput');
+    searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        const filtered = allNotices.filter(notice =>
+            notice.title.toLowerCase().includes(query) ||
+            notice.content.toLowerCase().includes(query)
+        );
+        renderNotices(filtered);
+    });
+}
+
+// 파일 업로드 이벤트 설정
+function setupFileUploadEvents() {
+    const fileUploadArea = document.getElementById('fileUploadArea');
+    const fileInput = document.getElementById('fileInput');
+
+    fileUploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        fileUploadArea.classList.add('drag-over');
+    });
+
+    fileUploadArea.addEventListener('dragleave', () => {
+        fileUploadArea.classList.remove('drag-over');
+    });
+
+    fileUploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        fileUploadArea.classList.remove('drag-over');
+
+        if (e.dataTransfer.files.length > 0) {
+            fileInput.files = e.dataTransfer.files;
+            handleFileSelect({ target: fileInput });
+        }
+    });
+}
+
+// 파일 선택 처리
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+        alert('파일 크기는 10MB를 초과할 수 없습니다.');
+        event.target.value = '';
+        return;
+    }
+
+    selectedFile = file;
+
+    const fileInfo = document.getElementById('fileInfo');
+    fileInfo.innerHTML = `
+        <i class="fas fa-file" style="color: #667eea;"></i>
+        <strong>${file.name}</strong> (${formatFileSize(file.size)})
+        <button type="button" onclick="clearFile()" style="float: right; background: none; border: none; color: #f56565; cursor: pointer;">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    fileInfo.classList.add('show');
+}
+
+// 파일 크기 포맷팅
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+}
+
+// 파일 선택 취소
+function clearFile() {
+    selectedFile = null;
+    document.getElementById('fileInput').value = '';
+    document.getElementById('fileInfo').classList.remove('show');
+}
+
+// 새 공지사항 작성 모달 열기
+function openCreateModal() {
+    currentNoticeId = null;
+    removeCurrentAttachment = false;
+    document.getElementById('modalTitle').textContent = '새 공지사항';
+    document.getElementById('noticeForm').reset();
+    document.getElementById('noticeId').value = '';
+    document.getElementById('createdBy').value = '관리자';
+    document.getElementById('currentAttachment').style.display = 'none';
+    clearFile();
+    document.getElementById('noticeModal').style.display = 'block';
+}
+
+// 공지사항 수정 모달 열기
+async function editNotice(noticeId) {
+    try {
+        const response = await fetch(`/api/notices/${noticeId}`);
+        if (!response.ok) throw new Error('공지사항 조회 실패');
+
+        const notice = await response.json();
+
+        currentNoticeId = noticeId;
+        removeCurrentAttachment = false;
+        document.getElementById('modalTitle').textContent = '공지사항 수정';
+        document.getElementById('noticeId').value = noticeId;
+        document.getElementById('title').value = notice.title;
+        document.getElementById('content').value = notice.content;
+        document.getElementById('createdBy').value = notice.created_by || '관리자';
+        document.getElementById('isImportant').checked = notice.is_important;
+
+        if (notice.attachment_name) {
+            document.getElementById('currentFileName').textContent = notice.attachment_name;
+            document.getElementById('currentAttachment').style.display = 'block';
+        } else {
+            document.getElementById('currentAttachment').style.display = 'none';
+        }
+
+        clearFile();
+        document.getElementById('noticeModal').style.display = 'block';
+
+    } catch (error) {
+        console.error('Error:', error);
+        alert('공지사항을 불러오는데 실패했습니다.');
+    }
+}
+
+// 첨부파일 삭제
+function removeAttachment() {
+    if (confirm('첨부파일을 삭제하시겠습니까?')) {
+        removeCurrentAttachment = true;
+        document.getElementById('currentAttachment').style.display = 'none';
+    }
+}
+
+// 모달 닫기
+function closeModal() {
+    document.getElementById('noticeModal').style.display = 'none';
+    document.getElementById('noticeForm').reset();
+    currentNoticeId = null;
+    selectedFile = null;
+    removeCurrentAttachment = false;
+    clearFile();
+}
+
+// 공지사항 저장
+async function saveNotice(event) {
+    event.preventDefault();
+
+    const title = document.getElementById('title').value.trim();
+    const content = document.getElementById('content').value.trim();
+    const createdBy = document.getElementById('createdBy').value.trim();
+    const isImportant = document.getElementById('isImportant').checked;
+
+    if (!title || !content) {
+        alert('제목과 내용을 입력해주세요.');
+        return;
+    }
+
+    try {
+        const formData = new FormData();
+        formData.append('title', title);
+        formData.append('content', content);
+        formData.append('is_important', isImportant);
+        formData.append('created_by', createdBy);
+
+        if (selectedFile) {
+            formData.append('file', selectedFile);
+        }
+
+        let url, method;
+        if (currentNoticeId) {
+            url = `/api/notices/${currentNoticeId}`;
+            method = 'PUT';
+            if (removeCurrentAttachment) {
+                formData.append('remove_attachment', 'true');
+            }
+        } else {
+            url = '/api/notices/';
+            method = 'POST';
+        }
+
+        const response = await fetch(url, {
+            method: method,
+            body: formData
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || '저장 실패');
+        }
+
+        alert(currentNoticeId ? '수정되었습니다.' : '등록되었습니다.');
+        closeModal();
+        loadNotices();
+
+    } catch (error) {
+        console.error('Error:', error);
+        alert('저장하는데 실패했습니다: ' + error.message);
+    }
+}
+
+// 공지사항 삭제
+async function deleteNotice(noticeId, title) {
+    if (!confirm(`"${title}"\n이 공지사항을 삭제하시겠습니까?`)) {
+        return;
+    }
+
+    const permanent = confirm('완전히 삭제하시겠습니까?\n(취소 시 비활성화됩니다)');
+
+    try {
+        const response = await fetch(`/api/notices/${noticeId}?permanent=${permanent}`, {
+            method: 'DELETE'
+        });
+
+        if (!response.ok) throw new Error('삭제 실패');
+
+        alert('삭제되었습니다.');
+        loadNotices();
+
+    } catch (error) {
+        console.error('Error:', error);
+        alert('삭제하는데 실패했습니다.');
+    }
+}
+
+// 에러 메시지 표시
+function showError(message) {
+    const loadingState = document.getElementById('loadingState');
+    loadingState.innerHTML = `
+        <i class="fas fa-exclamation-triangle" style="color: #f56565;"></i>
+        <p>${message}</p>
+        <button class="btn btn-primary" onclick="loadNotices()">다시 시도</button>
+    `;
+}
+
+// 모달 외부 클릭 시 닫기
+window.onclick = function(event) {
+    const modal = document.getElementById('noticeModal');
+    if (event.target === modal) {
+        closeModal();
+    }
+}
+</script>
+{% endblock %}

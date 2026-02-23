@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ page_title }}{% endblock %}</title>
+
+    <!-- 공통 CSS -->
+    <link rel="stylesheet" href="/static/css/common.css">
+    <link rel="stylesheet" href="/static/css/layout.css">
+
+    <!-- 페이지별 CSS -->
+    {% block styles %}{% endblock %}
+</head>
+<body>
+    <!-- 헤더 네비게이션 -->
+    <header class="main-header">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <img src="/static/img/kb-logo.png" alt="KB신용정보" />
+                <h1>내규편집기</h1>
+            </div>
+            <div class="nav-menu">
+                <a href="/regulations/current" class="nav-item {% if '/current' in request.url.path %}active{% endif %}">현행 내규 목록</a>
+                <a href="/regulations/history" class="nav-item {% if '/history' in request.url.path %}active{% endif %}">연혁목록</a>
+                <a href="/regulations/search" class="nav-item {% if '/search' in request.url.path and '/search-engine' not in request.url.path %}active{% endif %}" style="display: none;">상세검색</a>
+                <a href="/regulations/department" class="nav-item {% if '/department' in request.url.path %}active{% endif %}">부서관리</a>
+                <a href="/regulations/classification" class="nav-item {% if '/classification' in request.url.path %}active{% endif %}">분류관리</a>
+                <a href="/regulations/search-engine" class="nav-item {% if '/search-engine' in request.url.path %}active{% endif %}" style="display: none;">검색 엔진</a>
+                <a href="/regulations/service" class="nav-item {% if '/service' in request.url.path %}active{% endif %}">지원 페이지</a>
+                <a href="/admin/view-analytics" class="nav-item {% if '/view-analytics' in request.url.path %}active{% endif %}">조회수 분석</a>
+                <a href="/admin/synonyms" class="nav-item {% if '/synonyms' in request.url.path %}active{% endif %}">유사어 관리</a>
+                <a href="/admin/features" class="nav-item {% if '/features' in request.url.path %}active{% endif %}">기능 관리</a>
+            </div>
+            <div class="nav-user">
+                <button onclick="logout()" class="logout-btn" title="로그아웃">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M10 2.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 1 0V3h4v10h-4v-3a.5.5 0 0 0-1 0v3a.5.5 0 0 0 .5.5h5a.5.5 0 0 0 .5-.5v-11a.5.5 0 0 0-.5-.5h-5z"/>
+                        <path d="M7.854 11.854a.5.5 0 0 0 0-.708L5.207 8.5H12a.5.5 0 0 0 0-1H5.207l2.647-2.646a.5.5 0 0 0-.708-.708l-3.5 3.5a.5.5 0 0 0 0 .708l3.5 3.5a.5.5 0 0 0 .708 0z"/>
+                    </svg>
+                    로그아웃
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- 메인 컨텐츠 -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- 푸터 -->
+    <footer class="main-footer">
+        <p>&copy; 2025 KB신용정보. All rights reserved.</p>
+    </footer>
+
+    <!-- 공통 JavaScript -->
+    <script src="/static/js/common.js"></script>
+
+    <!-- 페이지별 JavaScript -->
+    {% block scripts %}{% endblock %}
+</body>
+</html>

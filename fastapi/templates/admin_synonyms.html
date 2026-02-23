@@ -1,0 +1,746 @@
+{% extends "common/base.html" %}
+
+{% block title %}유사어 관리 - 내규편집기{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="/static/styles.css?v=20251209_2">
+<link rel="stylesheet" href="/static/css/font-awesome.min.css">
+<style>
+    /* 단색 깔끔한 디자인 */
+    body {
+        background: #f8f9fa;
+        margin: 0;
+        padding: 0;
+    }
+
+    .page-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+        background: white;
+    }
+
+    /* 통계 카드 */
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .stat-card {
+        background: #f8f9fa;
+        padding: 15px 20px;
+        border-radius: 6px;
+        border: 1px solid #e9ecef;
+        text-align: center;
+    }
+
+    .stat-card .stat-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: #2c3e50;
+    }
+
+    .stat-card .stat-label {
+        font-size: 13px;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+
+    /* 툴바 */
+    .toolbar {
+        background: #f8f9fa;
+        padding: 15px 20px;
+        border-bottom: 1px solid #dee2e6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 20px;
+        border-radius: 6px;
+    }
+
+    .toolbar-left {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .search-input {
+        padding: 8px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 14px;
+        width: 250px;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+    }
+
+    .filter-select {
+        padding: 8px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 14px;
+        cursor: pointer;
+    }
+
+    /* 버튼 스타일 */
+    .btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 500;
+    }
+
+    .btn-primary {
+        background: #3498db;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #2980b9;
+    }
+
+    .btn-success {
+        background: #27ae60;
+        color: white;
+    }
+
+    .btn-success:hover {
+        background: #219a52;
+    }
+
+    .btn-danger {
+        background: #e74c3c;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background: #c0392b;
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #5a6268;
+    }
+
+    .btn-outline {
+        background: white;
+        border: 1px solid #3498db;
+        color: #3498db;
+    }
+
+    .btn-outline:hover {
+        background: #3498db;
+        color: white;
+    }
+
+    .btn-sm {
+        padding: 5px 10px;
+        font-size: 13px;
+    }
+
+    /* 테이블 스타일 */
+    .synonym-table {
+        width: 100%;
+        background: white;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
+
+    .synonym-table thead {
+        background: #f8f9fa;
+    }
+
+    .synonym-table th {
+        padding: 12px;
+        text-align: left;
+        font-weight: 600;
+        color: #495057;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .synonym-table td {
+        padding: 12px;
+        border-bottom: 1px solid #dee2e6;
+        vertical-align: middle;
+    }
+
+    .synonym-table tbody tr:hover {
+        background: #f8f9fa;
+    }
+
+    /* 유사어 태그 */
+    .synonym-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        max-width: 450px;
+    }
+
+    .synonym-tag {
+        background: #e7f1ff;
+        color: #2c3e50;
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        border: 1px solid #b8d4fe;
+    }
+
+    .synonym-tag.more {
+        background: #3498db;
+        color: white;
+        border-color: #3498db;
+        cursor: pointer;
+    }
+
+    /* 배지 */
+    .badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .badge-active {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .badge-inactive {
+        background: #e9ecef;
+        color: #6c757d;
+    }
+
+    .badge-priority {
+        background: #cce5ff;
+        color: #004085;
+    }
+
+    /* 모달 */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 2000;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal.active {
+        display: flex;
+    }
+
+    .modal-content {
+        background: white;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 650px;
+        max-height: 90vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+
+    .modal-content.wide {
+        max-width: 850px;
+    }
+
+    .modal-header {
+        padding: 15px 20px;
+        border-bottom: 1px solid #e5e5e5;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #2c3e50;
+        color: white;
+    }
+
+    .modal-header h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: white;
+        opacity: 0.8;
+        line-height: 1;
+    }
+
+    .modal-close:hover {
+        opacity: 1;
+    }
+
+    .modal-body {
+        padding: 20px;
+        overflow-y: auto;
+        flex: 1;
+    }
+
+    .modal-footer {
+        padding: 15px 20px;
+        border-top: 1px solid #e5e5e5;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        background: #f8f9fa;
+    }
+
+    /* 폼 스타일 */
+    .form-group {
+        margin-bottom: 18px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 600;
+        color: #2c3e50;
+        font-size: 14px;
+    }
+
+    .form-group input[type="text"],
+    .form-group input[type="number"],
+    .form-group textarea,
+    .form-group select {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 14px;
+        transition: all 0.2s;
+        font-family: inherit;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 70px;
+    }
+
+    .form-group small {
+        display: block;
+        margin-top: 4px;
+        color: #6c757d;
+        font-size: 12px;
+    }
+
+    /* 유사어 입력 영역 */
+    .synonyms-input-area {
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        padding: 12px;
+        background: #f8f9fa;
+    }
+
+    .synonyms-tags-input {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 10px;
+        min-height: 36px;
+    }
+
+    .synonym-input-tag {
+        background: #3498db;
+        color: white;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .synonym-input-tag .remove-tag {
+        cursor: pointer;
+        font-size: 14px;
+        line-height: 1;
+        opacity: 0.8;
+    }
+
+    .synonym-input-tag .remove-tag:hover {
+        opacity: 1;
+    }
+
+    .add-synonym-row {
+        display: flex;
+        gap: 8px;
+    }
+
+    .add-synonym-row input {
+        flex: 1;
+        padding: 8px 10px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+    }
+
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+    }
+
+    /* JSON 미리보기 */
+    .json-preview {
+        background: #2c3e50;
+        color: #ecf0f1;
+        padding: 15px;
+        border-radius: 4px;
+        font-family: 'Consolas', 'Monaco', monospace;
+        font-size: 13px;
+        overflow-x: auto;
+        max-height: 280px;
+        white-space: pre-wrap;
+    }
+
+    /* 빈 상태 */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #6c757d;
+    }
+
+    .empty-state svg {
+        width: 64px;
+        height: 64px;
+        margin-bottom: 15px;
+        opacity: 0.5;
+    }
+
+    .empty-state h3 {
+        margin: 0 0 10px 0;
+        font-size: 18px;
+        color: #495057;
+    }
+
+    /* 로딩 상태 */
+    .loading {
+        text-align: center;
+        padding: 40px;
+        color: #6c757d;
+    }
+
+    .loading .spinner {
+        display: inline-block;
+        width: 32px;
+        height: 32px;
+        border: 3px solid #e9ecef;
+        border-top-color: #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* 토스트 메시지 */
+    .toast {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        padding: 12px 20px;
+        border-radius: 4px;
+        color: white;
+        font-weight: 500;
+        font-size: 14px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        animation: slideIn 0.3s;
+        z-index: 3000;
+    }
+
+    .toast.success { background: #27ae60; }
+    .toast.error { background: #e74c3c; }
+    .toast.info { background: #3498db; }
+
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    /* 안내 배너 */
+    .info-banner {
+        background: #e7f3ff;
+        border: 1px solid #b8daff;
+        border-radius: 6px;
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #004085;
+        font-size: 14px;
+    }
+
+    .info-banner svg {
+        flex-shrink: 0;
+        color: #0066cc;
+    }
+
+    /* 반응형 */
+    @media (max-width: 768px) {
+        .stats-row {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .toolbar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .toolbar-left {
+            flex-direction: column;
+        }
+
+        .search-input {
+            width: 100%;
+        }
+
+        .synonym-table {
+            font-size: 13px;
+        }
+
+        .synonym-table th,
+        .synonym-table td {
+            padding: 8px;
+        }
+
+        .modal-content {
+            margin: 10px;
+            max-height: 95vh;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <!-- 안내 배너 -->
+    <div class="info-banner">
+        <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+        </svg>
+        <span>등록된 유사어는 검색엔진 색인 주기(매일 새벽 3시)에 자동 적용됩니다. 즉시 적용이 필요한 경우 시스템 관리자에게 문의하세요.</span>
+    </div>
+
+    <div class="page-header">
+        <h2 class="page-title">유사어 관리</h2>
+        <div class="page-actions">
+            <button class="btn btn-outline" onclick="openExportModal()">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                    <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                </svg>
+                JSON 내보내기
+            </button>
+            <button class="btn btn-primary" onclick="openCreateModal()">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                </svg>
+                새 유사어 그룹
+            </button>
+        </div>
+    </div>
+
+    <!-- 통계 카드 -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-value" id="statTotal">-</div>
+            <div class="stat-label">전체 그룹</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="statActive">-</div>
+            <div class="stat-label">활성 그룹</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="statInactive">-</div>
+            <div class="stat-label">비활성 그룹</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="statSynonyms">-</div>
+            <div class="stat-label">전체 유사어</div>
+        </div>
+    </div>
+
+    <!-- 툴바 -->
+    <div class="toolbar">
+        <div class="toolbar-left">
+            <input type="text" class="search-input" id="searchInput" placeholder="그룹명 또는 유사어 검색...">
+            <select class="filter-select" id="activeFilter">
+                <option value="">전체</option>
+                <option value="true">활성</option>
+                <option value="false">비활성</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- 테이블 -->
+    <div id="loadingState" class="loading">
+        <div class="spinner"></div>
+        <p>유사어를 불러오는 중...</p>
+    </div>
+
+    <table class="synonym-table" id="synonymsTable" style="display: none;">
+        <thead>
+            <tr>
+                <th style="width: 60px;">ID</th>
+                <th style="width: 140px;">그룹명</th>
+                <th>유사어</th>
+                <th style="width: 90px;">우선순위</th>
+                <th style="width: 80px;">상태</th>
+                <th style="width: 120px;">관리</th>
+            </tr>
+        </thead>
+        <tbody id="synonymsBody">
+        </tbody>
+    </table>
+
+    <div id="emptyState" class="empty-state" style="display: none;">
+        <svg viewBox="0 0 16 16" fill="currentColor">
+            <path d="M1 11a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1v-3zm5-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7zm5-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V2z"/>
+        </svg>
+        <h3>등록된 유사어가 없습니다</h3>
+        <p>새 유사어 그룹 버튼을 눌러 유사어를 등록하세요</p>
+    </div>
+</div>
+
+<!-- 유사어 등록/수정 모달 -->
+<div id="synonymModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">새 유사어 그룹</h3>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <form id="synonymForm" onsubmit="saveSynonym(event)">
+            <div class="modal-body">
+                <input type="hidden" id="synonymId" value="">
+
+                <div class="form-group">
+                    <label for="groupName">그룹명 (대표 단어) *</label>
+                    <input type="text" id="groupName" required maxlength="100" placeholder="예: 환자">
+                    <small>검색 시 기준이 되는 대표 단어를 입력하세요</small>
+                </div>
+
+                <div class="form-group">
+                    <label>유사어 목록 *</label>
+                    <div class="synonyms-input-area">
+                        <div class="synonyms-tags-input" id="synonymsTags"></div>
+                        <div class="add-synonym-row">
+                            <input type="text" id="newSynonymInput" placeholder="유사어 입력 후 Enter 또는 추가 버튼">
+                            <button type="button" class="btn btn-sm btn-primary" onclick="addSynonymTag()">추가</button>
+                        </div>
+                    </div>
+                    <small>쉼표(,)로 구분하여 여러 개 동시 입력 가능</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">설명</label>
+                    <textarea id="description" placeholder="유사어 그룹에 대한 설명 (선택)" maxlength="500"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="priority">우선순위</label>
+                    <input type="number" id="priority" value="0" min="0" max="1000" style="width: 120px;">
+                    <small>높을수록 검색 시 먼저 적용됩니다 (0-1000)</small>
+                </div>
+
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="isActive" checked>
+                        <label for="isActive" style="margin-bottom: 0; font-weight: normal;">활성화</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">취소</button>
+                <button type="submit" class="btn btn-success">저장</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- JSON 내보내기 모달 -->
+<div id="exportModal" class="modal">
+    <div class="modal-content wide">
+        <div class="modal-header">
+            <h3>JSON 내보내기</h3>
+            <button class="modal-close" onclick="closeExportModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>출력 형식</label>
+                <select class="filter-select" id="exportFormat" onchange="loadExportPreview()" style="width: 100%;">
+                    <option value="elasticsearch">Elasticsearch (synonym filter)</option>
+                    <option value="solr">Solr (synonym file)</option>
+                    <option value="array">단순 배열 (JSON)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>미리보기</label>
+                <div class="json-preview" id="exportPreview">로딩 중...</div>
+            </div>
+            <div class="form-group" id="esConfigGroup" style="display: none;">
+                <label>Elasticsearch 설정 예시</label>
+                <div class="json-preview" id="esConfigExample"></div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeExportModal()">닫기</button>
+            <button type="button" class="btn btn-outline" onclick="copyToClipboard()">복사</button>
+            <button type="button" class="btn btn-success" onclick="saveToServer()">서버에 저장</button>
+            <button type="button" class="btn btn-primary" onclick="downloadJson()">다운로드</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/admin-synonyms.js?v=20251209_2"></script>
+{% endblock %}

@@ -1,0 +1,102 @@
+대외비
+3.1.3.1. 통증관리
+제 정 일 2008.09. 최 종 개 정 일 2025.03.25. 최 종 검 토 일 2025.03.25.
+담 당 부 서 의료질향상 및 환자안전위원회
+유 관 부 서 마취통증의학과
+4주기 의료기관인증기준: 3.1.3 통증관리
+관 련 기 준
+JCI Standard 7th Edition: PCC.2.2, AOP.1.5, COP.6, ASC.5
+제1조 (목적)
+1. 환자가 겪는 통증이 환자에게 신체적, 정신적으로 영향을 주어 치료과정에 부정적인 결과를
+초래하는 것을 예방하고, 환자의 통증 감소 및 안위 도모를 위해 통중이 관리되도록 통증에
+대한 계획, 지지 그리고 치료를 제공하기 위함이다.
+제2조 (정의)
+1. 암성통증: 암세포의 침윤과 같이 암과 직접적으로 관련된 통증이나 약물 및 방사선 치료
+등과 관련된 근육세포의 손상으로 인한 통증 등 암환자가 겪는 침해수용성 통증과
+신경병증성 통증을 의미한다.
+2. 소아청소년환자: 만 18세 이하(만 19세 미만) 환자
+3. 노인환자: 만 65세 이상 환자
+제3조 (절차)
+1. 통증 초기평가
+1) 환자가 입원 시, 외래 및 응급진료센터 내원 시 통증 스크리닝을 시행한다.
+2) 통증 호소 시 통증 초기 평가를 시행한다.
+3) 입원환자는 통증이 없는 경우에도 1일 1회 통증유무확인을 시행한다.
+4) 통증 평가
+(1) 통증의 부위, 강도, 양상, 빈도, 지속기간 등을 평가한다.
+(2) 필요 시 악화요인, 완화요인, 동반질환, 지금까지 받아온 통증치료와 효과 등을
+평가한다.
+2. 통증평가 도구
+1) 만 3세 미만 환자, 의사소통이 불가능한 소아청소년환자, 무의식 소아청소년환자
+(1) FLACC(Face, Legs, Activity, Cry, Consolability) Pain Scale
+2) 만 3세 이상 의사소통이 가능한 환자
+(1) NRS(Numeric Rating Scale) / NPIS(Numerical Pain Intensity Scale)
+(2) VAS(Visual Analog Scale)
+(3) Wong-Baker Faces Pain Rating Scale
+3) 신생아
+3.1.3.1. 통증관리 페이지 1 / 3
+대외비
+(1) CRIES Scale(Crying, Requires oxygen, Increased vital sign, Expression of face, Sleeplessness)
+4) 의사소통이 불가능한 성인 환자, 무의식 성인 환자
+(1) CPOT(Critical-Care Pain Observation Tool)
+3. 통증관리
+1) 통증평가 후 통증점수가 1점 이상이고, 환자의 요구가 있는 경우 적절한 관리(약물적
+중재, 비약물적 중재 등)를 시행한다.
+2) 흉통 호소 환자는 즉각적인 평가와 중재를 시행한다.
+3) 환자 및 보호자에게 검사, 수술/시술, 치료과정에 따른 통증의 발생가능성을 설명하고
+통증관리 방법을 교육한다.
+4. 통증 재평가
+1) 방법: 통증중재 방법, 통증의 부위, 강도, 양상, 빈도, 지속기간 등을 평가한다.
+2) 재평가 시기
+(1) 환자 상태변화 시
+(2) 주사투여: 투약 후 30분 이내 평가
+(3) 주사제 마약성 진통제는 투약 후 15분 이내 평가
+(4) 경구투여: 투약 후 1시간 이내 평가(경구제 마약성 진통제는 투약 후 1시간 이내
+평가)
+(5) 흉통에 대해 약물 중재 적용 시: 투약 후 5분 이내 평가
+(6) 통증에 대한 비약물적 중재 적용 시: 중재 후 1시간 이내 평가
+(7) 수술, 침습적 처지 후: 당일 평가
+(8) 통증에 대한 지속적 치료적 중재 적용 시: 1일 2회 평가
+① PCA (Patient Controlled Analgesia) 적용 환자는 1일 2회 부작용 등을 포함하여
+통증평가를 시행한다.
+5. 암성통증 환자 통증관리
+1) 질병력, 정신사회적 문제, 통증이나 통증조절에 대한 잘못된 믿음, 통증원인 등 포괄적인
+통증평가를 시행한다.
+2) 암성통증의 재발을 예방하기 위해 진통제를 일정한 간격 또는 지속적으로 투여한다.
+3) 필요 시 마취통증의학과, 방사선종양학과 등 다학제적 전문가들의 평가와 중재를
+시행한다.
+4) 필요 시 진통제의 부작용을 최소화하기 위해 변비약, 항구토제 등의 투여를 병행한다.
+6. 통증평가와 관리 시 환자의 요구를 고려하고 권리를 존중한다.
+7. 의료진은 통증관리 관련 교육을 받는다.
+제4조 (부록)
+1. 통증평가 도구
+2. 통증 중재 순서도
+3.1.3.1. 통증관리 페이지 2 / 3
+대외비
+제5조 (참고)
+1. Serlin RC, Mendoza TR, Nakamura Y, et al. When is cancer pain mild, moderate, or severe? Grading pain
+severity by its interference with function. Pain. 1995;61: 277-284
+2. Collins SL, Moore RA, McQuay HJ. The visual analogue pain intensity scale: what is moderate pain in
+millimetres? Pain. 1997; 72: 95–7.
+3. Harris JT, Suresh Kumar K, Rajagopal MR. Intravenous morphine for rapid control of severe cancer pain.
+Palliat Med 2003;17: 248-256
+4. Gordon DB, Dahl JL, Miaskowski C, McCarberg B, Todd KH, Paice JA, Lipman AG, Bookbinder M,
+Sanders SH, Turk DC, Carr DB. American pain society recommendations for improving the quality of acute
+and cancer pain management: American Pain Society Quality of Care Task Force. Arch Intern Med. 2005;
+165(14): 1574-80.
+5. Jones KR, Vojir CP, Hutt E, Fink R. Determining mild, moderate, and severe pain equivalency across pain-
+intensity tools in nursing home residents. J Rehabil Res Dev. 2007; 44(2): 305-14.
+6. Breivik H, Borchgrevink PC, Allen SM, Rosseland LA, Romundstad L, Hals EK, Kvarstein G, Stubhaug A.
+Assessment of pain. Br J Anaesth. 2008; 101(1): 17-24.
+7. American Society of Anesthesiologists Task Force on Chronic Pain Management; American Society of
+Regional Anesthesia and Pain Medicine. Practice guidelines for chronic pain management: an updated
+report by the American Society of Anesthesiologists Task Force on Chronic Pain Management and the
+American Society of Regional Anesthesia and Pain Medicine. Anesthesiology. 2010; 112(4): 810-33.
+8. 암성 통증관리지침 권고안 7판. 보건복지부
+내규의 제·개정 이력
+제1조 (내규의 제정 및 시행)
+1. 이 내규는 2008년 9월부터 시행한다.
+제2조 (내규의 전면개정 및 시행)
+1. 이 내규는 2025년 3월 25일부터 시행한다.
+제3조 (내규의 개정)
+승 인 : 세브란스병원장 이 강 영 (인)
+3.1.3.1. 통증관리 페이지 3 / 3

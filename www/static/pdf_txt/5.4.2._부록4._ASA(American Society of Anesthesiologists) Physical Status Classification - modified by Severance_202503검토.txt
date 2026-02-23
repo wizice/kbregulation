@@ -1,0 +1,6 @@
+5.4.2. 부록 4.
+ASA(American Society of Anesthesiologists) Physical Status Classification
+
+- modified by Severance 담당부서 마취통증의학과 제정일 2014.10. 최종개정일 2018.09. 최종검토일 2025.03.
+
+ASA(American Society of Anesthesiologists) Physical Status Classification -modified by ASA Class Physical Status 1 나이 1개월 초과 80세 미만의 건강한 사람 나이 1개월 이하 80세 이상의 건강한 사람 혹은 기능적 장애가 없는 정도의 전신적 질병 혹은 하나의 장기에 조절되는 질병을 가진 환자 혹은 임산부, 혹은 BMI 30초과 40미만의 비만 경도의 기능적 장애가 있는 중등도의 전신적 질병 혹은 둘 이상의 잘기에 조절되는 질병 혹은 3 하나 이상의 주요 장기에 질병을 가졌으나 당장의 사망위험은 없는 환자 혹은 PCA<60 주의 미숙아 혹은 BMI 40이상의 비만 지속적으로 생명을 위협하는 중증의 전신적 질병 혹은 4 적어도 하나 이상의 조절되지 않는 질병 혹은 말기의 질환이 있어 사망 가능성이 있는 환자 수술을 하지 않으면 24시간 이상 생존할 가능성이 없거나 즉시 사망할 가능성이 있는 환자 6 뇌사자 E 응급수술 Reference: ASA (American Society of Anesthesiologists) Physical Status Classification System (2014) [https://www.asahq.org/resources/clinical-information/asa-physical-status-classification-system]

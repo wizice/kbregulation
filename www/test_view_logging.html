@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>조회 로깅 테스트</title>
+</head>
+<body>
+    <h1>조회 로깅 테스트</h1>
+    <button onclick="testLogging()">테스트 로그 전송</button>
+    <div id="result"></div>
+
+    <script src="/static/js/regulation-view-logger.js"></script>
+    <script>
+        async function testLogging() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '테스트 중...';
+
+            try {
+                console.log('RegulationViewLogger:', window.RegulationViewLogger);
+
+                if (!window.RegulationViewLogger) {
+                    resultDiv.innerHTML = '❌ RegulationViewLogger not loaded!';
+                    return;
+                }
+
+                await window.RegulationViewLogger.logView(
+                    9999,
+                    '테스트 내규',
+                    'TEST.1.1'
+                );
+
+                resultDiv.innerHTML = '✅ 로그 전송 완료! DB를 확인하세요.';
+            } catch (error) {
+                resultDiv.innerHTML = '❌ 에러: ' + error.message;
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>

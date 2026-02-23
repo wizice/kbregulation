@@ -1,0 +1,8 @@
+제정일: 2018.9.
+개정일:
+검토일:
+2021.3/2023.3./2024.3./2025.03.
+기안부서: 약무국 항암약물요법 투여 시 부작용 발생 시 대처방안 부작용 일반적인 대처방안 MILD: antihistamines 1 Anaphylaxis SEVERE: airway management, epinephrine, ECG 모니터링, IV fluids.
+2 Body temperature 상승 물과 fan을 사용하여 증발 냉각, agitation시 benzodiazepines 투여 합병증, 감염 징후 없는 mild to moderate diarrhea(Grade 1~2) :
+24시간 동안 4시간 간격으로 loperamide 2 mg 투여 3 Diarrhea 지속시: octreotide, IV fluids, 전해질 보급, 항생제 Monitor airway MILD/MODERATE: antihistamines, corticosteroids 또는 epinephrine (흡입 beta agonists 추가 가능) 4 Hypersensitivity reaction SEVERE: oxygen, 적극적인 airway management, antihistamines, epinephrine, corticosteroids, ECG모니터링, IV fluids.
+MILD/MODERATE, 무증상: treatment 필요없음 Hypertensive disorder SEVERE episode: nitroprusside 또는 nitroglycerin 고려 IV NS 10 ~ 20 mL/kg. 적절한 수분 보급 후 저혈압 지속시 Hypotensive episode dopamine or norepinephrine 사용. Sepsis 여부 평가 실시 6 Seizure IV benzodiazepnes. 지속시 barbiturate 추가 7 Decontamination 즉시 접촉 부위를 비누와 물로 세척하고 점막부위를 대량의 물로 씻어냄 Reference: Drug information handbook for oncology, Micromedex, UpToDate

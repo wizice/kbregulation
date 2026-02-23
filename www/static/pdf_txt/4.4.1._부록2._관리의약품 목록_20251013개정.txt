@@ -1,0 +1,54 @@
+관리의약품 목록
+2025.10.13.
+임상과 계열 성분명 약품명 용량 단위 제형
+Ceftazidime 2g, Avibactam sodium 0.5g(IV,IVF) Zavicefta inj 2.5 g V
+Cephalosporin
+Ceftolozane 1g, tazobactam 0.5g(IVF) Zerbaxa inj 1.5 g V
+Ertapenem(IM,IVF) Invanz inj 1 g V
+Imipenem monohydrate 500mg,Cilastatin Na 500mg(IVF) Prepenem inj (Na 1.4mEq/V 함유) 500 mg V
+Carbapenem Mepem inj 2 g V
+Meropenem(IVF) Meropen inj 0.5 g V
+Pospenem inj 1 g V
+Tetracycline Tigecycline(IVF) Tygacil inj 50 mg V
+Tapocin inj 200 mg V
+Taicocin inj 200 mg V
+Teicoplanin(IM,IV,IVF)
+항생제 Tapocin inj 400 mg V
+Glycopeptides Teiconin inj 400 mg V
+Vancomycin HCl 1g, NaCl 900mg/100ml(IVF) Vanco Kit inj (NS 100ml 포함) 1000 mg Kit
+500 mg V
+감염내과 Vancomycin HCl(IVF) Vancomycin inj
+노년내과 1000 mg V
+소아감염면역과 Linezolid(IVF) Cinezolid inj 600 mg Bag
+소아청소년과
+Oxazolidine Linezolin 300 mg T
+Linezolid(관리항생제)
+Zyvox 600 mg T
+Polymyxin Colistimethate Na(=polymyxin E)(Colistin으로서 150mg)(IV,IVF,IM) Colis inj 150 mg V
+350 mg V
+Miscellaneous Daptomycin(IVF) Dapto inj
+500 mg V
+Isavuconazonium sulfate (Isavuconazole 으로서 100mg) Cresemba 100 mg C
+Imidazole Voriconazole(IVF) Vfend inj 200 mg V
+Voriconazole(관리항생제) Vfend 200 mg T
+Anidulafungin(IVF) Eraxis inj 100 mg V
+항진균제
+Cancidas inj(초기용량) 70 mg V
+Echinocandin Caspofungin acetate(IVF, 전해질 함유 수액만)
+Cancidas inj(유지용량) 50 mg V
+Micafungin Na (IVF) Mycamine inj 50 mg V
+Polyene Amphotericin B liposomal(IVF) D5W에만 mix Ambisome inj(용량확인) 50 mg V
+항바이러스제 Maribavir Livtencity 200 mg T
+소아감염면역과
+소아청소년과
+항응고제 Antithrombin III human (IV,IVF) Antithrombin III inj 500 unit V
+소아혈액종양과
+혈액내과
+소아혈액종양과
+혈액내과 PNH 치료제 Eculizumab(IVF) Soliris inj(수막구균백신투여확인) 300 mg V
+신경과
+Pirespa 200 mg T
+200 mg T
+호흡기내과 특발성 폐섬유증 치료제 Pirfenidone
+Piresko 400 mg T
+600 mg T

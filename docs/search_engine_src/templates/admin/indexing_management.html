@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>색인 관리</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .header {
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+
+        .description {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .tab-btn {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 15px;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            border-bottom-color: #007bff;
+            color: #007bff;
+            font-weight: bold;
+        }
+
+        .tab-btn:hover {
+            color: #007bff;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* 진행 상황 섹션 */
+        .progress-section {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .progress-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .progress-bar-container {
+            background: #e9ecef;
+            border-radius: 4px;
+            height: 24px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #007bff, #0056b3);
+            height: 100%;
+            width: 0%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            transition: width 0.3s;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .progress-status {
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #333;
+            border-left: 3px solid #007bff;
+        }
+
+        .progress-status.completed {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+
+        .progress-status.error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+
+        /* 버튼 그룹 */
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        /* 통계 섹션 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 6px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .stat-card.indexed {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .stat-card.pending {
+            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+        }
+
+        .stat-card.error {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        /* 테이블 */
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th {
+            background: #f5f5f5;
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+            color: #333;
+            border-bottom: 2px solid #ddd;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tr:hover {
+            background: #f9f9f9;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status-badge.completed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-badge.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-badge.indexing {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        /* 필터 */
+        .filter-section {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-section label {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .filter-section select,
+        .filter-section input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        /* 로딩 표시 */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 5px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 에러 메시지 */
+        .error-message {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        .success-message {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        /* 모달 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+        }
+
+        .modal.active {
+            display: block;
+        }
+
+        .modal-content {
+            background: white;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .modal-close:hover {
+            color: #333;
+        }
+
+        .error-list {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .error-item {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            font-size: 12px;
+            color: #333;
+        }
+
+        .error-item:last-child {
+            border-bottom: none;
+        }
+
+        .error-item .rule-name {
+            font-weight: bold;
+            color: #dc3545;
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #999;
+            padding: 30px;
+            font-size: 14px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .action-buttons button {
+            padding: 4px 8px;
+            font-size: 11px;
+        }
+
+        .last-updated {
+            text-align: right;
+            color: #999;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📑 색인 관리</h1>
+            <p class="description">규정 검색을 위한 색인 작업을 관리합니다</p>
+        </div>
+
+        <!-- 탭 -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="progress">진행 상황</button>
+            <button class="tab-btn" data-tab="manual">수동 색인</button>
+            <button class="tab-btn" data-tab="logs">색인 로그</button>
+        </div>
+
+        <!-- TAB 1: 진행 상황 -->
+        <div id="progress" class="tab-content active">
+            <div class="button-group">
+                <button id="reindex-all-btn" class="btn btn-primary">
+                    🔄 모든 규정 재색인
+                </button>
+                <button id="refresh-stats-btn" class="btn btn-secondary">
+                    🔃 통계 새로고침
+                </button>
+            </div>
+
+            <div id="progress-section" class="progress-section" style="display:none;">
+                <div class="progress-title">
+                    <span class="spinner"></span>색인 진행 중...
+                </div>
+                <div class="progress-info">
+                    <span>진행률: <strong id="progress-percent">0</strong>%</span>
+                    <span>처리됨: <strong id="progress-count">0</strong> / <strong id="progress-total">0</strong></span>
+                    <span>경과시간: <strong id="elapsed-time">0</strong>초</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div id="progress-bar" class="progress-bar" style="width:0%">
+                        <span id="progress-percent-bar" style="display:none;">0%</span>
+                    </div>
+                </div>
+                <div id="current-item" class="progress-status">
+                    현재 처리 중: 대기 중...
+                </div>
+            </div>
+
+            <div id="progress-completed" class="progress-section" style="display:none;">
+                <div class="progress-title">✅ 색인 완료</div>
+                <div class="progress-status completed">
+                    총 <strong id="completed-total">0</strong>개 규정이 색인되었습니다
+                    (오류: <strong id="completed-errors">0</strong>개)
+                </div>
+                <div class="last-updated">
+                    마지막 업데이트: <span id="last-update-time">-</span>
+                </div>
+            </div>
+
+            <!-- 통계 -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-total">0</div>
+                    <div class="stat-label">전체 규정</div>
+                </div>
+                <div class="stat-card indexed">
+                    <div class="stat-value" id="stat-indexed">0</div>
+                    <div class="stat-label">색인됨</div>
+                </div>
+                <div class="stat-card pending">
+                    <div class="stat-value" id="stat-pending">0</div>
+                    <div class="stat-label">대기 중</div>
+                </div>
+                <div class="stat-card error">
+                    <div class="stat-value" id="stat-errors">0</div>
+                    <div class="stat-label">오류</div>
+                </div>
+            </div>
+
+            <div id="index-percentage" style="text-align: center; font-size: 14px; color: #666; margin-bottom: 20px;">
+                색인 완료율: <strong id="index-percent">0</strong>%
+            </div>
+        </div>
+
+        <!-- TAB 2: 수동 색인 -->
+        <div id="manual" class="tab-content">
+            <div class="button-group">
+                <button id="search-rules-btn" class="btn btn-primary">규정 검색</button>
+            </div>
+
+            <div class="filter-section">
+                <label>규정 검색:</label>
+                <input type="text" id="rule-search" placeholder="규정명 입력...">
+                <label style="margin-left: 20px;">부서:</label>
+                <select id="department-filter">
+                    <option value="">모든 부서</option>
+                </select>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 30%;">규정명</th>
+                            <th style="width: 20%;">부서</th>
+                            <th style="width: 15%;">상태</th>
+                            <th style="width: 20%;">마지막 색인</th>
+                            <th style="width: 15%;">작업</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rules-table-body">
+                        <tr>
+                            <td colspan="5" class="empty-message">규정을 검색해주세요</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB 3: 색인 로그 -->
+        <div id="logs" class="tab-content">
+            <div class="filter-section">
+                <label>상태 필터:</label>
+                <select id="log-status-filter">
+                    <option value="">모든 상태</option>
+                    <option value="completed">완료</option>
+                    <option value="pending">대기</option>
+                    <option value="error">오류</option>
+                </select>
+
+                <label style="margin-left: 20px;">규정명:</label>
+                <input type="text" id="log-search" placeholder="규정명 검색...">
+
+                <button id="log-filter-btn" class="btn btn-secondary" style="margin-left: 10px;">
+                    🔍 검색
+                </button>
+                <button id="log-clear-btn" class="btn btn-secondary">
+                    🗑️ 오래된 로그 삭제
+                </button>
+            </div>
+
+            <div id="log-message"></div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 5%;">#</th>
+                            <th style="width: 30%;">규정명</th>
+                            <th style="width: 15%;">상태</th>
+                            <th style="width: 30%;">오류 메시지</th>
+                            <th style="width: 20%;">색인 시간</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logs-table-body">
+                        <tr>
+                            <td colspan="5" class="empty-message">로그를 검색해주세요</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 에러 모달 -->
+    <div id="error-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>오류 상세</h2>
+                <button class="modal-close" onclick="closeErrorModal()">&times;</button>
+            </div>
+            <div id="error-list" class="error-list"></div>
+        </div>
+    </div>
+
+    <script>
+        // ========================
+        // 글로벌 상태
+        // ========================
+        let currentTab = 'progress';
+        let progressInterval = null;
+        let statsInterval = null;
+
+        // ========================
+        // 탭 관리
+        // ========================
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const tab = this.dataset.tab;
+                switchTab(tab);
+            });
+        });
+
+        function switchTab(tab) {
+            // 탭 버튼 활성화
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+
+            // 탭 콘텐츠 활성화
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tab).classList.add('active');
+
+            currentTab = tab;
+
+            // 탭별 초기화
+            if (tab === 'logs') {
+                loadIndexingLogs();
+            } else if (tab === 'manual') {
+                loadDepartments();
+            }
+        }
+
+        // ========================
+        // 진행 상황 모니터링
+        // ========================
+        document.getElementById('reindex-all-btn').addEventListener('click', async function() {
+            if (!confirm('모든 규정을 재색인 하시겠습니까?\n이 작업은 시간이 걸릴 수 있습니다.')) {
+                return;
+            }
+
+            this.disabled = true;
+
+            try {
+                const response = await fetch('/api/v1/indexing/reindex-all', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+
+                if (response.ok) {
+                    showMessage('색인 작업을 시작했습니다', 'success');
+                    document.getElementById('progress-section').style.display = 'block';
+                    document.getElementById('progress-completed').style.display = 'none';
+                    startProgressMonitoring();
+                } else {
+                    const data = await response.json();
+                    showMessage(data.detail || '색인 시작 실패', 'error');
+                    this.disabled = false;
+                }
+            } catch (error) {
+                showMessage('오류 발생: ' + error.message, 'error');
+                this.disabled = false;
+            }
+        });
+
+        function startProgressMonitoring() {
+            // 1초마다 진행 상황 확인
+            progressInterval = setInterval(async () => {
+                try {
+                    const response = await fetch('/api/v1/indexing/progress');
+                    if (response.ok) {
+                        const data = await response.json();
+                        updateProgress(data);
+
+                        // 완료되면 모니터링 중지
+                        if (!data.is_running) {
+                            clearInterval(progressInterval);
+                            document.getElementById('progress-section').style.display = 'none';
+                            document.getElementById('progress-completed').style.display = 'block';
+                            updateStats();
+                            document.getElementById('reindex-all-btn').disabled = false;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Progress monitoring error:', error);
+                }
+            }, 1000);
+        }
+
+        function updateProgress(data) {
+            const percent = Math.round(data.progress_percent);
+            document.getElementById('progress-percent').textContent = percent;
+            document.getElementById('progress-count').textContent = data.processed;
+            document.getElementById('progress-total').textContent = data.total;
+            document.getElementById('progress-bar').style.width = percent + '%';
+            document.getElementById('current-item').textContent =
+                '현재 처리 중: ' + (data.current_item || '대기 중...');
+
+            if (data.elapsed_seconds) {
+                document.getElementById('elapsed-time').textContent = Math.floor(data.elapsed_seconds);
+            }
+
+            if (!data.is_running && data.total > 0) {
+                document.getElementById('completed-total').textContent = data.processed;
+                document.getElementById('completed-errors').textContent = data.errors.length;
+                document.getElementById('last-update-time').textContent = new Date().toLocaleTimeString('ko-KR');
+            }
+        }
+
+        // ========================
+        // 통계
+        // ========================
+        document.getElementById('refresh-stats-btn').addEventListener('click', updateStats);
+
+        async function updateStats() {
+            try {
+                const response = await fetch('/api/v1/indexing/stats');
+                if (response.ok) {
+                    const data = await response.json();
+                    const stats = data.stats;
+
+                    document.getElementById('stat-total').textContent = stats.total_regulations;
+                    document.getElementById('stat-indexed').textContent = stats.indexed_count;
+                    document.getElementById('stat-pending').textContent = stats.pending_count;
+                    document.getElementById('stat-errors').textContent = stats.error_count;
+                    document.getElementById('index-percent').textContent = stats.index_percentage;
+                }
+            } catch (error) {
+                console.error('Stats update error:', error);
+            }
+        }
+
+        // ========================
+        // 수동 색인
+        // ========================
+        async function loadDepartments() {
+            try {
+                const response = await fetch('/api/v1/wz_dept');
+                if (response.ok) {
+                    const data = await response.json();
+                    const depts = data.data || [];
+                    const select = document.getElementById('department-filter');
+
+                    depts.forEach(dept => {
+                        const option = document.createElement('option');
+                        option.value = dept.dept_name || dept.name;
+                        option.textContent = dept.dept_name || dept.name;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Load departments error:', error);
+            }
+        }
+
+        document.getElementById('search-rules-btn').addEventListener('click', searchRules);
+
+        async function searchRules() {
+            const query = document.getElementById('rule-search').value;
+            const department = document.getElementById('department-filter').value;
+
+            if (!query && !department) {
+                showMessage('검색어 또는 부서를 선택해주세요', 'error');
+                return;
+            }
+
+            try {
+                let url = '/api/v1/regulations/current?limit=100';
+                if (query) url += `&search=${encodeURIComponent(query)}`;
+                if (department) url += `&department=${encodeURIComponent(department)}`;
+
+                const response = await fetch(url);
+                if (response.ok) {
+                    const data = await response.json();
+                    displayRules(data.data || []);
+                } else {
+                    showMessage('규정 검색 실패', 'error');
+                }
+            } catch (error) {
+                showMessage('오류 발생: ' + error.message, 'error');
+            }
+        }
+
+        function displayRules(rules) {
+            const tbody = document.getElementById('rules-table-body');
+            tbody.innerHTML = '';
+
+            if (rules.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-message">검색 결과가 없습니다</td></tr>';
+                return;
+            }
+
+            rules.forEach(rule => {
+                const row = document.createElement('tr');
+                const lastIndexed = rule.indexed_at
+                    ? new Date(rule.indexed_at).toLocaleString('ko-KR')
+                    : '-';
+                const status = rule.index_status || 'pending';
+
+                row.innerHTML = `
+                    <td>${rule.name || '-'}</td>
+                    <td>${rule.department || '-'}</td>
+                    <td><span class="status-badge ${status}">${getStatusLabel(status)}</span></td>
+                    <td>${lastIndexed}</td>
+                    <td class="action-buttons">
+                        <button class="btn btn-primary" onclick="indexRule(${rule.rule_id}, '${rule.name}')">
+                            색인
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        async function indexRule(ruleId, ruleName) {
+            try {
+                const response = await fetch(`/api/v1/indexing/manual-index?rule_id=${ruleId}`, {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    showMessage(`'${ruleName}' 규정의 색인을 시작했습니다`, 'success');
+                    // 3초 후 목록 새로고침
+                    setTimeout(searchRules, 3000);
+                } else {
+                    const data = await response.json();
+                    showMessage(data.detail || '색인 시작 실패', 'error');
+                }
+            } catch (error) {
+                showMessage('오류 발생: ' + error.message, 'error');
+            }
+        }
+
+        // ========================
+        // 색인 로그
+        // ========================
+        document.getElementById('log-filter-btn').addEventListener('click', loadIndexingLogs);
+        document.getElementById('log-clear-btn').addEventListener('click', clearOldLogs);
+
+        async function loadIndexingLogs() {
+            const status = document.getElementById('log-status-filter').value;
+            const ruleName = document.getElementById('log-search').value;
+
+            try {
+                let url = '/api/v1/indexing/logs?limit=100';
+                if (status) url += `&status=${status}`;
+                if (ruleName) url += `&rule_name=${encodeURIComponent(ruleName)}`;
+
+                const response = await fetch(url);
+                if (response.ok) {
+                    const data = await response.json();
+                    displayLogs(data.logs || []);
+                } else {
+                    showMessage('로그 조회 실패', 'error');
+                }
+            } catch (error) {
+                showMessage('오류 발생: ' + error.message, 'error');
+            }
+        }
+
+        function displayLogs(logs) {
+            const tbody = document.getElementById('logs-table-body');
+            tbody.innerHTML = '';
+
+            if (logs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-message">로그가 없습니다</td></tr>';
+                return;
+            }
+
+            logs.forEach((log, index) => {
+                const row = document.createElement('tr');
+                const indexedAt = log.indexed_at
+                    ? new Date(log.indexed_at).toLocaleString('ko-KR')
+                    : '-';
+
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${log.rule_name || '-'}</td>
+                    <td><span class="status-badge ${log.status}">${getStatusLabel(log.status)}</span></td>
+                    <td>${log.error_message || '-'}</td>
+                    <td>${indexedAt}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        async function clearOldLogs() {
+            if (!confirm('30일 이상 된 로그를 삭제하시겠습니까?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/v1/indexing/logs?keep_days=30', {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showMessage(`${data.deleted_count}개의 오래된 로그가 삭제되었습니다`, 'success');
+                    loadIndexingLogs();
+                } else {
+                    showMessage('로그 삭제 실패', 'error');
+                }
+            } catch (error) {
+                showMessage('오류 발생: ' + error.message, 'error');
+            }
+        }
+
+        // ========================
+        // 유틸리티 함수
+        // ========================
+        function getStatusLabel(status) {
+            const labels = {
+                'completed': '완료',
+                'pending': '대기',
+                'indexing': '진행중',
+                'error': '오류'
+            };
+            return labels[status] || status;
+        }
+
+        function showMessage(message, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = type === 'error' ? 'error-message' : 'success-message';
+            messageDiv.textContent = message;
+
+            const container = document.querySelector('.container');
+            container.insertBefore(messageDiv, container.firstChild);
+
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 5000);
+        }
+
+        function closeErrorModal() {
+            document.getElementById('error-modal').classList.remove('active');
+        }
+
+        // ========================
+        // 초기화
+        // ========================
+        updateStats();
+    </script>
+</body>
+</html>

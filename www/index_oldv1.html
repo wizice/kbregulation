@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta property="og:image" content="/static/img/wizice_meta.png">
+        <title>규정관리 서비스</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+                font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+            }
+            
+            body {
+                background-color: #f9f9f9;
+                color: #333;
+            }
+            
+            .top-bar {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 10px 8%;
+                background-color: white;
+                border-bottom: 1px solid #e9e9e9;
+            }
+            
+            .logo-area {
+                display: flex;
+                align-items: center;
+            }
+            
+            .logo {
+                display: flex;
+                align-items: center;
+            }
+            
+            .logo img {
+                height: 40px;
+                margin-right: 10px;
+            }
+            
+            .sub-logo {
+                width: 45px;
+                height: 45px;
+                background-color: #68b04d;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-weight: bold;
+                font-size: 14px;
+                margin-left: 8px;
+            }
+            
+            .top-menu {
+                display: flex;
+                gap: 15px;
+                align-items: center;
+            }
+            
+            .top-menu a {
+                text-decoration: none;
+                color: #555;
+                font-size: 13px;
+                transition: color 0.2s;
+            }
+            
+            .top-menu a:hover {
+                color: #1e61ad;
+            }
+            
+        /* 메인 네비게이션 스타일 */
+        .main-nav {
+            width: 100%;
+            position: relative;
+            background-color: #2158b2;
+            color: white;
+        }
+        
+        /* 메인 메뉴 스타일 */
+        .main-menu {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .main-menu .menu-item {
+            flex: 1;
+            text-align: center;
+            padding: 15px 10px;
+            cursor: pointer;
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+            white-space: nowrap;
+        }
+        
+        .main-menu .menu-item:hover {
+            background-color: #1a4896;
+        }
+        
+        /* 드롭다운 메뉴 스타일 */
+        .sub-menu-container {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background-color: white;
+            border: 1px solid #ddd;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+        }
+        
+        .menu-table {
+            display: flex;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 0;
+        }
+        
+        .menu-col {
+            flex: 1;
+            padding: 0 15px;
+            border-right: 1px solid #eee;
+        }
+        
+        .menu-col:last-child {
+            border-right: none;
+        }
+        
+        .menu-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .menu-list li {
+            padding: 5px 0;
+            color: #333;
+            cursor: pointer;
+        }
+        
+        .menu-list li:hover {
+            color: #2158b2;
+        }           
+
+ 
+            .hero-section {
+                text-align: center;
+                padding: 35px 8%;
+                background-color: white;
+                margin-top: 20px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            }
+            
+            .hero-title {
+                font-size: 22px;
+                margin-bottom: 25px;
+                color: #333;
+                font-weight: 500;
+            }
+            
+            .search-box {
+                display: flex;
+                max-width: 700px;
+                margin: 0 auto;
+                border: 2px solid #2c69bb;
+                border-radius: 2px;
+            }
+            
+            .search-category {
+                padding: 12px 15px;
+                background-color: white;
+                width: 150px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                cursor: pointer;
+                position: relative;
+                border-right: 1px solid #ddd;
+            }
+            
+            .search-category:hover {
+                background-color: #f5f5f5;
+            }
+            
+            .search-input {
+                flex-grow: 1;
+                padding: 12px 15px;
+                border: none;
+                outline: none;
+                font-size: 15px;
+            }
+            
+            .search-button {
+                padding: 12px 25px;
+                background-color: #2c69bb;
+                color: white;
+                border: none;
+                cursor: pointer;
+                font-weight: 500;
+                transition: background-color 0.3s;
+            }
+            
+            .search-button:hover {
+                background-color: #1e56a0;
+            }
+            
+            .category-dropdown {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background-color: white;
+                border: 1px solid #ddd;
+                display: none;
+                z-index: 100;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            }
+            
+            .category-item {
+                padding: 10px 15px;
+                cursor: pointer;
+            }
+            
+            .category-item:hover {
+                background-color: #f5f5f5;
+            }
+            
+            .search-category.active .category-dropdown {
+                display: block;
+            }
+            
+            .notification-box {
+                max-width: 700px;
+                margin: 20px auto;
+                padding: 15px;
+                background-color: #fff8e1;
+                border-radius: 3px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-left: 3px solid #ffb74d;
+            }
+            
+            .notification-text {
+                color: #333;
+                font-size: 15px;
+            }
+            
+            .notification-button {
+                padding: 8px 15px;
+                background-color: #d5543f;
+                color: white;
+                border: none;
+                border-radius: 3px;
+                cursor: pointer;
+                font-size: 14px;
+                transition: background-color 0.3s;
+            }
+            
+            .notification-button:hover {
+                background-color: #c74634;
+            }
+            
+            .content-section {
+                padding: 0 8%;
+                margin-top: 20px;
+                display: flex;
+                gap: 25px;
+            }
+            
+            .content-left {
+                flex: 7;
+            }
+            
+            .content-right {
+                flex: 3;
+            }
+            
+            .tabs {
+                display: flex;
+                background-color: #f8f8f8;
+                border: 1px solid #ddd;
+                border-radius: 2px 2px 0 0;
+            }
+            
+            .tab {
+                padding: 12px 18px;
+                cursor: pointer;
+                border-right: 1px solid #ddd;
+                font-size: 14px;
+                transition: background-color 0.2s;
+            }
+            
+            .tab:hover {
+                background-color: #f1f1f1;
+            }
+            
+            .tab.active {
+                background-color: #2c69bb;
+                color: white;
+                font-weight: 500;
+            }
+            
+            .category-box {
+                display: flex;
+                margin-top: 20px;
+                gap: 15px;
+            }
+            
+            .category {
+                flex: 1;
+                padding: 20px;
+                background-color: #f8fbff;
+                border: 1px solid #ddd;
+                text-align: center;
+                border-radius: 3px;
+                transition: transform 0.2s, box-shadow 0.2s;
+                cursor: pointer;
+            }
+            
+            .category:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 5px 10px rgba(0,0,0,0.05);
+            }
+            
+            .category-icon {
+                font-size: 28px;
+                margin-bottom: 12px;
+                color: #2c69bb;
+            }
+            
+            .category-title {
+                font-weight: 500;
+                margin-bottom: 5px;
+                color: #444;
+            }
+            
+            .category-desc {
+                font-size: 13px;
+                color: #777;
+            }
+            
+            .law-list {
+                margin-top: 20px;
+                background-color: white;
+                border: 1px solid #ddd;
+                border-radius: 0 0 3px 3px;
+            }
+            
+            .law-item {
+                padding: 12px 15px;
+                border-bottom: 1px solid #eee;
+                display: flex;
+                justify-content: space-between;
+                transition: background-color 0.2s;
+            }
+            
+            .law-item:hover {
+                background-color: #f8fbff;
+            }
+            
+            .law-item:last-child {
+                border-bottom: none;
+            }
+            
+            .law-title {
+                flex: 3;
+                color: #333;
+            }
+            
+            .law-source {
+                flex: 1;
+                text-align: center;
+                color: #666;
+                font-size: 14px;
+            }
+            
+            .law-date {
+                flex: 1;
+                text-align: right;
+                color: #666;
+                font-size: 14px;
+            }
+            
+            .sidebar-box {
+                background-color: white;
+                border: 1px solid #ddd;
+                padding: 15px;
+                margin-bottom: 20px;
+                border-radius: 3px;
+            }
+            
+            .sidebar-title {
+                font-weight: 500;
+                margin-bottom: 12px;
+                padding-bottom: 10px;
+                border-bottom: 1px solid #eee;
+                color: #444;
+            }
+            
+            .sidebar-list {
+                list-style: none;
+            }
+            
+            .sidebar-list li {
+                padding: 8px 5px;
+                border-bottom: 1px solid #f5f5f5;
+                transition: background-color 0.2s;
+                cursor: pointer;
+                font-size: 14px;
+            }
+            
+            .sidebar-list li:hover {
+                background-color: #f8fbff;
+            }
+            
+            .sidebar-list .number {
+                display: inline-block;
+                width: 20px;
+                color: #2c69bb;
+                font-weight: 500;
+            }
+            
+            .banner {
+                overflow: hidden;
+                border-radius: 3px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+                transition: transform 0.2s;
+                cursor: pointer;
+            }
+            
+            .banner:hover {
+                transform: translateY(-3px);
+            }
+            
+            .banner img {
+                width: 100%;
+                display: block;
+            }
+            
+            .calendar {
+                background-color: white;
+                border: 1px solid #ddd;
+                margin-top: 20px;
+                border-radius: 3px;
+                overflow: hidden;
+            }
+            
+            .calendar-header {
+                display: flex;
+                justify-content: space-between;
+                padding: 12px 15px;
+                background-color: #f8f8f8;
+                border-bottom: 1px solid #eee;
+                font-weight: 500;
+                color: #444;
+            }
+            
+            .calendar-controls {
+                display: flex;
+                gap: 10px;
+                align-items: center;
+            }
+            
+            .calendar-controls span {
+                cursor: pointer;
+                width: 24px;
+                height: 24px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                transition: background-color 0.2s;
+            }
+            
+            .calendar-controls span:hover {
+                background-color: #e5e5e5;
+            }
+            
+            .calendar-days {
+                display: grid;
+                grid-template-columns: repeat(7, 1fr);
+                text-align: center;
+            }
+            
+            .day-header {
+                padding: 8px 5px;
+                border-bottom: 1px solid #eee;
+                font-weight: 500;
+                font-size: 13px;
+            }
+            
+            .day {
+                padding: 10px 5px;
+                border: 1px solid #f5f5f5;
+                cursor: pointer;
+                transition: background-color 0.2s;
+                position: relative;
+            }
+            
+            .day:hover {
+                background-color: #f8fbff;
+            }
+            
+            .day.has-laws::after {
+                content: '';
+                position: absolute;
+                bottom: 3px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 4px;
+                height: 4px;
+                background-color: #d5543f;
+                border-radius: 50%;
+            }
+            
+            .service-section {
+                display: flex;
+                justify-content: space-between;
+                margin-top: 30px;
+                gap: 15px;
+            }
+            
+            .service-box {
+                flex: 1;
+                background-color: white;
+                border: 1px solid #ddd;
+                padding: 20px;
+                text-align: center;
+                border-radius: 3px;
+                transition: transform 0.2s, box-shadow 0.2s;
+                cursor: pointer;
+            }
+            
+            .service-box:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 5px 10px rgba(0,0,0,0.05);
+            }
+            
+            .service-icon {
+                font-size: 32px;
+                margin-bottom: 15px;
+                color: #2c69bb;
+            }
+            
+            .service-title {
+                font-weight: 500;
+                margin-bottom: 5px;
+                color: #444;
+            }
+            
+            .service-desc {
+                font-size: 13px;
+                color: #777;
+            }
+            
+            .footer {
+                background-color: #f5f5f5;
+                border-top: 1px solid #ddd;
+                padding: 20px 8%;
+                margin-top: 40px;
+                display: flex;
+                justify-content: space-between;
+            }
+            
+            .footer-links {
+                display: flex;
+                gap: 20px;
+            }
+            
+            .footer-links a {
+                text-decoration: none;
+                color: #555;
+                font-size: 13px;
+                transition: color 0.2s;
+            }
+            
+            .footer-links a:hover {
+                color: #2c69bb;
+            }
+            
+            .breadcrumb {
+                display: flex;
+                align-items: center;
+                margin-bottom: 15px;
+                gap: 10px;
+                color: #777;
+                font-size: 13px;
+            }
+            
+            .breadcrumb a {
+                color: #555;
+                text-decoration: none;
+            }
+            
+            .breadcrumb a:hover {
+                color: #2c69bb;
+            }
+            
+            .menu-toggle-btn {
+                display: none;
+                background: none;
+                border: none;
+                color: white;
+                font-size: 18px;
+                cursor: pointer;
+            }
+            
+            @media (max-width: 992px) {
+                .content-section {
+                    flex-direction: column;
+                }
+                
+                .service-section {
+                    flex-direction: column;
+                }
+                
+                .category-box {
+                    flex-direction: column;
+                }
+                
+                .menu-toggle-btn {
+                    display: block;
+                }
+                
+                .main-menu {
+                    display: none;
+                    flex-direction: column;
+                }
+                
+                .main-menu.active {
+                    display: flex;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <!-- 상단 로고 및 메뉴 영역 -->
+        <div class="top-bar">
+            <div class="logo-area">
+                <div class="logo">
+                    <img src="/static/img/WIZICE.png" alt="로고" >
+                </div>
+            </div>
+            <div class="top-menu">
+                <a href="#">로그인</a>
+                <a href="#">회원가입</a>
+                <a href="#">English</a>
+                <a href="#">-</a>
+                <a href="#">100%</a>
+                <a href="#">+</a>
+            </div>
+        </div>
+        
+        <!-- 메인 네비게이션 -->
+        <nav class="main-nav">
+            <ul class="main-menu">
+                <li class="menu-item" data-menu="laws">규정 (현행, 연혁, 최신)</li>
+                <li class="menu-item" data-menu="rules">새칙</li>
+                <li class="menu-item" data-menu="admin">행정규칙</li>
+                <li class="menu-item" data-menu="forms">별표・서식</li>
+                <li class="menu-item" data-menu="info">그밖의 정보</li>
+                <li class="menu-item" data-menu="all">전체메뉴</li>
+            </ul>
+            
+            <!-- 드롭다운 메뉴 -->
+            <div class="sub-menu-container" id="sub-menu">
+                <div class="menu-table">
+                    <div class="menu-col">
+                        <ul class="menu-list">
+                            <li><a href="/current_law">현행법령</a></li>
+                            <li>연혁법령</li>
+                            <li>최신법령</li>
+                        </ul>
+                    </div>
+                    <div class="menu-col">
+                        <ul class="menu-list">
+                            <li>현행법령</li>
+                            <li>연혁법령</li>
+                            <li>최신법령</li>
+                        </ul>
+                    </div>
+                    <div class="menu-col">
+                        <ul class="menu-list">
+                            <li>현행행정규칙</li>
+                            <li>연혁행정규칙</li>
+                            <li>최신행정규칙</li>
+                        </ul>
+                    </div>
+                    <div class="menu-col">
+                        <ul class="menu-list">
+                            <li>별표</li>
+                        </ul>
+                    </div>
+                    <div class="menu-col">
+                        <ul class="menu-list">
+                            <li>전자법령집</li>
+                            <li>법령칼렌더</li>
+                            <li>법률명약장</li>
+                            <li>자주 하는 질문(사용방법)</li>
+                            <li>법령통계</li>
+                            <li>개선의견</li>
+                            <li>법적효력/저작권</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+        </nav>
+        
+        <!-- 히어로 섹션 (검색) -->
+        <div class="hero-section">
+            <h1 class="hero-title">법제처는 우리나라의 모든 법령정보를 제공합니다.</h1>
+            <div class="search-box">
+                <div class="search-category">
+                    헌법법령
+                    <span>▼</span>
+                    <div class="category-dropdown">
+                        <div class="category-item">헌법법령</div>
+                        <div class="category-item">행정규칙</div>
+                        <div class="category-item">판례</div>
+                        <div class="category-item">행정규칙</div>
+                    </div>
+                </div>
+                <input type="text" class="search-input" placeholder="검색어를 입력하세요...">
+                <button class="search-button">검색</button>
+            </div>
+            <div class="notification-box">
+                <div class="notification-text">일상용어나 문장으로 법령을 검색할 수 있습니다.</div>
+                <button class="notification-button">AI 법령검색 바로가기 ▶</button>
+            </div>
+        </div>
+        
+        <!-- 콘텐츠 섹션 -->
+        <div class="content-section">
+            <div class="content-left">
+                <div class="tabs">
+                    <div class="tab active">최신법령</div>
+                    <div class="tab">자치법규</div>
+                    <div class="tab">행정규칙</div>
+                    <div class="tab">판례</div>
+                    <div class="tab">한눈보기</div>
+                    <div class="tab">+</div>
+                </div>
+                
+                <div class="category-box">
+                    <div class="category">
+                        <div class="category-icon"></div>
+                        <div class="category-title">기관별 찾기</div>
+                        <div class="category-desc">중앙부처 및 자치단체</div>
+                    </div>
+                    <div class="category">
+                        <div class="category-icon"></div>
+                        <div class="category-title">법령분야별 찾기</div>
+                        <div class="category-desc">소관 법령 분야</div>
+                    </div>
+                </div>
+                
+                <div class="law-list">
+                    <div class="law-item">
+                        <div class="law-title">• 여성의 시행규칙</div>
+                        <div class="law-source">여성수당법령</div>
+                        <div class="law-date">2025.4.28.</div>
+                    </div>
+                    <div class="law-item">
+                        <div class="law-title">• 취기 임신 및 보조출산 치료과 이용 보호에 관한 특...</div>
+                        <div class="law-source">국토교통부령</div>
+                        <div class="law-date">2025.4.28.</div>
+                    </div>
+                    <div class="law-item">
+                        <div class="law-title">• 이륜자동차검사의 시행 등에 관한 규칙</div>
+                        <div class="law-source">국토교통부령</div>
+                        <div class="law-date">2025.4.28.</div>
+                    </div>
+                    <div class="law-item">
+                        <div class="law-title">• 자동차관리법 시행규칙</div>
+                        <div class="law-source">국토교통부령</div>
+                        <div class="law-date">2025.4.28.</div>
+                    </div>
+                </div>
+                
+                <div class="calendar">
+                    <div class="calendar-header">
+                        <div>이번주 시행법령 2025.4.28</div>
+                        <div class="calendar-controls">
+                            <span>◀</span>
+                            <span>+</span>
+                        </div>
+                    </div>
+                    <div class="calendar-days">
+                        <div class="day-header" style="color: #e53935;">일</div>
+                        <div class="day-header">월</div>
+                        <div class="day-header">화</div>
+                        <div class="day-header">수</div>
+                        <div class="day-header">목</div>
+                        <div class="day-header">금</div>
+                        <div class="day-header" style="color: #1e88e5;">토</div>
+                        
+                        <div class="day" style="color: #e53935;">27</div>
+                        <div class="day has-laws">28</div>
+                        <div class="day">29</div>
+                        <div class="day">30</div>
+                        <div class="day">1</div>
+                        <div class="day">2</div>
+                        <div class="day" style="color: #1e88e5;">3</div>
+                    </div>
+                </div>
+                
+                <div class="service-section">
+                    <div class="service-box">
+                        <div class="service-icon"></div>
+                        <div class="service-title">국가법령정보센터</div>
+                        <div class="service-desc">불편신고</div>
+                    </div>
+                    <div class="service-box">
+                        <div class="service-icon"></div>
+                        <div class="service-title">국가법령정보센터</div>
+                        <div class="service-desc">민속도 조사</div>
+                    </div>
+                    <div class="service-box">
+                        <div class="service-icon"></div>
+                        <div class="service-title">국가법령정보센터</div>
+                        <div class="service-desc">메일링 서비스</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="content-right">
+                <div class="sidebar-box">
+                    <div class="sidebar-title">실시간검색어</div>
+                    <ul class="sidebar-list">
+                        <li><span class="number">1</span> 민법</li>
+                        <li><span class="number">2</span> 민법</li>
+                        <li><span class="number">3</span> 대한민국헌법</li>
+                        <li><span class="number">4</span> 산업안전보건법</li>
+                    </ul>
+                </div>
+                
+                <div class="banner">
+                    <img src="/api/placeholder/300/200" alt="배너 이미지">
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <div class="footer-links">
+                <a href="#">법적효력/저작권</a>
+                <a href="#">공공누리</a>
+                <a href="#">LOD 정보</a>
+                <a href="#">작약 · 규정, 자치법규 용어집</a>
+                <a href="#">개인정보처리방침</a>
+                <a href="#">대한민국헌법제정일</a>
+                <a href="#">국가법령정보센터 소개</a>
+            </div>
+        </div>
+        
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 메인 메뉴 토글 기능
+            const menuItems = document.querySelectorAll('.menu-item');
+            const subMenus = document.querySelectorAll('.sub-menu-container');
+            
+            // 초기에 모든 서브메뉴 숨기기
+            subMenus.forEach(menu => {
+                menu.style.display = 'none';
+            });
+            
+            menuItems.forEach(item => {
+                item.addEventListener('mouseenter', function() {
+                    const menuId = this.getAttribute('data-menu');
+                    const targetMenu = document.getElementById('sub-menu');
+                    
+                    // 모든 서브메뉴 숨기기
+                    subMenus.forEach(menu => {
+                        menu.style.display = 'none';
+                    });
+                    
+                    // 현재 메뉴 표시
+                    if (targetMenu) {
+                        targetMenu.style.display = 'block';
+                    }
+                });
+            });
+            
+            // 메인 메뉴 영역을 벗어나면 서브메뉴 닫기
+            const mainNav = document.querySelector('.main-nav');
+            
+            mainNav.addEventListener('mouseleave', function() {
+                subMenus.forEach(menu => {
+                    menu.style.display = 'none';
+                });
+            });
+            
+            // 탭 기능
+            const tabs = document.querySelectorAll('.tab');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+            
+            // 검색 카테고리 드롭다운 토글
+            const searchCategory = document.querySelector('.search-category');
+            
+            if (searchCategory) {
+                searchCategory.addEventListener('click', function(event) {
+                    event.stopPropagation();
+                    this.classList.toggle('active');
+                });
+            }
+            
+            document.addEventListener('click', function() {
+                if (searchCategory) {
+                    searchCategory.classList.remove('active');
+                }
+            });
+            
+            // 카테고리 아이템 선택 시 값 변경
+            const categoryItems = document.querySelectorAll('.category-item');
+            
+            categoryItems.forEach(item => {
+                item.addEventListener('click', function(event) {
+                    event.stopPropagation();
+                    const selectedText = this.textContent;
+                    
+                    // 검색 카테고리의 텍스트 노드 업데이트
+                    if (searchCategory) {
+                        // 첫 번째 자식이 텍스트 노드인지 확인
+                        let updated = false;
+                        for (let i = 0; i < searchCategory.childNodes.length; i++) {
+                            if (searchCategory.childNodes[i].nodeType === 3) {
+                                searchCategory.childNodes[i].textContent = selectedText;
+                                updated = true;
+                                break;
+                            }
+                        }
+                        
+                        // 텍스트 노드가 없다면 내용 새로 설정
+                        if (!updated) {
+                            const span = searchCategory.querySelector('span');
+                            searchCategory.innerHTML = selectedText;
+                            if (span) {
+                                searchCategory.appendChild(span);
+                            }
+                        }
+                        
+                        searchCategory.classList.remove('active');
+                    }
+                });
+            });
+            
+            // 모바일 메뉴 토글 버튼
+            const menuToggleBtn = document.querySelector('.menu-toggle-btn');
+            const mainMenu = document.querySelector('.main-menu');
+            
+            if (menuToggleBtn && mainMenu) {
+                menuToggleBtn.addEventListener('click', function() {
+                    mainMenu.classList.toggle('active');
+                });
+            }
+            
+            // 캘린더 날짜 클릭 이벤트
+            const days = document.querySelectorAll('.day');
+            
+            days.forEach(day => {
+                day.addEventListener('click', function() {
+                    days.forEach(d => d.classList.remove('selected'));
+                    this.classList.add('selected');
+                    
+                    // 여기에 선택한 날짜에 대한 법령 정보를 가져오는 로직을 추가할 수 있습니다
+                    console.log('Selected day:', this.textContent);
+                });
+            });
+        });
+        </script>
+    </body>
+</html>

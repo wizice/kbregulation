@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>세브란스 편집기 - UI 모달 테스트</title>
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            margin: 40px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        .test-item {
+            margin: 15px 0;
+            padding: 10px;
+            background: white;
+            border-left: 4px solid #3498db;
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .pass { background: #27ae60; color: white; }
+        .fail { background: #e74c3c; color: white; }
+        .pending { background: #f39c12; color: white; }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        .instructions {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🏥 세브란스 편집기 - UI 모달 테스트</h1>
+
+        <div class="instructions">
+            <h3>📋 테스트 가이드</h3>
+            <p>아래 체크리스트를 따라 UI 기능을 확인하세요:</p>
+        </div>
+
+        <div class="test-section">
+            <h2>1. 개정 업로드 모달 테스트</h2>
+
+            <div class="test-item">
+                <input type="checkbox" id="test1">
+                <label for="test1">
+                    <strong>파일 업로드 검증</strong>
+                    <span class="status pending">대기</span>
+                </label>
+                <ul>
+                    <li>PDF와 DOCX 파일 모두 선택 필수</li>
+                    <li>하나만 선택 시 경고 메시지 표시</li>
+                </ul>
+            </div>
+
+            <div class="test-item">
+                <input type="checkbox" id="test2">
+                <label for="test2">
+                    <strong>모달 크기 확인</strong>
+                    <span class="status pending">대기</span>
+                </label>
+                <ul>
+                    <li>모달 크기가 90% x 90%로 설정됨</li>
+                    <li>모든 버튼과 내용이 보임</li>
+                </ul>
+            </div>
+
+            <div class="test-item">
+                <input type="checkbox" id="test3">
+                <label for="test3">
+                    <strong>스크롤 동작</strong>
+                    <span class="status pending">대기</span>
+                </label>
+                <ul>
+                    <li>모달 내부 스크롤 시 모달이 닫히지 않음</li>
+                    <li>배경 클릭 시에만 모달 닫힘</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>2. 비교 모달 테스트</h2>
+
+            <div class="test-item">
+                <input type="checkbox" id="test4">
+                <label for="test4">
+                    <strong>자동 열기</strong>
+                    <span class="status pending">대기</span>
+                </label>
+                <ul>
+                    <li>파싱 완료 후 자동으로 비교 모달 열림</li>
+                    <li>미리보기 없이 바로 비교 화면 표시</li>
+                </ul>
+            </div>
+
+            <div class="test-item">
+                <input type="checkbox" id="test5">
+                <label for="test5">
+                    <strong>나란히 표시</strong>
+                    <span class="status pending">대기</span>
+                </label>
+                <ul>
+                    <li>PDF 결과가 왼쪽에 표시</li>
+                    <li>DOCX 결과가 오른쪽에 표시</li>
+                </ul>
+            </div>
+
+            <div class="test-item">
+                <input type="checkbox" id="test6">
+                <label for="test6">
+                    <strong>동기화 스크롤</strong>
+                    <span class="status pending">대기</span>
+                </label>
+                <ul>
+                    <li>한쪽 스크롤 시 다른 쪽도 동기화</li>
+                    <li>스크롤 위치가 비율적으로 매칭</li>
+                </ul>
+            </div>
+
+            <div class="test-item">
+                <input type="checkbox" id="test7">
+                <label for="test7">
+                    <strong>병합 버튼</strong>
+                    <span class="status pending">대기</span>
+                </label>
+                <ul>
+                    <li>병합 버튼이 하단에 표시</li>
+                    <li>클릭 시 병합 API 호출</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>3. 파일 저장 테스트</h2>
+
+            <div class="test-item">
+                <input type="checkbox" id="test8">
+                <label for="test8">
+                    <strong>타임스탬프 확인</strong>
+                    <span class="status pending">대기</span>
+                </label>
+                <ul>
+                    <li>저장된 파일명에 YYYYMMDD_HHMMSS 형식 포함</li>
+                    <li>PDF, DOCX, TXT, JSON, Merged 모두 적용</li>
+                </ul>
+            </div>
+
+            <div class="test-item">
+                <input type="checkbox" id="test9">
+                <label for="test9">
+                    <strong>디렉토리 구조</strong>
+                    <span class="status pending">대기</span>
+                </label>
+                <ul>
+                    <li>applib/pdf/ - PDF 파일</li>
+                    <li>applib/docx/ - DOCX 파일</li>
+                    <li>applib/text/ - 텍스트 파일</li>
+                    <li>applib/json/ - JSON 파일</li>
+                    <li>applib/merged/ - 병합 파일</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🚀 테스트 실행</h2>
+            <button onclick="window.open('http://localhost:8800', '_blank')">
+                세브란스 편집기 열기
+            </button>
+            <button onclick="updateStatus()">
+                테스트 상태 업데이트
+            </button>
+        </div>
+
+        <div class="test-section" style="background: #e8f4f8;">
+            <h3>📊 테스트 결과 요약</h3>
+            <p>총 테스트: <span id="total">9</span>개</p>
+            <p>통과: <span id="passed" style="color: green;">0</span>개</p>
+            <p>실패: <span id="failed" style="color: red;">0</span>개</p>
+            <p>대기: <span id="pending" style="color: orange;">9</span>개</p>
+        </div>
+    </div>
+
+    <script>
+        function updateStatus() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            let passed = 0, failed = 0, pending = 0;
+
+            checkboxes.forEach(checkbox => {
+                const status = checkbox.nextElementSibling.querySelector('.status');
+                if (checkbox.checked) {
+                    status.textContent = '통과';
+                    status.className = 'status pass';
+                    passed++;
+                } else {
+                    status.textContent = '대기';
+                    status.className = 'status pending';
+                    pending++;
+                }
+            });
+
+            document.getElementById('passed').textContent = passed;
+            document.getElementById('failed').textContent = failed;
+            document.getElementById('pending').textContent = pending;
+        }
+
+        // 체크박스 변경 시 자동 업데이트
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', updateStatus);
+        });
+    </script>
+</body>
+</html>

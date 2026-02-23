@@ -1,0 +1,19 @@
+5.4.1. 부록 1. 성인 진정 약물 사용 가이드라인 담당부서 진정위원회 제정일 2010.02. 최종개정일 2023.01. 최종검토일 2025.03.
+
+성인 진정 약물 사용 가이드라인 (Dosage recommendation for Adult patients)
+
+(1) 진정 약물 Drug Dosage Onset Duration Comments 0.05-0.1 mg/kg IV 추가: 2분 이상 간격으로 0.5
+① Paradoxical response mg, 최대 5 mg IV 1-5 min IV 45-60 min IV ② Airway obstruction, Apnea Midazolam *60세 이상 또는 만성질환 환 10-15 min IM 60-90 min IM ③ 마약성 진통제와 사용할 자는 초기용량을 0.5 mg 줄여 경우 용량 25-50% 감소 서 투여하고 추가 용량은 최대 1.25 mg으로 줄임 Diazepam 1.25-2.5 mg/kg IV 5 min IV 6 – 8 hr 10-20 mg IV bolus Pentothal Airway obstruction, 5 mg/kg IV 10-20 sec IV 5-15 min Sodium Hemodynamic change 가능 최대 400mg IV 0.2-1 mg/kg IV 60 sec IV 5-15 min Ketamine Airway obstruction 가능 2-4 mg/kg IM 3-8 min IM 15-25 min 0.5-1.5 mg/kg IV bolus Propofol 추가로 0.5mg/kg 또는 1-2 min IV 10-30 min Airway obstruction 가능 10-20mg IV
+
+(2) 마약성 진통제:
+통증있는 시술 시 추가할 수 있다.
+진정약물과 병용할 경우 진정의 깊이와 호흡 양상을 주의깊게 관찰하여야 한다.
+Drug Dosage Onset Duration Comments 2.5 – 5mg IV Airway obstruction, Apnea가 늦게 Morphine 10-15 min 2-3 hr 최대 5-10 mg IV 나타남 1 mcg/kg IV bolus Airway obstruction, Apnea, Fentanyl 추가 25-50 mcg/kg 3-5 min 30-60 min Hypoxia가 투여 즉시 발생 최대 3 mcg/kg 0.5 mcg/kg IV bolus Titration이 어렵고 Apnea가 더 Remifentanil 0.05-0.25 mcg/kg/min (continuous 1 min 10-15 min 흔히 발생 IV infusion)
+
+(3) 길항제:
+길항제 투여시에는 회복실에서 최소 1시간 이상 관찰한다.
+Drug Dosage Onset Duration Comments
+
+① Benzodiazepine 길항제 0.1-0.2 mg IV 1 min 간격 Flumazenil 1-3 min <1 hr ② Duration이 짧으므로 최대 1 mg IV 충분한 시간 관찰 필요
+
+① Opioid 길항제 0.4-0.8 mg IV 2-3 min 간격 Naloxone 2-3 min 20-60 min ② Duration이 짧으므로 최대 2mg IV 충분한 시간 관찰 필요

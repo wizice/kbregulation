@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 로그인 - KB신용정보 내규</title>
+    <!-- KB금융체 웹폰트 -->
+    <style>
+        @font-face {
+            font-family: 'KB금융체Text';
+            src: url('/static/webfonts/KBfgTextM.woff2') format('woff2');
+            font-weight: 400;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'KB금융체Text';
+            src: url('/static/webfonts/KBfgTextB.woff2') format('woff2');
+            font-weight: 700;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'KB금융체Display';
+            src: url('/static/webfonts/KBfgDisplayB.woff2') format('woff2');
+            font-weight: 700;
+            font-style: normal;
+        }
+
+        /* KB CI 색상 변수 */
+        :root {
+            --kb-yellow: #FFBC00;
+            --kb-yellow-dark: #E5A800;
+            --kb-yellow-light: #FFD54F;
+            --kb-brown: #7D6B5D;
+            --kb-brown-light: #9A8A7B;
+            --kb-brown-dark: #5C4D42;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'KB금융체Text', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--kb-brown) 0%, var(--kb-brown-dark) 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-wrapper {
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .login-container {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo img {
+            height: 50px;
+            margin-bottom: 1rem;
+        }
+
+        .logo h1 {
+            font-family: 'KB금융체Display', sans-serif;
+            color: var(--kb-brown);
+            font-size: 1.6rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .logo p {
+            color: var(--kb-brown-light);
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--kb-brown);
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.9rem 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--kb-yellow);
+            box-shadow: 0 0 0 3px rgba(255, 188, 0, 0.2);
+        }
+
+        .password-container {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #999;
+            font-size: 1.1rem;
+            padding: 4px;
+        }
+
+        .password-toggle:hover {
+            color: var(--kb-brown);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--kb-yellow);
+            color: var(--kb-brown-dark);
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .login-btn:hover {
+            background: var(--kb-yellow-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 188, 0, 0.4);
+        }
+
+        .login-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .error-message {
+            background: #fff5f5;
+            color: #c53030;
+            padding: 0.9rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+            border-left: 4px solid #c53030;
+            font-size: 0.9rem;
+        }
+
+        .admin-notice {
+            background: linear-gradient(135deg, #FFF8E1 0%, #FFECB3 100%);
+            color: var(--kb-brown);
+            padding: 1rem 1.2rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-size: 0.9rem;
+            border-left: 4px solid var(--kb-yellow);
+        }
+
+        .admin-notice strong {
+            color: var(--kb-brown-dark);
+        }
+
+        /* 토큰 발급 섹션 */
+        .token-section {
+            display: none;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .token-section.show {
+            display: block;
+        }
+
+        .token-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .token-header h3 {
+            color: var(--kb-brown);
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .token-display {
+            background: #f8f9fa;
+            border: 2px dashed var(--kb-yellow);
+            border-radius: 8px;
+            padding: 1rem;
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .token-display code {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.8rem;
+            word-break: break-all;
+            display: block;
+            color: var(--kb-brown-dark);
+            line-height: 1.5;
+        }
+
+        .copy-btn {
+            position: absolute;
+            right: 8px;
+            top: 8px;
+            background: var(--kb-yellow);
+            color: var(--kb-brown-dark);
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: var(--kb-yellow-dark);
+        }
+
+        .copy-btn.copied {
+            background: #28a745;
+            color: white;
+        }
+
+        .token-info {
+            background: #e8f4fd;
+            border-left: 4px solid #2196F3;
+            padding: 0.8rem 1rem;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 1rem;
+        }
+
+        .token-info p {
+            font-size: 0.85rem;
+            color: #1565c0;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        .token-info code {
+            background: rgba(21, 101, 192, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 1rem;
+        }
+
+        .btn-secondary {
+            flex: 1;
+            padding: 0.8rem;
+            background: var(--kb-brown);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: var(--kb-brown-dark);
+        }
+
+        .btn-outline {
+            flex: 1;
+            padding: 0.8rem;
+            background: white;
+            color: var(--kb-brown);
+            border: 2px solid var(--kb-brown);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline:hover {
+            background: var(--kb-brown);
+            color: white;
+        }
+
+        .api-key-link {
+            text-align: center;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+        }
+
+        .api-key-link a {
+            color: var(--kb-brown);
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .api-key-link a:hover {
+            color: var(--kb-yellow-dark);
+            text-decoration: underline;
+        }
+
+        /* 하단 정보 */
+        .footer-info {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+        }
+
+        .footer-info a {
+            color: var(--kb-yellow);
+            text-decoration: none;
+        }
+
+        .footer-info a:hover {
+            text-decoration: underline;
+        }
+
+        /* 로딩 스피너 */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(0,0,0,0.1);
+            border-left-color: var(--kb-brown-dark);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Claude Code 사용 안내 */
+        .claude-code-guide {
+            background: #f0f4f8;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .claude-code-guide h4 {
+            color: var(--kb-brown);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .claude-code-guide pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            overflow-x: auto;
+            margin: 0;
+        }
+
+        .claude-code-guide pre .comment {
+            color: #75715e;
+        }
+
+        .claude-code-guide pre .string {
+            color: #a6e22e;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-wrapper">
+        <div class="login-container">
+            <div class="logo">
+                <img src="/static/img/kb-logo.png" alt="KB신용정보">
+                <h1>사규관리시스템</h1>
+                <p>관리자 로그인</p>
+            </div>
+
+            <div class="admin-notice">
+                <strong>관리자 계정</strong>으로만 접속 가능합니다
+            </div>
+
+            <div id="error-message" class="error-message"></div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">관리자 아이디</label>
+                    <input type="text" id="username" name="username" required
+                           placeholder="관리자 아이디를 입력하세요" autocomplete="username">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">비밀번호</label>
+                    <div class="password-container">
+                        <input type="password" id="password" name="password" required
+                               placeholder="비밀번호를 입력하세요" autocomplete="current-password">
+                        <button type="button" class="password-toggle" id="passwordToggle">👁</button>
+                    </div>
+                </div>
+
+                <button type="submit" class="login-btn" id="loginBtn">로그인</button>
+            </form>
+
+            <!-- 토큰 발급 섹션 (로그인 성공 시 표시) -->
+            <div id="tokenSection" class="token-section">
+                <div class="token-header">
+                    <h3>🔑 인증 토큰 발급 완료</h3>
+                </div>
+
+                <div class="token-display">
+                    <code id="accessToken"></code>
+                    <button class="copy-btn" onclick="copyToken()">복사</button>
+                </div>
+
+                <div class="token-info">
+                    <p><strong>Claude Code에서 사용하기:</strong><br>
+                    Authorization 헤더에 <code>Bearer {토큰}</code> 형식으로 사용하세요.</p>
+                </div>
+
+                <div class="claude-code-guide">
+                    <h4>📋 Claude Code 설정 방법</h4>
+                    <pre><span class="comment"># 환경변수 설정</span>
+export KB_API_TOKEN=<span class="string">"Bearer {토큰}"</span>
+
+<span class="comment"># 또는 .claude/settings.json에 추가</span>
+{
+  "apiKey": "<span class="string">{토큰}</span>"
+}</pre>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn-secondary" onclick="goToRegulations()">
+                        📋 규정 관리로 이동
+                    </button>
+                    <button class="btn-outline" onclick="goToApiKeys()">
+                        🔐 API 키 관리
+                    </button>
+                </div>
+
+                <div class="api-key-link">
+                    <a href="/admin/api-keys">
+                        💡 장기 사용을 위한 API 키를 발급받으세요 →
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-info">
+            <p>© 2025 KB신용정보. All Rights Reserved.</p>
+        </div>
+    </div>
+
+    <script>
+        // DOM 요소들
+        const loginForm = document.getElementById('loginForm');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const passwordToggle = document.getElementById('passwordToggle');
+        const errorMessage = document.getElementById('error-message');
+        const loginBtn = document.getElementById('loginBtn');
+        const tokenSection = document.getElementById('tokenSection');
+        const accessTokenDisplay = document.getElementById('accessToken');
+
+        let currentToken = '';
+
+        // 비밀번호 보기/숨기기 토글
+        passwordToggle.addEventListener('click', function() {
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                passwordToggle.textContent = '🙈';
+            } else {
+                passwordInput.type = 'password';
+                passwordToggle.textContent = '👁';
+            }
+        });
+
+        // 에러 메시지 표시 함수
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 5000);
+        }
+
+        // 로딩 상태 설정 함수
+        function setLoading(isLoading) {
+            if (isLoading) {
+                loginBtn.disabled = true;
+                loginBtn.innerHTML = '<span class="spinner"></span>로그인 중...';
+            } else {
+                loginBtn.disabled = false;
+                loginBtn.textContent = '로그인';
+            }
+        }
+
+        // 로그인 폼 제출 처리
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            // 입력 검증
+            if (!username || !password) {
+                showError('관리자 아이디와 비밀번호를 모두 입력해주세요.');
+                return;
+            }
+
+            setLoading(true);
+
+            try {
+                const response = await fetch('/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password,
+                        remember_me: false
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+
+                    // 관리자 권한 확인 (서버 응답에서)
+                    if (data.user && data.user.role === 'admin') {
+                        // 토큰 저장 및 표시
+                        currentToken = data.access_token;
+                        accessTokenDisplay.textContent = currentToken;
+
+                        // 로그인 폼 숨기고 토큰 섹션 표시
+                        loginForm.style.display = 'none';
+                        document.querySelector('.admin-notice').style.display = 'none';
+                        tokenSection.classList.add('show');
+
+                        // 버튼 텍스트 변경
+                        loginBtn.textContent = '로그인 성공!';
+                        loginBtn.style.background = '#28a745';
+
+                    } else {
+                        // 관리자 권한이 없는 경우
+                        showError('관리자 권한이 없습니다. 관리자 계정으로 로그인해주세요.');
+                        setLoading(false);
+                    }
+                } else {
+                    // 로그인 실패 (401, 500 등 모든 에러)
+                    showError('아이디 또는 비밀번호가 올바르지 않습니다.');
+                    setLoading(false);
+                }
+            } catch (error) {
+                // 네트워크 에러 등 예외 상황
+                console.error('Login error:', error);
+                showError('서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.');
+                setLoading(false);
+            }
+        });
+
+        // 토큰 복사
+        function copyToken() {
+            navigator.clipboard.writeText(currentToken).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                btn.textContent = '복사됨!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = '복사';
+                    btn.classList.remove('copied');
+                }, 2000);
+            }).catch(() => {
+                // Fallback
+                const textArea = document.createElement('textarea');
+                textArea.value = currentToken;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('토큰이 클립보드에 복사되었습니다.');
+            });
+        }
+
+        // 규정 관리로 이동
+        function goToRegulations() {
+            window.location.href = '/regulations/current';
+        }
+
+        // API 키 관리로 이동
+        function goToApiKeys() {
+            window.location.href = '/admin/api-keys';
+        }
+
+        // 엔터 키로 로그인
+        passwordInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                loginForm.dispatchEvent(new Event('submit'));
+            }
+        });
+
+        // 페이지 로드 시 username 필드에 포커스
+        window.addEventListener('load', function() {
+            if (!usernameInput.value) {
+                usernameInput.focus();
+            } else {
+                passwordInput.focus();
+            }
+        });
+    </script>
+</body>
+</html>

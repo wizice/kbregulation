@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>규정 로드 테스트</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #4caf50; color: white; }
+        .error { background: #f44336; color: white; }
+        .info { background: #2196f3; color: white; }
+        .content { background: #f5f5f5; padding: 15px; margin: 20px 0; border-radius: 5px; }
+        pre { white-space: pre-wrap; word-wrap: break-word; }
+    </style>
+</head>
+<body>
+    <h1>규정 파일 로드 테스트</h1>
+    <div id="log"></div>
+    <div id="content"></div>
+
+    <script>
+        const log = document.getElementById('log');
+        const content = document.getElementById('content');
+
+        function addLog(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.textContent = message;
+            log.appendChild(div);
+            console.log(message);
+        }
+
+        async function testLoad() {
+            // 1. Summary 파일 로드
+            addLog('1단계: summary_kbregulation.json 로드 시작');
+            try {
+                const summaryResponse = await fetch('/static/file/summary_kbregulation.json');
+                addLog(`Summary 응답 상태: ${summaryResponse.status}`, summaryResponse.ok ? 'success' : 'error');
+
+                if (!summaryResponse.ok) {
+                    throw new Error(`Summary 파일 로드 실패: ${summaryResponse.status}`);
+                }
+
+                const summaryData = await summaryResponse.json();
+                addLog('Summary 파일 로드 성공', 'success');
+
+                // 첫 번째 규정 찾기
+                const firstChapter = summaryData["1장"];
+                const firstRegulation = firstChapter.regulations[0];
+                addLog(`첫 번째 규정: ${firstRegulation.code} - ${firstRegulation.name}`, 'info');
+
+                // 파일명 확인
+                const fileName = firstRegulation.detail?.documentInfo?.파일명;
+                if (!fileName) {
+                    throw new Error('파일명이 없습니다');
+                }
+                addLog(`파일명: ${fileName}`, 'info');
+
+                // 2. 개별 파일 로드
+                addLog('2단계: 개별 규정 파일 로드 시작');
+                const detailUrl = `/static/file/${fileName}`;
+                addLog(`로드 URL: ${detailUrl}`, 'info');
+
+                const detailResponse = await fetch(detailUrl);
+                addLog(`Detail 응답 상태: ${detailResponse.status}`, detailResponse.ok ? 'success' : 'error');
+
+                if (!detailResponse.ok) {
+                    throw new Error(`Detail 파일 로드 실패: ${detailResponse.status}`);
+                }
+
+                const detailData = await detailResponse.json();
+                addLog('Detail 파일 로드 성공', 'success');
+                addLog(`조문 개수: ${detailData.조문내용?.length || 0}`, 'info');
+
+                // 3. 조문 내용 표시
+                if (detailData.조문내용 && detailData.조문내용.length > 0) {
+                    let html = '<h2>조문 내용</h2>';
+                    html += '<div class="content">';
+
+                    detailData.조문내용.forEach((article, index) => {
+                        const paddingLeft = (article.레벨 - 1) * 20;
+                        const color = article.레벨 === 1 ? '#1565c0' : '#333';
+                        const fontSize = article.레벨 === 1 ? '16px' : '14px';
+                        const fontWeight = article.레벨 === 1 ? 'bold' : 'normal';
+
+                        html += `<div style="padding-left: ${paddingLeft}px; color: ${color}; font-size: ${fontSize}; font-weight: ${fontWeight}; margin: 5px 0;">`;
+                        html += `[${index + 1}] ${article.번호 || ''} ${article.내용}`;
+                        html += '</div>';
+                    });
+
+                    html += '</div>';
+                    content.innerHTML = html;
+                    addLog('조문 내용 렌더링 완료', 'success');
+                } else {
+                    content.innerHTML = '<div class="error">조문 내용이 없습니다</div>';
+                }
+
+            } catch (error) {
+                addLog(`에러 발생: ${error.message}`, 'error');
+                console.error('Full error:', error);
+            }
+        }
+
+        // 페이지 로드 시 테스트 실행
+        testLoad();
+    </script>
+</body>
+</html>

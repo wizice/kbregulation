@@ -1,0 +1,26 @@
+--내규 테이블 (WZ_RULE)
+CREATE TABLE WZ_RULE (
+    wzRuleSeq INTEGER PRIMARY KEY,
+    wzLevel INTEGER,
+    wzRuleId INTEGER,
+    wzName TEXT,
+    wzEditType TEXT,
+    wzPubNo TEXT,
+    wzEstabDate TEXT,
+    wzLastRevDate TEXT,
+    wzLastRevwDate TEXT,
+    wzMgrDptNm TEXT,
+    wzMgrDptOrgCd TEXT,
+    wzRelDptNm TEXT,
+    wzRelDptOrgCd TEXT,
+    wzRelStandard TEXT,
+    wzCateSeq INTEGER,
+    wzExecDate TEXT,
+    wzLKndName TEXT,
+    wzCloseDate TEXT,
+    wzFileDocx TEXT NOT NULL,
+    wzFilePdf TEXT NOT NULL,
+    wzFileHwp TEXT,
+    wzCreatedBy TEXT NOT NULL,
+    wzModifiedBy TEXT NOT NULL
+);

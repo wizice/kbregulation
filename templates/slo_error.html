@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>인증 실패 - 세브란스 세칙관리시스템</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .error-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+            text-align: center;
+        }
+        .error-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            animation: shake 0.5s;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        h1 {
+            color: #dc3545;
+            font-size: 28px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        .error-message {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        .error-details {
+            background: #f8f9fa;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .error-details-item {
+            margin: 12px 0;
+            font-size: 14px;
+            color: #495057;
+        }
+        .error-details-label {
+            font-weight: 600;
+            color: #212529;
+            display: inline-block;
+            min-width: 120px;
+        }
+        .network-info {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+            font-size: 13px;
+            color: #6c757d;
+        }
+        .network-info div {
+            margin: 8px 0;
+        }
+        .btn-group {
+            margin-top: 30px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 32px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.4);
+        }
+        .help-text {
+            margin-top: 30px;
+            font-size: 13px;
+            color: #999;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .help-text strong {
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-icon">🔒</div>
+        <h1>모바일 SLO 인증 실패</h1>
+        <div class="error-message">
+            {% if error_detail %}
+                {{ error_detail }}
+            {% else %}
+                인증에 실패했습니다. 다시 시도해주세요.
+            {% endif %}
+        </div>
+
+        <div class="error-details">
+            <div class="error-details-item">
+                <span class="error-details-label">오류 코드:</span>
+                <span>{{ result_code or 'N/A' }}</span>
+            </div>
+            <div class="error-details-item">
+                <span class="error-details-label">상세 메시지:</span>
+                <span>{{ error or '알 수 없는 오류' }}</span>
+            </div>
+        </div>
+
+        <div class="network-info">
+            <div><strong>접속 네트워크:</strong> {{ network_type or 'Unknown' }}</div>
+            <div><strong>서버 환경:</strong> {{ server_type or 'Unknown' }}</div>
+        </div>
+
+        <div class="btn-group">
+            <a href="javascript:history.back()" class="btn btn-secondary">뒤로 가기</a>
+            <a href="/severance" class="btn btn-primary">홈으로 이동</a>
+        </div>
+
+        <div class="help-text">
+            <strong>도움말:</strong><br>
+            모바일 앱에 로그인되어 있는지 확인하고, 다시 시도해주세요.<br>
+            문제가 지속되면 관리자에게 문의하세요.
+        </div>
+    </div>
+</body>
+</html>

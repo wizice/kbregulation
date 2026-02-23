@@ -1,0 +1,48 @@
+{
+  "test_users": [
+    {
+      "username": "admin",
+      "email": "admin@severance.yonsei.ac.kr",
+      "full_name": "시스템 관리자",
+      "role": "admin",
+      "is_email_verified": true
+    },
+    {
+      "username": "editor1",
+      "email": "editor1@severance.yonsei.ac.kr", 
+      "full_name": "편집자1",
+      "role": "editor",
+      "is_email_verified": true
+    },
+    {
+      "username": "viewer1",
+      "email": "viewer1@severance.yonsei.ac.kr",
+      "full_name": "열람자1", 
+      "role": "viewer",
+      "is_email_verified": false
+    }
+  ],
+  
+  "login_credentials": {
+    "admin": {
+      "username": "admin",
+      "password": "admin123!@#",
+      "expected_role": "admin"
+    },
+    "invalid_user": {
+      "username": "invalid",
+      "password": "wrongpass",
+      "expected_result": "401"
+    }
+  },
+  
+  "session_config": {
+    "default_ttl": 86400,
+    "refresh_ttl": 604800,
+    "cookie_settings": {
+      "httponly": true,
+      "secure": true,
+      "samesite": "lax"
+    }
+  }
+}

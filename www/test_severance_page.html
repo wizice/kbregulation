@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Severance Page Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #4caf50; color: white; }
+        .error { background: #f44336; color: white; }
+        .info { background: #2196f3; color: white; }
+    </style>
+</head>
+<body>
+    <h1>Severance Page 데이터 로딩 테스트</h1>
+    <div id="log"></div>
+
+    <script>
+        const log = document.getElementById('log');
+
+        function addLog(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.textContent = message;
+            log.appendChild(div);
+            console.log(message);
+        }
+
+        async function testDataLoading() {
+            // URL 파라미터 확인
+            const params = new URLSearchParams(window.location.search);
+            const chapter = params.get('chapter') || '1장';
+            const code = params.get('code') || '1.1.1';
+
+            addLog(`테스트 파라미터: chapter=${chapter}, code=${code}`, 'info');
+
+            try {
+                // 1. Summary 파일 로드
+                addLog('1. Summary 파일 로드 시작', 'info');
+                const summaryResponse = await fetch('/static/file/summary_kbregulation.json');
+                addLog(`Summary 응답 상태: ${summaryResponse.status}`, summaryResponse.ok ? 'success' : 'error');
+
+                if (!summaryResponse.ok) {
+                    throw new Error(`Summary 파일 로드 실패: ${summaryResponse.status}`);
+                }
+
+                const summaryData = await summaryResponse.json();
+                addLog('Summary 파일 로드 성공', 'success');
+                addLog(`챕터 수: ${Object.keys(summaryData).length}`, 'info');
+
+                // 2. 특정 챕터와 규정 찾기
+                addLog(`2. ${chapter} 검색 중...`, 'info');
+                const chapterData = summaryData[chapter];
+                if (!chapterData) {
+                    throw new Error(`챕터 ${chapter}를 찾을 수 없습니다`);
+                }
+                addLog(`${chapter} 찾음: ${chapterData.title}`, 'success');
+
+                // 3. 규정 찾기
+                addLog(`3. 규정 ${code} 검색 중...`, 'info');
+                const regulation = chapterData.regulations.find(reg => reg.code === code);
+                if (!regulation) {
+                    throw new Error(`규정 ${code}를 찾을 수 없습니다`);
+                }
+                addLog(`규정 찾음: ${regulation.name}`, 'success');
+
+                // 4. 파일명 확인
+                const fileName = regulation.detail?.documentInfo?.파일명;
+                if (!fileName) {
+                    addLog('파일명이 없습니다 (detail.documentInfo.파일명)', 'error');
+                    return;
+                }
+                addLog(`파일명: ${fileName}`, 'info');
+
+                // 5. 개별 파일 로드
+                addLog('4. 개별 규정 파일 로드 시작', 'info');
+                const detailUrl = `/static/file/${fileName}`;
+                addLog(`로드 URL: ${detailUrl}`, 'info');
+
+                const detailResponse = await fetch(detailUrl);
+                addLog(`Detail 응답 상태: ${detailResponse.status}`, detailResponse.ok ? 'success' : 'error');
+
+                if (!detailResponse.ok) {
+                    throw new Error(`Detail 파일 로드 실패: ${detailResponse.status}`);
+                }
+
+                const detailData = await detailResponse.json();
+                addLog('Detail 파일 로드 성공', 'success');
+                addLog(`문서정보: ${detailData.문서정보?.규정명 || '없음'}`, 'info');
+                addLog(`조문 개수: ${detailData.조문내용?.length || 0}`, 'info');
+
+            } catch (error) {
+                addLog(`에러 발생: ${error.message}`, 'error');
+                console.error('Full error:', error);
+            }
+        }
+
+        // 페이지 로드 시 테스트 실행
+        testDataLoading();
+    </script>
+</body>
+</html>

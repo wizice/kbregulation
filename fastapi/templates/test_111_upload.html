@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1.1.1 파일 업로드 테스트</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .header p {
+            margin: 10px 0 0;
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .upload-section {
+            margin-bottom: 30px;
+        }
+
+        .upload-label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-input-button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-input-button:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+        }
+
+        .file-input-button.has-file {
+            background: #e7f1ff;
+            border-color: #667eea;
+            border-style: solid;
+        }
+
+        .file-name {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #495057;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .result-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .result-section.show {
+            display: block;
+        }
+
+        .result-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .result-content {
+            padding: 15px;
+            background: white;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            padding: 15px;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            color: #721c24;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .success-message {
+            padding: 15px;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 4px;
+            color: #155724;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>1.1.1 정확한 환자 확인</h1>
+            <p>PDF 및 DOCX 파일 업로드 및 병합 테스트</p>
+        </div>
+
+        <div class="content">
+            <!-- PDF 업로드 섹션 -->
+            <div class="upload-section">
+                <label class="upload-label">PDF 파일 선택</label>
+                <div class="file-input-wrapper">
+                    <input type="file" id="pdfFile" class="file-input" accept=".pdf">
+                    <label for="pdfFile" class="file-input-button" id="pdfButton">
+                        📄 PDF 파일을 선택하거나 드래그하세요
+                    </label>
+                    <div id="pdfFileName" class="file-name" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- DOCX 업로드 섹션 -->
+            <div class="upload-section">
+                <label class="upload-label">DOCX 파일 선택</label>
+                <div class="file-input-wrapper">
+                    <input type="file" id="docxFile" class="file-input" accept=".docx,.doc">
+                    <label for="docxFile" class="file-input-button" id="docxButton">
+                        📝 DOCX 파일을 선택하거나 드래그하세요
+                    </label>
+                    <div id="docxFileName" class="file-name" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- 버튼 그룹 -->
+            <div class="button-group">
+                <button class="btn btn-secondary" onclick="clearFiles()">초기화</button>
+                <button class="btn btn-primary" id="uploadBtn" onclick="uploadAndMerge()" disabled>
+                    업로드 및 병합
+                </button>
+            </div>
+
+            <!-- 로딩 표시 -->
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>파일 처리 중입니다...</p>
+            </div>
+
+            <!-- 에러 메시지 -->
+            <div class="error-message" id="errorMessage"></div>
+
+            <!-- 성공 메시지 -->
+            <div class="success-message" id="successMessage"></div>
+
+            <!-- 결과 섹션 -->
+            <div class="result-section" id="resultSection">
+                <div class="result-title">병합 결과</div>
+                <div class="result-content" id="resultContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let pdfFileData = null;
+        let docxFileData = null;
+
+        // PDF 파일 선택
+        document.getElementById('pdfFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                pdfFileData = file;
+                document.getElementById('pdfButton').classList.add('has-file');
+                document.getElementById('pdfButton').textContent = '✅ PDF 파일 선택됨';
+                document.getElementById('pdfFileName').textContent = `파일명: ${file.name}`;
+                document.getElementById('pdfFileName').style.display = 'block';
+                checkUploadReady();
+            }
+        });
+
+        // DOCX 파일 선택
+        document.getElementById('docxFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                docxFileData = file;
+                document.getElementById('docxButton').classList.add('has-file');
+                document.getElementById('docxButton').textContent = '✅ DOCX 파일 선택됨';
+                document.getElementById('docxFileName').textContent = `파일명: ${file.name}`;
+                document.getElementById('docxFileName').style.display = 'block';
+                checkUploadReady();
+            }
+        });
+
+        // 업로드 버튼 활성화 체크
+        function checkUploadReady() {
+            const uploadBtn = document.getElementById('uploadBtn');
+            if (pdfFileData || docxFileData) {
+                uploadBtn.disabled = false;
+            } else {
+                uploadBtn.disabled = true;
+            }
+        }
+
+        // 파일 초기화
+        function clearFiles() {
+            pdfFileData = null;
+            docxFileData = null;
+
+            document.getElementById('pdfFile').value = '';
+            document.getElementById('docxFile').value = '';
+
+            document.getElementById('pdfButton').classList.remove('has-file');
+            document.getElementById('pdfButton').textContent = '📄 PDF 파일을 선택하거나 드래그하세요';
+            document.getElementById('pdfFileName').style.display = 'none';
+
+            document.getElementById('docxButton').classList.remove('has-file');
+            document.getElementById('docxButton').textContent = '📝 DOCX 파일을 선택하거나 드래그하세요';
+            document.getElementById('docxFileName').style.display = 'none';
+
+            document.getElementById('uploadBtn').disabled = true;
+
+            // 메시지 숨기기
+            document.getElementById('errorMessage').classList.remove('show');
+            document.getElementById('successMessage').classList.remove('show');
+            document.getElementById('resultSection').classList.remove('show');
+        }
+
+        // 업로드 및 병합
+        async function uploadAndMerge() {
+            const formData = new FormData();
+
+            if (pdfFileData) {
+                formData.append('pdf_file', pdfFileData);
+            }
+            if (docxFileData) {
+                formData.append('docx_file', docxFileData);
+            }
+
+            // UI 상태 변경
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('errorMessage').classList.remove('show');
+            document.getElementById('successMessage').classList.remove('show');
+            document.getElementById('resultSection').classList.remove('show');
+            document.getElementById('uploadBtn').disabled = true;
+
+            try {
+                const response = await fetch('/api/v1/file-upload/process/1.1.1', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // 성공 처리
+                    document.getElementById('successMessage').textContent =
+                        `✅ ${data.message || '파일 처리 완료'}`;
+                    document.getElementById('successMessage').classList.add('show');
+
+                    // 결과 표시
+                    if (data.merged_content) {
+                        document.getElementById('resultContent').textContent =
+                            JSON.stringify(data.merged_content, null, 2);
+                        document.getElementById('resultSection').classList.add('show');
+                    }
+                } else {
+                    // 에러 처리
+                    document.getElementById('errorMessage').textContent =
+                        `❌ 오류: ${data.detail || '파일 처리 실패'}`;
+                    document.getElementById('errorMessage').classList.add('show');
+                }
+            } catch (error) {
+                console.error('업로드 오류:', error);
+                document.getElementById('errorMessage').textContent =
+                    `❌ 네트워크 오류: ${error.message}`;
+                document.getElementById('errorMessage').classList.add('show');
+            } finally {
+                document.getElementById('loading').classList.remove('show');
+                document.getElementById('uploadBtn').disabled = false;
+                checkUploadReady();
+            }
+        }
+
+        // 드래그 앤 드롭 지원
+        ['pdfButton', 'docxButton'].forEach(buttonId => {
+            const button = document.getElementById(buttonId);
+            const inputId = buttonId.replace('Button', 'File');
+
+            button.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                button.style.background = '#e7f1ff';
+            });
+
+            button.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                button.style.background = '';
+            });
+
+            button.addEventListener('drop', (e) => {
+                e.preventDefault();
+                button.style.background = '';
+
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    document.getElementById(inputId).files = files;
+                    document.getElementById(inputId).dispatchEvent(new Event('change'));
+                }
+            });
+        });
+    </script>
+</body>
+</html>

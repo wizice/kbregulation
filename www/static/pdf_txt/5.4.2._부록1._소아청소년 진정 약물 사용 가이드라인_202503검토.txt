@@ -1,0 +1,30 @@
+5.4.2. 부록 1. 소아청소년 진정 약물 사용 가이드라인 담당부서 진정위원회 제정일 2006.07. 최종개정일 2015.10. 최종검토일 2025.03.
+
+소아청소년 진정 약물 사용 가이드라인 Dosage recommendation for children and adolescent patients
+
+(1) 진정약물 Drug Dosage Onset Duration Comments
+① 2세 이하에서는 효과가 일 25-100mg/kg PO 정치 않음 Chloral hydrate 30-60 min 1-4hr 최대 1g ② Prolonged sedation, Apnea 가 능성 있음
+
+① Paradoxical response 0.05-0.1 mg/kg IV 1-3 min IV 45-60 min IV ② Airway obstruction, Apnea Midazolam 0.1-0.2 mg/kg IM 10-15 min IM 60-90 min IM ③ 마약성 진통제와 사용할 경우 용량 25-50% 감소
+
+① Apnea 3.0mg/kg 이하 IV 1-3 min IV 30-60 min ② 저혈압 Thiopental (1 vial- 250mg) ③ 마약성 진통제와 사용 할 경우 용량 25-50% 감소
+
+① Hypersalivation 예방을 위해 0.5-1 mg/kg IV Anticholinergics 전처치 필요 최대4 mg/kg IV (Glycopyrrolate 0.01 mg/kg) Ketamine 3-4 mg/kg IM 2-4 min IV 20-60 min ② Laryngospasm, Agitation, (1 vial- 500mg) Emergence delirium
+
+③ 빈맥, 혈압상승
+
+④ 구역, 구토
+
+(2) 마약성진통제:
+통증이 있는 시술시 추가할 수 있다.
+진정약물과 병용할 경우 진정의 깊이와 호흡 양상을 주의깊게 관찰해야 한다.
+Drug Dosage Onset Duration Comments Airway loss, Apnea, Hypoxia, Morphine 0.05-0.1 mg IV, IM 5 min 2-4 hr Histamine release Airway obstruction, Fentanyl 0.5-2 mcg/kg IV 3-5 min 30-60 min Apnea, Hypoxia가 투여 즉 시 발생할 수 있음 Titration이 어렵고 Apnea가 0.1-0.5 mcg/kg/min Remifentanil 1 min 10-15 min 더 흔히 continuous IV infusion 발생
+
+(3) 길항제: 길항제 투여시에는 회복실에서 최소 1시간 이상 관찰한다.
+Drug Dosage Onset Duration Comments
+
+① Benzodiazepine 0.01 mg/kg IV 길항제 필요시 1분마다 0.005 ② Duration Benzodiazepine 보 Flumazenil 1-3 min <1 hr mg/kg 다짧으므로 충분한 시간 최대 1 mg 관찰 필요
+
+① Opioid 길항제 0.025-0.05 mg/kg IV,
+
+② Duration이 Opioids 보다 IM 짧으므로 충분한 Naloxone 2-5 min 20-60 min 필요시 2분마다 0.01 시간 관찰 필요 mg/kg 최대 2 mg

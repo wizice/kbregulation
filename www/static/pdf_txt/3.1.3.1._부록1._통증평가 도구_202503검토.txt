@@ -1,0 +1,30 @@
+3.1.3.1. 부록 1. 통증평가 도구 담당부서 의료질향상 및 환자안전위원회 제정일 - 최종개정일 2024.08.. 최종검토일 2025.03.
+
+통증평가 도구
+
+1. 만 3 세 미만 환자, 의사소통이 불가능한 소아청소년 환자, 무의식 소아청소년 환자 <개정 2024.8/2014.4>
+1) FLACC Pain Scale (Face, Legs, Activity, Cry, Consolability)
+(1) 사용방법  각 5가지 항목에 대한 점수 측정  점수 합계 기록 (총 점수 0 ~ 10) Scoring Criteria 항목 0 1 2 가끔 얼굴을 찡그림, 특별한 표정이 없거나 눈살을 찌푸림, 자주 또는 지속적인 턱의 얼굴 웃음 움츠림, 무관심함 떨림, 이를 악물고 있음 Face No particular expression Occasional grimace Frequent to constant frown, or smile or frown, Withdrawn, Clenched jaw, Quivering chin Disinterested 다리 정상 자세 또는 이완 불안함, 거북함, 긴장됨 다리를 차거나 끌어올림 Normal position or relaxed Uneasy, Restless, Tense Kicking, or Legs drawn up Legs 조용히 누워있거나 꿈틀댐, 몸을 앞뒤로 몸을 구부리고 뻣뻣함 활동성 정상자세, 쉽게 움직임 뒤척거림, 긴장됨 또는 경련 Activity Lying quietly, Normal Squirming, Shifting back/forth, Arched, Rigid or Jerking position, Moves easily Tense 끙끙댐, 흐느낌 지속적인 울음, 소리침, 울음이 없음 울음 또는 훌쩍댐 흐느낌, 잦은 불편감 호소 No cry Cry (Awake or Asleep) Moans or Whimpers Crying steadily, Screams or Occasional Complaint Sobs, Frequent complaints 가끔 안아주거나 접촉을 하여 안심시키는 것이 마음의 필요함. 관심을 다른 이완 곳으로 돌리기 위해 안정되기 어려움 안정도 Content, Relaxed 대화가 필요함 Difficult to console or comfort Consolability Reassured by occasional touching hugging, or talking to, Distractible
+
+2. 만 3세 이상 의사소통이 가능한 환자
+1) NRS(Numeric Rating Scale) / NPIS(Numerical Pain Intensity Scale) <개정 2015.4>
+(1) 사용방법  통증의 정도를 구두로 질문하거나,  서면으로 통증의 정도에 해당되는 숫자에 원을 그리게 함 0 1 2 3 4 5 6 7 8 9 10 통증 없음 최악의 통증 No Pain Worst Imaginable Pain
+
+2) VAS (Visual Analog Scale)
+(1) 사용방법  통증 없음과 최악의 통증 중 통증의 강도와 일치하는 점을 10cm선위에 표시 통증 없음 최악의 통증 No Pain Worst Imaginable Pain 10cm
+
+3) Wong-Baker Faces Pain Rating Scale
+(1) 사용방법  소아의 표정과 가장 가까운 얼굴 비교하여 기록 통증없음 약한통증 보통통증 심한통증 아주심한통증 최악의 통증 No Hurt Hurts Hurts Hurts A Little Bit A Little More Even More A Whole Lot Worst
+
+3. 신생아
+1) CRIES Scale
+(1) 지표  울음(crying)  산소요구량(requires oxygen)  Vital sign의 변화(increased vital sign)  얼굴 표정(expression of face)  수면장애(sleeplessness) Scoring Criteria 항목 0 1 2 울음 없다 고음 달래지지 않는다.
+>95% 산소포화도를 없다 <30% >30% 유지하기 위한 산소 요구량 HR 혹은 BP 가 HR 혹은 BP가 전보다 Vital sign 변화 수술 전보다 10% 이내로 전보다 11~20% 높다.
+높다. 20% 이상으로 높다.
+찡그리거나 끙끙 얼굴 표정 없다 찡그린다 앓는다 수면 잘 잔다 자주 깬다 계속해서 깨어 있다
+
+4. 의사소통이 불가능한 성인 환자, 무의식 성인 환자 <신설 2024.8>
+1) CPOT(Critical-Care Pain Observation Tool)
+(1) 사용방법 • 각 4가지 지표에 대한 점수 측정(얼굴표정, 신체운동, 기계호흡의 순응도(기관삽관 환자) 또는 발성(발관환자), 근육 긴장도) • 점수 합계 기록 (총 점수 0 ~8점) 지표 점수 서술 얼굴표정 이완됨, 자연스러움 0 근 긴장이 관찰되지 않음 얼굴을 찌푸림, 눈썹을 찌푸림, 안와가 팽팽하고 거근의 수축이 있음 긴장됨 1 또는 그 밖의 다른 변화 (예: 눈을 뜨거나 통증 유발하는 처치동안 눈물흘림) 0 1 2 앞에 나열한 모든 얼굴 움직임 + 눈꺼풀을 꽉 닫음(환자는 입을 벌리고 있거나 이완됨, 긴장됨 인상을 찌푸림 2 기관내관을 물고 있을 수 있음) 자연스러움 찌푸림 신체운동 전혀 움직임이 없음(반드시 통증이 없음을 의미하지는 않음) 움직임이 없거나 정상 자세 0 또는 정상 자세(통증부위 쪽이나 보호를 목적으로 움직이지 않음) 느리고 조심스러운 움직임, 통증부위를 만지거나 문지름, 조심히 움직이려고 보호 1 노력함 튜브를 당김, 앉으려고 시도함, 사지의 움직임/때림, 명령에 따르지 않음, 불안정 2 직원을 때림, 침대를 기어오름
+
+기계호흡의 순응도 인공호흡기나 움직임에 견딤 0 경보가 울리지 않고 쉽게 인공 호흡함 (기관삽관 환자) 기침하지만 견딤 1 기침함, 경보가 활발히 울림. 하지만 자발적으로 멈춤 인공호흡기에 저항함 2 조화롭지 못함, 환기가 차단됨, 경보가 자주 울림 또는 발성 보통의 어조로 말하거나 소리 0 보통의 어조로 말하거나 소리 내지 않음 (발관 환자) 내지 않음 한숨, 신음 1 한숨, 신음 소리내어 울거나 흐느낌 2 소리 내어 울거나 흐느낌 근육 긴장도 이완됨 0 수동적인 움직임에 저항이 없음 (상지의 수동적 굴곡 및 신전운동 검사로 긴장됨, 경직됨 1 수동적인 움직임에 저항함 평가) 매우 긴장되거나 경직됨 2 수동적인 움직임에 강하게 저항함, 수동적으로 움직이는 것이 불가능함 총점 ______ / 8

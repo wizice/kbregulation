@@ -1,0 +1,248 @@
+대외비
+세브란스병원 내규 8.1.2. 항생제 관리체계(제한 항생제, 수술 시 예방적 항생제 사용)
+8.1.2. 부록 1.
+세브란스병원 수술 시 예방적 항생제 사용 지침
+담당부서 항생제사용관리위원회
+제정일 2007.03. 최종개정일 2025.03. 최종검토일 2025.03.
+대외비
+세브란스병원 수술 시 예방적 항생제 사용 지침
+1. 항생제 투여 대상, 시기 및 방법
+Principle Consensus position
+General dosing
+Antibiotic timing Surgical incision 하기 전 60분이내에 항생제가 투여되어야 한다.
+예외적으로 퀴놀론제 등은 투여시간이 오래 걸리므로 수술부위 절개 전
+2시간 이내부터 투여한다.
+Duration of prophylaxis 수술이 끝난 후 24시간이내에 예방적 항생제 투여를 멈추어야 한다. 단,
+특수한 경우에는 48-72시간까지 연장할 수 있다. 수술 후 감염이 발생하여
+투여하는 항생제는 치료적 항생제에 속하므로 본 지침의 적용 대상이 아니다.
+Screening for ß-lactam Cephalosporin 계열의 항생제를 투여하는 수술의 경우, 과거에 항생제에 의한
+allergy 부작용이나 아나필락시스 여부를 자세히 문진해야 하며 필요한 경우 skin test
+등을 시행하여야 한다.
+Antimicrobial dosing 항생제 용량은 환자의 body weight, adjusted dosing weight, body mass index를
+고려하여 결정하여야 한다. 또한 예방적 항생제를 투여한 후 수술시간이
+투여한 항생제 반감기의 2배 이상 되면 수술 중 추가적으로 항생제를 투여
+한다.
+Indication* Clean surgery는 예방적 항생제를 사용하지 않는 것이 원칙이며, Clean
+contaminated surgery는 예방적 항생제 사용의 대상 수술이다. Contaminated
+surgery나 dirty surgery는 치료적 항생제의 대상이 되는 수술이므로 본 지침의
+대상이 아니다.
+단, clean surgery 중에서 cardiac surgery, vascular surgery, neurosurgical procedure,
+intravascular prosthesis나 prosthetic joint를 삽입하는 수술 등은 예방적 항생제
+사용의 대상 수술이다.
+1
+대외비
+2. 창상의 분류
+1) Clean wound(청결창상): 무균 수술에 의한 창상. 수술부위에 감염이 없고 수술 과정 중 감염 병소를
+통과하지 않는 수술로서, 수술 과정 중에 호흡기, 소화기, 비뇨기, 생식기 등의 무균적이지 않은 기관을
+통과하지 않음. (An uninfected operative wound in which no inflammation is encountered and the respiratory,
+alimentary, genital, or uninfected urinary tract is not entered. In addition, clean wounds are primarily closed and, if
+necessary, drained with closed drainage. Operative incisional wound that follow non penetrating (blunt) trauma should
+be included in this category if they meet the criteria.)
+2) Clean-contaminated wound(청결오염창상): 수술에 의한 창상이며, 수술부위에 감염이 없고 수술 과정 중
+감염 병소를 통과하지 않는 수술이지만, 수술 과정 중에 호흡기, 소화기, 비뇨기, 생식기 등의
+무균적이기 않은 기관을 통과함. 단, 준비된 수술 과정을 거치고, 수술 중에 예기치 않은 오염이
+발생하지 않은 경우임. (An operative wound in which the respiratory, alimentary, genital, or urinary tracts are entered
+under controlled conditions and without unusual contamination. Specifically, operations involving the biliary tract,
+appendix, vagina, and oropharynx are included in this category, provided no evidence of infection or major break in
+technique is encountered.)
+3) Contaminated wound(오염창상): 불결하지 않은 외상에 의한 창상. 수술 창상의 경우, 무균 시술이 깨진
+경우, 소화기관으로부터 눈에 보이는 오염이 생긴 경우, 수술 과정 중에 급성 염증이 있는 부위를
+지나는 경우 등은 오염 창상에 속함. (Open, fresh, accidental wounds. In addition, operation with major breaks in
+sterile technique (e.g., open cardiac massage) or gross spillage from the gastrointestinal tract, and incisions in which acute,
+non-purulent inflammation is encountered are included in this category.)
+4) Dirty wound(불결창상): 불결한 외상에 의한 창상. 죽은 조직이나, 뚜렷한 감염이 있는 부위의 수술,
+장천공에 의해 오염된 복강의 수술 등은 불결 창상에 속함. (Old traumatic wounds with retained devitalized
+tissue and those that involve existing clinical infection or perforated viscera. This definition suggests that the organisms
+causing postoperative infection were present in the operative field before the operation.)
+2
+대외비
+3. 예방적 항생제 사용 권고안
+1) 성인 수술 시
+Operation Antibiotic prophylaxis ß-lactam allergy가 있는 경우
+Cardiac Cefazolin 2g IV single dose or q8h Vancomycin 1g IV single dose (or
+for 1-2 days Clindamycin 900mg single dose)
+Thoracic Cefazolin 2g single dose, ampicillin-
+sulbactam 3g single dose
+Gastrointestinal
+Gastroduodenal Cefazolin 2g (or cefoxitin 2g or (Clindamycin 900mg or vancomycin
+cefotetan 2g or ceftriaxone 2gm) IV 1g) + (gentamicin 5mg/kg or
+single dose aztreonam 2g or ciprofloxacin 400mg)
+Biliary tract Cefazolin 2g IV or cefotetan 2g IV (or (Clindamycin 900mg or vancomycin
+cefoxitin 2g IV or ceftriaxone 2g, 1g) +(gentamicin 5mg/kg or
+ampicillin-sulbactam 3g) single dose aztreonam 2g or ciprofloxacin 400mg)
+Metronidazole 1g + (Gentamicin
+5mg/kg or ciprofloxacin 400mg)
+Appendectomy for Cefotetan 2g IV (or cefoxitin 2g IV)
+uncomplicated appendicitis single dose
+or cefazolin 2g IV + metronidazole 1g
+IV single dose
+Colorectal Cefazolin 2g IV+ metronidazole 1g Clindamycin 900mg IV + (gentamicin
+IV q8hr for 1-2 days 5mg/kg or aztreonam 2g IV or
+cefoxitin, cefotetan 2g IV, Ampicillin- ciprofloxacin 400mg)
+sulbactam 3g,
+ceftriaxone 2g+ metronidazole 1g IV
+q8hr for 1-2 days
+Ertapenem 1g IV
+Head and neck
+Clean with placement of Cefazolin 2g IV single dose Clindamycin 900 mg
+prosthesis
+Clean-contaminated Cefazolin 2g IV + metronidazole 1g Clindamycin 900 mg
+(procedures involving IV
+oral/pharyngeal mucosa) Ampicillin-sulbactam 3g
+Neurosurgical procedures Cefazolin 2g IV Clindamycin 900 mg
+3
+대외비
+Operation Antibiotic prophylaxis ß-lactam allergy가 있는 경우
+Obstetric or gynecologic
+Cesarean delivery Cefazolin 2g IV Clindamycin 900mg IV + Gentamicin
+5mg/kg 1dose
+Hysterectomy Cefazolin 2g IV or cefotetan 2g IV (or (Clindamycin 900mg IV or
+cefoxitin 2g IV) single dose vancomycin 1g IV) +
+Ampicillin-sulbactam 3g (gentamicin 5mg/kg 1dose or
+aztreonam 2g IV of
+ciprofloxacin 400mg IV)
+Metronidazole 1g IV + Ciprofloxacin
+400mg IV
+Ophthalmic Topical 1-2 drops or tobramycin 0.3%
+or gentamicin 0.3% 2 drops instilled
+before procedure
+Addition of tobramycin 20 mg by
+subconjuctival injection is optional
+Orthopedic
+Clean, not involving None
+implantation of foreign
+materials
+Hip arthroplasty, spinal Cefazolin 2g (IV single dose) or q8h Vancomycin 1g IV single dose or
+fusion for 1-2 days Clindamycin 900mg single dose
+Implantation of internal Cefazolin 2g IV q8hr for 24hr
+fixation devices
+Total joint replacement Cefazolin 2g IV q8hr for 1-2 days
+Urologic
+Cystoscopy Prophylaxis generally not necessary if urine is sterile
+Cystoscopy with Ciprofloxacin 500mg PO
+manipulation
+Transrectal prostate biopsy Ciprofloxacin 500mg PO 12hrs prior
+to biopsy and repeated 12hrs after 1st
+dose
+Vascular Cefazolin 2 g iv q8hr for 24hr Cindamycin 900mg IV or Vancomycin
+1g IV
+4
+대외비
+Heart, lung, heart-lung Cefazolin 2 g iv q8hr for 24hr Cindamycin 900mg IV or Vancomycin
+transplantation 1g IV
+Liver transplantation Piperacillin-tazobactam 3.375g or (Clindamycin 900mg IV or
+(cefotaxime 1g + ampicillin 2g) Vancomycin 1g IV) + (gentamicin
+5mg/kg or aztreonam 2g or
+ciprofloxacin 400mg IV)
+Pancreas and pancreas- Cefazolin 2g or Cefazolin 2g + (Clindamycin 900mg IV or
+kidney transplantation fluconazole 400mg (for patients at Vancomycin 1g IV) + (gentamicin
+high risk of fungal infection [e.g., 5mg/kg or aztreonam 2g or
+those with enteric drainage of the ciprofloxacin 400mg IV)
+pancreas])
+Plastic surgery
+Clean with risk factors or Cefazolin 2g IV Cindamycin 900mg IV or Vancomycin
+clean contaminated Ampicillin-sulbactam 3g 1g IV
+#Cefotetan 이나 cefoxitin의 경우 다른 2세대 cephalosporin의 사용도 가능함
+* 체중 ≥120kg 환자에서 cefazolin 3g 사용
+2) 소아 수술 시
+Operation Antibiotic prophylaxis ß-lactam allergy가 있는 경우
+Cardiothoracic Cefazolin 30mg/kg IV single dose or Vancomycin 15mg/kg IV single dose or
+q8h for 1-2 days q12h for 1-2days
+Gastrointestinal
+Gastroduodenal Cefazolin 30mg/kg IV or cefotetan Vancomycin 15 mg/kg IV + gentamicin
+40mg/kg IV (or cefoxitin 40mg/kg IV) 2.5mg/kg IV single dose
+single dose (or clindamycin 10mg/kg IV +
+gentamicin 2.5mg/kg IV single dose)
+Biliary tract Cefazolin 30mg/kg IV or cefotetan Metronidazole 15mg/kg IV + gentamicin
+40mg/kg IV (or cefoxitin 40mg/kg IV) 2.5mg/kg IV single dose
+single dose (or clindamycin 10mg/kg IV +
+gentamicin 2.5mg/kg IV single dose)
+Appendectomy for Cefotetan 40mg/kg IV (or cefoxitin Metronidazole 15mg/kg IV + gentamicin
+uncomplicated appendicitis 40mg/kg IV) single dose 2.5mg/kg IV single dose
+or cefazolin 30mg/kg IV + (or clindamycin 10mg/kg IV +
+metronidazole 15mg/kg IV single dose gentamicin 2.5mg/kg IV single dose)
+5
+대외비
+Colorectal Cefotetan 40mg/kg IV (or cefoxitin Metronidazole 15mg/kg IV + gentamicin
+40mg/kg IV) q8hr for 1-2 days 2.5mg/kg IV q8hr for 1-2 days
+or cefazolin 30mg/kg IV + (or clindamycin 10mg/kg IV +
+metronidazole 15mg/kg IV q8hr for 1-2 gentamicin 2.5mg/kg IV q8hr for 1-2
+days days )
+Head and neck
+Clean with placement of Cefazolin 30mg/kg IV single dose Clindamycin 10mg/kg IV single dose
+prosthesis
+Clean-contaminated Cefazolin 30mg/kg IV q 8hr for 1 day Clindamycin 10mg/kg IV q8hr for 1day
+(procedure involving
+oral/pharyngeal mucosa)
+Neurosurgical procedures
+Clean, non-implant Cefazolin 30mg/kg IV single dose Clindamycin 10mg/kg IV single dose
+(e.g. craniotomy)
+Clean, contaminated Cefazolin 30mg/kg IV q 8hr for 1 day Clindamycin 10mg/kg IV q8hr for 1day
+(cross sinuses or
+naso/oropharynx)
+CSF shunt surgery Cefazolin 30mg/kg IV single dose Vancomycin 15mg/kg IV single dose
+Obstetric or gynecologic
+Cesarean delivery Cefazolin 30mg/kg IV or cefotetan Metronidazole 15mg/kg IV + gentamicin
+40mg/kg IV or (cefoxitin 40mg/kg IV) 2.5mg/Kg IV single dose
+single dose (or Clindamycin 10mg/kg IV +
+gentamicin 2.5mg/Kg IV single dose)
+Hysterectomy Cefazolin 30mg/kg IV or cefotetan Metronidazole 15mg/kg IV + gentamicin
+40mg/kg IV (or cefoxitin 40mg/kg IV) 2.5mg/Kg IV single dose
+single dose (or clindamycin 10mg/kg IV +
+gentamicin2.5mg/Kg IV single dose)
+Ophthalmic Topical 1-2 drops or tobramycin 0.3%
+or gentamicin 0.3% 2 drops instilled
+before procedure
+6
+대외비
+Operation Antibiotic prophylaxis ß-lactam allergy가 있는 경우
+Orthopedic
+Clean, not involving None
+implantation of foreign
+materials
+Hip fracture repair Cefazolin 30mg/kg IV q8hr for 24hr Vancomycin 15mg/kg IV q12hr for 24hr
+Implantation of internal Cefazolin 30mg/kg IV q8hr for 24hr Vancomycin 15mg/kg IV q12hr for 24hr
+fixation devices
+Total joint replacement Cefazolin 30mg/kg IV q8hr for 1-2 Vancomycin 15mg/kg IV q12hr for 1-2
+days days
+Urologic Cefazolin 30mg/kg IV single dose Trimethoprim 6-10 mg/kg plus
+sulfamethoxazole 30-50 mg/kg IV single
+dose
+Trimethoprim 6-10 mg/kg plus
+sulfamethoxazole 30-50 mg/kg PO 2hr
+before surgery if oral agent used
+Patients with pre-operative Cefazolin 30mg/kg IV q8h times 1-3 Trimethoprim 6-10 mg/kg plus
+bacteriuria doses peri-operatively, followed by sulfamethoxazole 30-50 mg/kg IV q12h
+oral antibiotics (TMP-SMX) until times 1-2 doses peri-operatively,
+catheter is removed or for 10 days followed by oral antibiotics (TMP-
+SMX) until catheter is removed or for 10
+days
+Vascular Cefazolin 30mg/kg IV q8hr for 24hr Vancomycin 15mg/kg IV q12hr for 24hr
+#Cefotetan 이나 cefoxitin의 경우 다른 2세대 cephalosporin의 사용도 가능함
+7
+대외비
+3) 항생제 재투약 권고 시간
+정상 신기능 환자에서 예방적 항생제 최초 투약후
+반감기(hr) 재투약 시간(hr)
+Ampicillin–sulbactam 0.8–1.3 2
+Aztreonam 1.3–2.4 4
+Cefazolin 1.2–2.2 4
+Cefoxitin 0.7–1.1 2
+Cefotetan 2.8–4.6 6
+Ceftriaxone 5.4–10.9 자료 없음
+Ciprofloxacin 3–7 자료 없음
+Clindamycin 2–4 6
+Ertapenem 3–5 자료 없음
+Fluconazole 30 자료 없음
+Gentamicin 2–3 자료 없음
+Levofloxacin 6–8 자료 없음
+Metronidazole 6–8 자료 없음
+Piperacillin–tazobactam 0.7–1.2 2
+Vancomycin 4–8 자료 없음
+* 수술 시간이 긴 경우, 항생제 반감기를 고려하여 수술 중 재투약이 필요함.
+4. Reference
+- ASHP Therapeutic Guidelines on Antimicrobial Prophylaxis in Surgery. Am J Health-Syst Pharm 70:195; 2013
+-‘23년[2주기 2차] 수술의 예방적 항생제 사용 평가 세부시행계획 건강보험심사평가원 2022.10
+- Zelenitsky SA. Effective Antimicrobial Prophylaxis in Surgery: The Relevance and Role of Pharmacokinetics-
+Pharmacodynamics. Antibiotics (Basel). 2023 Dec 14;12(12):1738
+8

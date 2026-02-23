@@ -1,0 +1,20 @@
+<svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_2952_112064)">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M82 48C82 67.8816 65.8834 84 45.9988 84C26.1166 84 10 67.8816 10 48C10 28.1184 26.1166 12 45.9988 12C65.8834 12 82 28.1184 82 48" fill="#FFCC00"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M48.9091 47.4545C48.9091 49.3636 47.3642 50.9091 45.4558 50.9091C43.5474 50.9091 42 49.3636 42 47.4545C42 45.5455 43.5474 44 45.4558 44C47.3642 44 48.9091 45.5455 48.9091 47.4545" fill="#070100"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M54 28C54 32.4201 50.4179 36 46 36C41.5821 36 38 32.4201 38 28C38 23.5799 41.5821 20 46 20C50.4179 20 54 23.5799 54 28" fill="#FEFEFE"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M54 28C54 32.4201 50.4179 36 46 36C41.5821 36 38 32.4201 38 28C38 23.5799 41.5821 20 46 20C50.4179 20 54 23.5799 54 28Z" stroke="#070100" stroke-width="4"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M72 48C72 52.4201 68.4179 56 64 56C59.5821 56 56 52.4201 56 48C56 43.5799 59.5821 40 64 40C68.4179 40 72 43.5799 72 48" fill="#FEFEFE"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M72 48C72 52.4201 68.4179 56 64 56C59.5821 56 56 52.4201 56 48C56 43.5799 59.5821 40 64 40C68.4179 40 72 43.5799 72 48Z" stroke="#070100" stroke-width="4"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M54 66C54 70.4201 50.4179 74 46 74C41.5821 74 38 70.4201 38 66C38 61.5799 41.5821 58 46 58C50.4179 58 54 61.5799 54 66" fill="#FEFEFE"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M54 66C54 70.4201 50.4179 74 46 74C41.5821 74 38 70.4201 38 66C38 61.5799 41.5821 58 46 58C50.4179 58 54 61.5799 54 66Z" stroke="#070100" stroke-width="4"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M34 48C34 52.4201 30.4179 56 26 56C21.5821 56 18 52.4201 18 48C18 43.5799 21.5821 40 26 40C30.4179 40 34 43.5799 34 48" fill="#FEFEFE"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M34 48C34 52.4201 30.4179 56 26 56C21.5821 56 18 52.4201 18 48C18 43.5799 21.5821 40 26 40C30.4179 40 34 43.5799 34 48Z" stroke="#070100" stroke-width="4"/>
+<path d="M84 84H51.8252H45.3916C25.846 84 10 67.881 10 47.9988C10 28.1166 25.846 12 45.3916 12C64.9372 12 80.7832 28.1166 80.7832 47.9988C80.7832 58.9814 75.9489 68.812 68.3301 75.4169" stroke="#070100" stroke-width="4"/>
+</g>
+<defs>
+<clipPath id="clip0_2952_112064">
+<rect width="96" height="96" fill="white"/>
+</clipPath>
+</defs>
+</svg>

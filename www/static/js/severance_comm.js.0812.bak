@@ -1,0 +1,279 @@
+// =================== 글꼴 크기 조절 기능 - regulation-content 포함 버전 ===================
+// 글꼴 크기 레벨 정의
+const FONT_SIZES = ['xs', 'sm', 'md', 'lg', 'xl', 'xxl'];
+const FONT_SIZE_NAMES = {
+    'xs': '매우 작게',
+    'sm': '작게', 
+    'md': '보통',
+    'lg': '크게',
+    'xl': '매우 크게',
+    'xxl': '최대'
+};
+const DEFAULT_FONT_SIZE_INDEX = 2; // 'md' (기본 크기)
+let currentFontSizeIndex = DEFAULT_FONT_SIZE_INDEX;
+
+// 글꼴 크기 증가
+function increaseFontSize() {
+    if (currentFontSizeIndex < FONT_SIZES.length - 1) {
+        currentFontSizeIndex++;
+        applyFontSize();
+        //showFontSizeToast('글꼴 크기 증가', FONT_SIZES[currentFontSizeIndex]);
+    } else {
+        showFontSizeToast('최대 크기입니다', FONT_SIZES[currentFontSizeIndex]);
+    }
+}
+
+// 글꼴 크기 감소
+function decreaseFontSize() {
+    if (currentFontSizeIndex > 0) {
+        currentFontSizeIndex--;
+        applyFontSize();
+        //showFontSizeToast('글꼴 크기 감소', FONT_SIZES[currentFontSizeIndex]);
+    } else {
+        showFontSizeToast('최소 크기입니다', FONT_SIZES[currentFontSizeIndex]);
+    }
+}
+
+// 글꼴 크기 초기화
+function resetFontSize() {
+    currentFontSizeIndex = DEFAULT_FONT_SIZE_INDEX;
+    applyFontSize();
+    //showFontSizeToast('글꼴 크기 초기화', FONT_SIZES[currentFontSizeIndex]);
+}
+
+// 개선된 글꼴 크기 적용 함수 - regulation-content까지 포함
+function applyFontSize() {
+    // 메인 컨테이너 찾기 (여러 선택자 시도)
+    const mainContainers = [
+        document.querySelector('.regulation-detail'),           // 메인 페이지
+        document.getElementById('regulationContent'),           // 새창 페이지
+        document.getElementById('contentBody'),                 // contentBody
+        document.querySelector('#contentBody .regulation-detail') // 중첩
+    ];
+    
+    const mainContainer = mainContainers.find(element => element !== null);
+    
+    if (!mainContainer) {
+        console.error('글꼴 크기를 적용할 메인 컨테이너를 찾을 수 없습니다.');
+        return;
+    }
+    
+    // 기존 글꼴 크기 클래스 제거
+    FONT_SIZES.forEach(size => {
+        mainContainer.classList.remove(`font-size-${size}`);
+    });
+    
+    // 새 글꼴 크기 클래스 추가
+    const newSizeClass = `font-size-${FONT_SIZES[currentFontSizeIndex]}`;
+    mainContainer.classList.add(newSizeClass);
+    
+    // CSS 변수도 직접 설정
+    const fontSizeValue = getFontSizeValue(FONT_SIZES[currentFontSizeIndex]);
+    mainContainer.style.setProperty('--content-font-size', fontSizeValue);
+    
+    // ✅ 수정된 부분: regulation-content에 직접 스타일 적용
+    const regulationContent = mainContainer.querySelector('.regulation-content');
+    if (regulationContent) {
+        regulationContent.style.fontSize = fontSizeValue;
+        
+        // ✅ 모든 하위 요소를 단순하게 선택
+        const allElements = regulationContent.querySelectorAll('*');
+        
+        allElements.forEach(element => {
+            // ✅ 수정된 예외 조건 (중복 제거)
+            const isExcluded = element.closest('.regulation-meta-table') || 
+                              element.closest('.mobile-meta-cards') || 
+                              element.closest('.page-actions') ||
+                              element.classList.contains('regulation-meta-table') ||
+                              element.classList.contains('mobile-meta-cards') ||
+                              element.classList.contains('page-actions') ||
+                              element.classList.contains('action-btn');
+            
+            if (!isExcluded) {
+                element.style.fontSize = fontSizeValue;
+                console.log(`폰트 적용: ${element.tagName}.${element.className} = ${fontSizeValue}`);
+            } else {
+                console.log(`폰트 제외: ${element.tagName}.${element.className}`);
+            }
+        });
+    }
+    
+    // ✅ 추가: 특정 요소들에 개별적으로 적용
+    
+    // article-title들 (조금 더 크게)
+    const articleTitles = mainContainer.querySelectorAll('.article-title');
+    articleTitles.forEach(title => {
+        if (!title.closest('.regulation-meta-table')) {
+            title.style.fontSize = `calc(${fontSizeValue} * 1.2)`;
+            console.log(`article-title 폰트 적용: calc(${fontSizeValue} * 1.2)`);
+        }
+    });
+    
+    // article-item들
+    const articleItems = mainContainer.querySelectorAll('.article-item');
+    articleItems.forEach(item => {
+        if (!item.closest('.regulation-meta-table')) {
+            item.style.fontSize = fontSizeValue;
+        }
+    });
+    
+    // article-sub-item들
+    const articleSubItems = mainContainer.querySelectorAll('.article-sub-item');
+    articleSubItems.forEach(item => {
+        if (!item.closest('.regulation-meta-table')) {
+            item.style.fontSize = fontSizeValue;
+        }
+    });
+    
+    // appendix-section
+    const appendixSection = mainContainer.querySelector('.appendix-section');
+    if (appendixSection) {
+        const appendixElements = appendixSection.querySelectorAll('*');
+        appendixElements.forEach(element => {
+            element.style.fontSize = fontSizeValue;
+        });
+    }
+    
+    // 로컬스토리지에 저장
+    localStorage.setItem('regulationFontSize', FONT_SIZES[currentFontSizeIndex]);
+    
+    console.log(`글꼴 크기 적용됨: ${newSizeClass} (${fontSizeValue}), 컨테이너:`, mainContainer);
+    if (regulationContent) {
+        console.log('regulation-content에도 적용됨:', regulationContent);
+    }
+}
+
+// 글꼴 크기 값 반환 함수
+function getFontSizeValue(sizeKey) {
+    const sizeMap = {
+        'xs': '0.9em',
+        'sm': '0.95em',
+        'md': '1.0em',
+        'lg': '1.05em',
+        'xl': '1.1em',
+        'xxl': '1.15em'
+    };
+    return sizeMap[sizeKey] || '1.0em';
+}
+
+// 글꼴 크기 토스트 메시지
+function showFontSizeToast(message, size) {
+    // 기존 토스트 제거
+    const existingToast = document.querySelector('.font-size-toast');
+    if (existingToast) {
+        existingToast.remove();
+    }
+    
+    const toast = document.createElement('div');
+    toast.className = 'font-size-toast';
+    toast.style.cssText = `
+        position: fixed;
+        top: 90px;
+        right: 20px;
+        background: #2786dd;
+        color: white;
+        padding: 12px 16px;
+        border-radius: 6px;
+        z-index: 10000;
+        font-size: 14px !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+    `;
+    
+    toast.innerHTML = `
+        <div style="font-weight: 600; margin-bottom: 2px; font-size: 14px !important;">${message}</div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // 애니메이션
+    setTimeout(() => {
+        toast.style.transform = 'translateX(0)';
+    }, 100);
+    
+    // 2초 후 제거
+    setTimeout(() => {
+        toast.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 300);
+    }, 2000);
+}
+
+// 저장된 글꼴 크기 로드 함수
+function loadSavedFontSize() {
+    const savedSize = localStorage.getItem('regulationFontSize');
+    if (savedSize && FONT_SIZES.includes(savedSize)) {
+        const savedIndex = FONT_SIZES.indexOf(savedSize);
+        currentFontSizeIndex = savedIndex;
+        
+        // DOM이 완전히 로드된 후 적용
+        setTimeout(() => {
+            applyFontSize();
+        }, 200);
+        
+        console.log(`저장된 글꼴 크기 로드됨: ${savedSize}`);
+    } else {
+        console.log('저장된 글꼴 크기가 없습니다. 기본값 사용.');
+    }
+}
+
+// 디버깅용 함수 - 더 상세한 정보
+function debugFontSize() {
+    console.log('=== 글꼴 크기 디버깅 정보 ===');
+    console.log('현재 인덱스:', currentFontSizeIndex);
+    console.log('현재 크기:', FONT_SIZES[currentFontSizeIndex]);
+    console.log('현재 값:', getFontSizeValue(FONT_SIZES[currentFontSizeIndex]));
+    
+    console.log('\n사용 가능한 컨테이너들:');
+    console.log('  .regulation-detail:', document.querySelector('.regulation-detail'));
+    console.log('  #regulationContent:', document.getElementById('regulationContent'));
+    console.log('  #contentBody:', document.getElementById('contentBody'));
+    
+    console.log('\n내용 요소들:');
+    console.log('  .regulation-content:', document.querySelector('.regulation-content'));
+    console.log('  .article-title들:', document.querySelectorAll('.article-title').length, '개');
+    console.log('  .article-item들:', document.querySelectorAll('.article-item').length, '개');
+    
+    console.log('\n저장된 값:', localStorage.getItem('regulationFontSize'));
+    
+    // 현재 적용된 스타일 확인
+    const mainContainer = document.querySelector('.regulation-detail') || document.getElementById('regulationContent');
+    if (mainContainer) {
+        console.log('\n현재 컨테이너 클래스:', mainContainer.className);
+        console.log('CSS 변수 값:', getComputedStyle(mainContainer).getPropertyValue('--content-font-size'));
+    }
+}
+
+// 초기화 함수
+function initializeFontSizeControl() {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadSavedFontSize);
+    } else {
+        loadSavedFontSize();
+    }
+    
+    console.log('글꼴 크기 조절 기능 초기화 완료');
+}
+
+// 키보드 단축키
+document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && (e.key === '+' || e.key === '=')) {
+        e.preventDefault();
+        increaseFontSize();
+    }
+    else if (e.ctrlKey && e.key === '-') {
+        e.preventDefault();
+        decreaseFontSize();
+    }
+    else if (e.ctrlKey && e.key === '0') {
+        e.preventDefault();
+        resetFontSize();
+    }
+});
+
+// 자동 초기화
+initializeFontSizeControl();

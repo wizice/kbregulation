@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KB신용정보 내규정보관리 시스템 DB 구축 방안</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Malgun Gothic', '맑은 고딕', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(255, 255, 255, 0.05) 10px,
+                rgba(255, 255, 255, 0.05) 20px
+            );
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid #3498db;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .section h2 {
+            color: #2c3e50;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ecf0f1;
+            display: flex;
+            align-items: center;
+        }
+
+
+        .section h3 {
+            color: #34495e;
+            font-size: 1.4em;
+            margin: 25px 0 15px 0;
+            display: flex;
+            align-items: center;
+        }
+
+
+        .section h4 {
+            color: #7f8c8d;
+            font-size: 1.2em;
+            margin: 20px 0 10px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .section h4::before {
+            content: '▪️';
+            margin-right: 6px;
+        }
+
+        .table-container {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            overflow-x: auto;
+            border: 1px solid #e9ecef;
+        }
+
+        .sql-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .sql-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .sql-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .sql-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .sql-table tr:hover {
+            background-color: #e3f2fd;
+            transition: background-color 0.3s ease;
+        }
+
+        .field-name {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .field-type {
+            color: #27ae60;
+            font-style: italic;
+        }
+
+        .field-desc {
+            color: #555;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(116, 185, 255, 0.3);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: scale(1.05);
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2c3e50;
+            display: block;
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 15px 0;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .footer {
+            background: #34495e;
+            color: white;
+            text-align: center;
+            padding: 30px;
+            margin-top: 40px;
+        }
+
+        .footer p {
+            margin-bottom: 10px;
+        }
+
+        .footer .date {
+            font-style: italic;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .section {
+                padding: 20px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>KB신용정보 내규정보관리 시스템</h1>
+            <div class="subtitle">데이터베이스 구축 방안 보고서</div>
+        </div>
+
+        <div class="content">
+            <!-- 프로젝트 개요 섹션 -->
+            <div class="section">
+                <h2>프로젝트 개요</h2>
+                <div class="highlight-box">
+                    <strong>목적:</strong> KB신용정보의 내규 문서를 체계적으로 관리하고 효율적으로 검색할 수 있는 통합 데이터베이스 시스템 구축
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-number">145+</span>
+                        <div class="stat-label">내규 문서</div>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">200+</span>
+                        <div class="stat-label">부록 문서</div>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">13</span>
+                        <div class="stat-label">주요 카테고리</div>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">6</span>
+                        <div class="stat-label">핵심 테이블</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 데이터베이스 설계 방안 섹션 -->
+            <div class="section">
+                <h2>데이터베이스 설계 방안</h2>
+                
+                <h3>주요 테이블 구조</h3>
+                
+                <h4>1.1.1 관리자 테이블 (ADMIN_USER)</h4>
+                <div class="table-container">
+                    <table class="sql-table">
+                        <thead>
+                            <tr>
+                                <th>필드명</th>
+                                <th>데이터 타입</th>
+                                <th>제약조건</th>
+                                <th>설명</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="field-name">ADMIN_ID</td>
+                                <td class="field-type">VARCHAR(20)</td>
+                                <td>PK, NOT NULL</td>
+                                <td class="field-desc">관리자 고유 ID</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">USER_ID</td>
+                                <td class="field-type">VARCHAR(50)</td>
+                                <td>UNIQUE, NOT NULL</td>
+                                <td class="field-desc">사용자 ID</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">PASSWORD</td>
+                                <td class="field-type">VARCHAR(50)</td>
+                                <td>NOT NULL</td>
+                                <td class="field-desc">비밀번호</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">USER_NAME</td>
+                                <td class="field-type">VARCHAR(100)</td>
+                                <td>NOT NULL</td>
+                                <td class="field-desc">사용자명</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">EMAIL</td>
+                                <td class="field-type">VARCHAR(200)</td>
+                                <td>NOT NULL</td>
+                                <td class="field-desc">이메일</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">DEPARTMENT</td>
+                                <td class="field-type">VARCHAR(100)</td>
+                                <td></td>
+                                <td class="field-desc">소속 부서</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">ROLE</td>
+                                <td class="field-type">VARCHAR(20)</td>
+                                <td>NOT NULL</td>
+                                <td class="field-desc">역할 (시스템관리자/내규관리자/부서관리자)</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">AUTH_LEVEL</td>
+                                <td class="field-type">INT</td>
+                                <td>DEFAULT 1</td>
+                                <td class="field-desc">권한 레벨 (1-9)</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">CREATED_DATE</td>
+                                <td class="field-type">DATETIME</td>
+                                <td>DEFAULT NOW()</td>
+                                <td class="field-desc">생성일</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">LAST_LOGIN</td>
+                                <td class="field-type">DATETIME</td>
+                                <td></td>
+                                <td class="field-desc">최종 로그인</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">STATUS</td>
+                                <td class="field-type">CHAR(1)</td>
+                                <td>DEFAULT 'Y'</td>
+                                <td class="field-desc">상태 (Y:활성/N:비활성)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h4>1.1.2 내규 마스터 테이블 (REGULATION_MASTER)</h4>
+                <div class="table-container">
+                    <table class="sql-table">
+                        <thead>
+                            <tr>
+                                <th>필드명</th>
+                                <th>데이터 타입</th>
+                                <th>제약조건</th>
+                                <th>설명</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="field-name">REG_ID</td>
+                                <td class="field-type">VARCHAR(20)</td>
+                                <td>PK, NOT NULL</td>
+                                <td class="field-desc">내규 고유 ID</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">REG_CODE</td>
+                                <td class="field-type">VARCHAR(20)</td>
+                                <td>UNIQUE, NOT NULL</td>
+                                <td class="field-desc">내규 코드 (예: 1.1.1)</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">REG_TITLE</td>
+                                <td class="field-type">VARCHAR(500)</td>
+                                <td>NOT NULL</td>
+                                <td class="field-desc">내규 제목</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">CATEGORY_LEVEL1</td>
+                                <td class="field-type">VARCHAR(10)</td>
+                                <td>NOT NULL</td>
+                                <td class="field-desc">대분류 코드</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">CATEGORY_LEVEL2</td>
+                                <td class="field-type">VARCHAR(10)</td>
+                                <td></td>
+                                <td class="field-desc">중분류 코드</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">CATEGORY_LEVEL3</td>
+                                <td class="field-type">VARCHAR(10)</td>
+                                <td></td>
+                                <td class="field-desc">소분류 코드</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">CURRENT_NOTICE_NO</td>
+                                <td class="field-type">VARCHAR(50)</td>
+                                <td></td>
+                                <td class="field-desc">현재 공포 번호</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">CURRENT_VERSION_ID</td>
+                                <td class="field-type">VARCHAR(20)</td>
+                                <td>FK</td>
+                                <td class="field-desc">현재 유효한 버전 ID</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">STATUS</td>
+                                <td class="field-type">VARCHAR(10)</td>
+                                <td>DEFAULT '유효'</td>
+                                <td class="field-desc">상태 (유효/폐기/개정중)</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">UPLOAD_ADMIN_ID</td>
+                                <td class="field-type">VARCHAR(20)</td>
+                                <td>FK, NOT NULL</td>
+                                <td class="field-desc">업로드한 관리자 ID</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">CREATED_DATE</td>
+                                <td class="field-type">DATETIME</td>
+                                <td>DEFAULT NOW()</td>
+                                <td class="field-desc">생성일</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">LAST_UPDATED</td>
+                                <td class="field-type">DATETIME</td>
+                                <td></td>
+                                <td class="field-desc">최종 수정일</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h4>1.1.3 내규 버전 테이블 (REGULATION_VERSION)</h4>
+                <div class="table-container">
+                    <table class="sql-table">
+                        <thead>
+                            <tr>
+                                <th>필드명</th>
+                                <th>데이터 타입</th>
+                                <th>제약조건</th>
+                                <th>설명</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="field-name">VERSION_ID</td>
+                                <td class="field-type">VARCHAR(20)</td>
+                                <td>PK, NOT NULL</td>
+                                <td class="field-desc">버전 고유 ID</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">REG_ID</td>
+                                <td class="field-type">VARCHAR(20)</td>
+                                <td>FK, NOT NULL</td>
+                                <td class="field-desc">내규 ID</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">NOTICE_NO</td>
+                                <td class="field-type">VARCHAR(50)</td>
+                                <td></td>
+                                <td class="field-desc">공포 번호</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">REVISION_DATE</td>
+                                <td class="field-type">DATE</td>
+                                <td></td>
+                                <td class="field-desc">개정일</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">EFFECTIVE_DATE</td>
+                                <td class="field-type">DATE</td>
+                                <td></td>
+                                <td class="field-desc">시행일자</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">APPENDIX_IDS</td>
+                                <td class="field-type">TEXT</td>
+                                <td></td>
+                                <td class="field-desc">해당 버전의 부록 ID 목록 (쉼표 구분)</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">FILE_PATH</td>
+                                <td class="field-type">VARCHAR(500)</td>
+                                <td>NOT NULL</td>
+                                <td class="field-desc">파일 경로</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">FILE_NAME</td>
+                                <td class="field-type">VARCHAR(300)</td>
+                                <td>NOT NULL</td>
+                                <td class="field-desc">원본 파일명</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">PARSED_CONTENT</td>
+                                <td class="field-type">LONGTEXT</td>
+                                <td></td>
+                                <td class="field-desc">파싱된 내용 (검색용)</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">REVISION_REASON</td>
+                                <td class="field-type">TEXT</td>
+                                <td></td>
+                                <td class="field-desc">개정 사유</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">UPLOAD_ADMIN_ID</td>
+                                <td class="field-type">VARCHAR(20)</td>
+                                <td>FK, NOT NULL</td>
+                                <td class="field-desc">업로드한 관리자 ID</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">AUTO_PARSED</td>
+                                <td class="field-type">CHAR(1)</td>
+                                <td>DEFAULT 'N'</td>
+                                <td class="field-desc">자동 파싱 여부 (Y/N)</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">PARSING_STATUS</td>
+                                <td class="field-type">VARCHAR(10)</td>
+                                <td>DEFAULT '대기'</td>
+                                <td class="field-desc">파싱 상태 (성공/실패/진행중/대기)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h4>1.1.4 부록 테이블 (APPENDIX)</h4>
+                <div class="table-container">
+                    <table class="sql-table">
+                        <thead>
+                            <tr>
+                                <th>필드명</th>
+                                <th>데이터 타입</th>
+                                <th>제약조건</th>
+                                <th>설명</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="field-name">APPENDIX_ID</td>
+                                <td class="field-type">VARCHAR(20)</td>
+                                <td>PK, NOT NULL</td>
+                                <td class="field-desc">부록 고유 ID</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">REG_ID</td>
+                                <td class="field-type">VARCHAR(20)</td>
+                                <td>FK, NOT NULL</td>
+                                <td class="field-desc">연결된 내규 ID</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">APPENDIX_CODE</td>
+                                <td class="field-type">VARCHAR(20)</td>
+                                <td>NOT NULL</td>
+                                <td class="field-desc">부록 코드 (예: 부록1, 부록2)</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">APPENDIX_TITLE</td>
+                                <td class="field-type">VARCHAR(500)</td>
+                                <td>NOT NULL</td>
+                                <td class="field-desc">부록 제목</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">FILE_PATH</td>
+                                <td class="field-type">VARCHAR(500)</td>
+                                <td>NOT NULL</td>
+                                <td class="field-desc">파일 경로</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">FILE_NAME</td>
+                                <td class="field-type">VARCHAR(300)</td>
+                                <td>NOT NULL</td>
+                                <td class="field-desc">원본 파일명</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">PARSED_CONTENT</td>
+                                <td class="field-type">LONGTEXT</td>
+                                <td></td>
+                                <td class="field-desc">파싱된 내용 (검색용)</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">UPLOAD_ADMIN_ID</td>
+                                <td class="field-type">VARCHAR(20)</td>
+                                <td>FK, NOT NULL</td>
+                                <td class="field-desc">업로드한 관리자 ID</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">AUTO_PARSED</td>
+                                <td class="field-type">CHAR(1)</td>
+                                <td>DEFAULT 'N'</td>
+                                <td class="field-desc">자동 파싱 여부 (Y/N)</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">PARSING_STATUS</td>
+                                <td class="field-type">VARCHAR(10)</td>
+                                <td>DEFAULT '대기'</td>
+                                <td class="field-desc">파싱 상태 (성공/실패/진행중/대기)</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">CREATED_DATE</td>
+                                <td class="field-type">DATETIME</td>
+                                <td>DEFAULT NOW()</td>
+                                <td class="field-desc">생성일</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">UPDATED_DATE</td>
+                                <td class="field-type">DATETIME</td>
+                                <td></td>
+                                <td class="field-desc">수정일</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h4>1.1.5 분류 체계 테이블 (CATEGORY)</h4>
+                <div class="table-container">
+                    <table class="sql-table">
+                        <thead>
+                            <tr>
+                                <th>필드명</th>
+                                <th>데이터 타입</th>
+                                <th>제약조건</th>
+                                <th>설명</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="field-name">CATEGORY_ID</td>
+                                <td class="field-type">VARCHAR(10)</td>
+                                <td>PK, NOT NULL</td>
+                                <td class="field-desc">분류 ID</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">PARENT_ID</td>
+                                <td class="field-type">VARCHAR(10)</td>
+                                <td>FK</td>
+                                <td class="field-desc">상위 분류 ID</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">CATEGORY_CODE</td>
+                                <td class="field-type">VARCHAR(10)</td>
+                                <td>NOT NULL</td>
+                                <td class="field-desc">분류 코드</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">CATEGORY_NAME</td>
+                                <td class="field-type">VARCHAR(200)</td>
+                                <td>NOT NULL</td>
+                                <td class="field-desc">분류명</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">LEVEL</td>
+                                <td class="field-type">INT</td>
+                                <td>NOT NULL</td>
+                                <td class="field-desc">분류 레벨 (1,2,3)</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">SORT_ORDER</td>
+                                <td class="field-type">INT</td>
+                                <td>DEFAULT 0</td>
+                                <td class="field-desc">정렬 순서</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h4>1.1.6 문서 업로드 로그 테이블 (UPLOAD_LOG)</h4>
+                <div class="table-container">
+                    <table class="sql-table">
+                        <thead>
+                            <tr>
+                                <th>필드명</th>
+                                <th>데이터 타입</th>
+                                <th>제약조건</th>
+                                <th>설명</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="field-name">LOG_ID</td>
+                                <td class="field-type">VARCHAR(20)</td>
+                                <td>PK, NOT NULL</td>
+                                <td class="field-desc">로그 고유 ID</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">ADMIN_ID</td>
+                                <td class="field-type">VARCHAR(20)</td>
+                                <td>FK, NOT NULL</td>
+                                <td class="field-desc">업로드한 관리자 ID</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">FILE_NAME</td>
+                                <td class="field-type">VARCHAR(300)</td>
+                                <td>NOT NULL</td>
+                                <td class="field-desc">업로드된 파일명</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">UPLOAD_DATE</td>
+                                <td class="field-type">DATETIME</td>
+                                <td>DEFAULT NOW()</td>
+                                <td class="field-desc">업로드 일시</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">PARSING_RESULT</td>
+                                <td class="field-type">VARCHAR(10)</td>
+                                <td></td>
+                                <td class="field-desc">파싱 결과 (성공/실패)</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">ERROR_MESSAGE</td>
+                                <td class="field-type">TEXT</td>
+                                <td></td>
+                                <td class="field-desc">오류 메시지 (있을 경우)</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">REG_ID</td>
+                                <td class="field-type">VARCHAR(20)</td>
+                                <td>FK</td>
+                                <td class="field-desc">생성된 내규 ID (성공 시)</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">APPENDIX_COUNT</td>
+                                <td class="field-type">INT</td>
+                                <td>DEFAULT 0</td>
+                                <td class="field-desc">연결된 부록 수</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 분류 체계 분석 섹션 -->
+
+            <!-- 구현 고려사항 섹션 -->
+            <!-- 결론 및 권장사항 섹션 -->
+        </div>
+
+        <div class="footer">
+            <p><strong>KB신용정보 내규정보관리 시스템 DB 구축 방안</strong></p>
+            <p class="date">작성일: 2025년 7월 29일</p>
+        </div>
+    </div>
+</body>
+</html>

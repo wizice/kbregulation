@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>다운로드 이력 대시보드 - 규정관리시스템</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e5ba8 0%, #0d4a8f 100%);
+            color: white;
+            padding: 20px 40px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .controls label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .controls input, .controls select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .controls button {
+            padding: 8px 20px;
+            background: #1e5ba8;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .controls button:hover {
+            background: #0d4a8f;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .stat-card h3 {
+            font-size: 14px;
+            color: #888;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1e5ba8;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .chart-container h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        td {
+            padding: 12px;
+            font-size: 14px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge-pdf { background: #ffebee; color: #c62828; }
+        .badge-docx { background: #e3f2fd; color: #1565c0; }
+        .badge-appendix { background: #e8f5e9; color: #2e7d32; }
+        .badge-comparison { background: #fff3e0; color: #ef6c00; }
+        .badge-history { background: #f3e5f5; color: #7b1fa2; }
+        .badge-pc { background: #e3f2fd; color: #1976d2; }
+        .badge-mobile { background: #f3e5f5; color: #7b1fa2; }
+        .badge-tablet { background: #fff3e0; color: #f57c00; }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        canvas {
+            max-height: 300px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .pagination button {
+            padding: 8px 16px;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .pagination button:hover {
+            background: #e9ecef;
+        }
+
+        .pagination button.active {
+            background: #1e5ba8;
+            color: white;
+            border-color: #1e5ba8;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>다운로드 이력 대시보드</h1>
+        <p>규정 파일 다운로드 현황 모니터링</p>
+    </div>
+
+    <div class="container">
+        <!-- 조회 조건 -->
+        <div class="controls">
+            <div>
+                <label>조회 기간:</label>
+                <select id="period" onchange="loadDashboard()">
+                    <option value="1">최근 1일</option>
+                    <option value="7" selected>최근 7일</option>
+                    <option value="30">최근 30일</option>
+                    <option value="90">최근 90일</option>
+                </select>
+            </div>
+            <div>
+                <label>파일 종류:</label>
+                <select id="fileType" onchange="loadLogs()">
+                    <option value="">전체</option>
+                    <option value="pdf">PDF</option>
+                    <option value="docx">DOCX</option>
+                    <option value="appendix">부록</option>
+                    <option value="comparison">신구대비표</option>
+                    <option value="history">수정이력</option>
+                </select>
+            </div>
+            <button onclick="loadDashboard()">새로고침</button>
+            <button onclick="exportToCSV()">CSV 다운로드</button>
+        </div>
+
+        <!-- 요약 통계 -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>총 다운로드 수</h3>
+                <div class="value" id="totalDownloads">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>순 방문자 (IP)</h3>
+                <div class="value" id="uniqueVisitors">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>평균 일일 다운로드</h3>
+                <div class="value" id="avgDailyDownloads">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>조회 기간</h3>
+                <div class="value" id="periodDays" style="font-size: 24px;">7일</div>
+            </div>
+        </div>
+
+        <!-- 일별 다운로드 추이 -->
+        <div class="chart-container">
+            <h2>일별 다운로드 추이</h2>
+            <canvas id="dailyChart"></canvas>
+        </div>
+
+        <!-- 파일종류/디바이스 통계 -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            <div class="chart-container">
+                <h2>파일 종류별 다운로드</h2>
+                <canvas id="typeChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h2>디바이스별 다운로드</h2>
+                <canvas id="deviceChart"></canvas>
+            </div>
+        </div>
+
+        <!-- 인기 다운로드 규정 -->
+        <div class="chart-container">
+            <h2>인기 다운로드 규정 TOP 10</h2>
+            <table id="topRulesTable">
+                <thead>
+                    <tr>
+                        <th>순위</th>
+                        <th>공포번호</th>
+                        <th>규정명</th>
+                        <th>다운로드 수</th>
+                        <th>순 방문자</th>
+                        <th>마지막 다운로드</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- 최근 다운로드 로그 -->
+        <div class="chart-container">
+            <h2>최근 다운로드 이력</h2>
+            <table id="recentLogsTable">
+                <thead>
+                    <tr>
+                        <th>시간</th>
+                        <th>규정명</th>
+                        <th>파일 종류</th>
+                        <th>파일명</th>
+                        <th>IP</th>
+                        <th>디바이스</th>
+                        <th>브라우저</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <div class="pagination">
+                <button id="prevBtn" onclick="changePage(-1)">이전</button>
+                <span id="pageInfo">1 / 1</span>
+                <button id="nextBtn" onclick="changePage(1)">다음</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        let dailyChart, typeChart, deviceChart;
+        let currentPage = 1;
+        const pageSize = 20;
+        let totalCount = 0;
+
+        // 대시보드 로드
+        async function loadDashboard() {
+            const days = document.getElementById('period').value;
+            document.getElementById('periodDays').textContent = `${days}일`;
+
+            try {
+                // 통계 요약 조회
+                const response = await fetch(`/api/v1/download-logs/stats/summary?days=${days}`);
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error('통계 조회 실패');
+                }
+
+                const data = result.data;
+
+                // 요약 통계 업데이트
+                document.getElementById('totalDownloads').textContent = data.summary.total_downloads.toLocaleString();
+                document.getElementById('uniqueVisitors').textContent = data.summary.total_unique_visitors.toLocaleString();
+                document.getElementById('avgDailyDownloads').textContent = data.summary.avg_daily_downloads.toLocaleString();
+
+                // 일별 차트 업데이트
+                updateDailyChart(data.daily_stats);
+
+                // 파일 종류별 차트 업데이트
+                updateTypeChart(data.type_stats);
+
+                // 디바이스 차트 업데이트
+                updateDeviceChart(data.device_stats);
+
+                // 인기 규정 테이블 업데이트
+                updateTopRulesTable(data.top_rules);
+
+                // 최근 로그 조회
+                currentPage = 1;
+                await loadLogs();
+
+            } catch (error) {
+                console.error('Dashboard load error:', error);
+                alert('대시보드 로드 실패: ' + error.message);
+            }
+        }
+
+        // 일별 차트
+        function updateDailyChart(dailyStats) {
+            const ctx = document.getElementById('dailyChart');
+
+            if (dailyChart) {
+                dailyChart.destroy();
+            }
+
+            const sortedStats = [...dailyStats].reverse();
+            const labels = sortedStats.map(d => d.day);
+            const downloadData = sortedStats.map(d => d.download_count);
+            const uniqueData = sortedStats.map(d => d.unique_visitors);
+
+            dailyChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: '총 다운로드 수',
+                            data: downloadData,
+                            borderColor: '#1e5ba8',
+                            backgroundColor: 'rgba(30, 91, 168, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: '순 방문자',
+                            data: uniqueData,
+                            borderColor: '#4caf50',
+                            backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    }
+                }
+            });
+        }
+
+        // 파일 종류별 차트
+        function updateTypeChart(typeStats) {
+            const ctx = document.getElementById('typeChart');
+
+            if (typeChart) {
+                typeChart.destroy();
+            }
+
+            const typeLabels = {
+                'pdf': 'PDF',
+                'docx': 'DOCX',
+                'appendix': '부록',
+                'comparison': '신구대비표',
+                'history': '수정이력'
+            };
+
+            typeChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: typeStats.map(d => typeLabels[d.file_type] || d.file_type),
+                    datasets: [{
+                        data: typeStats.map(d => d.download_count),
+                        backgroundColor: ['#c62828', '#1565c0', '#2e7d32', '#ef6c00', '#7b1fa2']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true
+                }
+            });
+        }
+
+        // 디바이스 차트
+        function updateDeviceChart(deviceStats) {
+            const ctx = document.getElementById('deviceChart');
+
+            if (deviceChart) {
+                deviceChart.destroy();
+            }
+
+            deviceChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: deviceStats.map(d => d.device_type || 'Unknown'),
+                    datasets: [{
+                        data: deviceStats.map(d => d.download_count),
+                        backgroundColor: ['#1e5ba8', '#4caf50', '#ff9800']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true
+                }
+            });
+        }
+
+        // 인기 규정 테이블
+        function updateTopRulesTable(topRules) {
+            const tbody = document.querySelector('#topRulesTable tbody');
+            tbody.innerHTML = '';
+
+            topRules.forEach((rule, index) => {
+                const row = tbody.insertRow();
+                const lastDownload = rule.last_downloaded_at
+                    ? new Date(rule.last_downloaded_at).toLocaleString('ko-KR')
+                    : '-';
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${rule.rule_pubno || '-'}</td>
+                    <td>${rule.rule_name || '-'}</td>
+                    <td>${rule.download_count.toLocaleString()}</td>
+                    <td>${rule.unique_visitors.toLocaleString()}</td>
+                    <td>${lastDownload}</td>
+                `;
+            });
+        }
+
+        // 최근 로그 조회
+        async function loadLogs() {
+            const fileType = document.getElementById('fileType').value;
+            const offset = (currentPage - 1) * pageSize;
+
+            try {
+                let url = `/api/v1/download-logs/logs?limit=${pageSize}&offset=${offset}`;
+                if (fileType) {
+                    url += `&file_type=${fileType}`;
+                }
+
+                const response = await fetch(url);
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error('로그 조회 실패');
+                }
+
+                totalCount = result.total_count;
+                const totalPages = Math.ceil(totalCount / pageSize);
+
+                const tbody = document.querySelector('#recentLogsTable tbody');
+                tbody.innerHTML = '';
+
+                result.data.forEach(log => {
+                    const row = tbody.insertRow();
+                    const typeClass = `badge-${log.file_type}`;
+                    const deviceClass = `badge-${(log.device_type || 'pc').toLowerCase()}`;
+
+                    row.innerHTML = `
+                        <td>${new Date(log.downloaded_at).toLocaleString('ko-KR')}</td>
+                        <td>${log.rule_name || '-'}</td>
+                        <td><span class="badge ${typeClass}">${getFileTypeLabel(log.file_type)}</span></td>
+                        <td>${truncateText(log.file_name, 40)}</td>
+                        <td>${log.ip_address || '-'}</td>
+                        <td><span class="badge ${deviceClass}">${log.device_type || '-'}</span></td>
+                        <td>${log.browser || '-'}</td>
+                    `;
+                });
+
+                // 페이지 정보 업데이트
+                document.getElementById('pageInfo').textContent = `${currentPage} / ${totalPages || 1}`;
+                document.getElementById('prevBtn').disabled = currentPage <= 1;
+                document.getElementById('nextBtn').disabled = currentPage >= totalPages;
+
+            } catch (error) {
+                console.error('Logs load error:', error);
+            }
+        }
+
+        // 페이지 변경
+        function changePage(delta) {
+            currentPage += delta;
+            loadLogs();
+        }
+
+        // 파일 종류 라벨
+        function getFileTypeLabel(type) {
+            const labels = {
+                'pdf': 'PDF',
+                'docx': 'DOCX',
+                'appendix': '부록',
+                'comparison': '신구대비표',
+                'history': '수정이력'
+            };
+            return labels[type] || type;
+        }
+
+        // 텍스트 자르기
+        function truncateText(text, maxLength) {
+            if (!text) return '-';
+            return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+        }
+
+        // CSV 내보내기
+        async function exportToCSV() {
+            try {
+                const response = await fetch(`/api/v1/download-logs/logs?limit=10000`);
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error('데이터 조회 실패');
+                }
+
+                // CSV 생성
+                const headers = ['시간', '규정ID', '규정명', '공포번호', '파일종류', '파일명', 'IP', '디바이스', '브라우저', 'OS'];
+                let csv = '\uFEFF' + headers.join(',') + '\n';  // UTF-8 BOM 추가
+
+                result.data.forEach(log => {
+                    const row = [
+                        log.downloaded_at,
+                        log.rule_id || '',
+                        (log.rule_name || '').replace(/,/g, ' '),
+                        log.rule_pubno || '',
+                        log.file_type,
+                        (log.file_name || '').replace(/,/g, ' '),
+                        log.ip_address || '',
+                        log.device_type || '',
+                        log.browser || '',
+                        log.os || ''
+                    ];
+                    csv += row.join(',') + '\n';
+                });
+
+                // 다운로드
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `download_logs_${new Date().toISOString().split('T')[0]}.csv`;
+                link.click();
+
+            } catch (error) {
+                console.error('CSV export error:', error);
+                alert('CSV 내보내기 실패: ' + error.message);
+            }
+        }
+
+        // 초기 로드
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDashboard();
+            // 5분마다 자동 새로고침
+            setInterval(loadDashboard, 5 * 60 * 1000);
+        });
+    </script>
+</body>
+</html>

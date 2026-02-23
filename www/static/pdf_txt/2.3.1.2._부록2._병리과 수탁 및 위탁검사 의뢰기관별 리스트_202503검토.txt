@@ -1,0 +1,23 @@
+대외비
+세브란스병원 내규 2.3.1.2. 검체검사 검사과정 관리 - 병리과
+2.3.1.2. 부록 2.
+병리과 수탁 및 위탁검사 의뢰기관별 리스트
+담당부서 병리과
+제정일 최종개정일 2022.11. 최종검토일 2025.03.
+대외비
+병리과 수탁 및 위탁검사 의뢰기관별 리스트
+1. 위탁 검사 목록
+N 기관명 검사명 검사코드
+1 녹십자 의료재단 HRD검사 W2198
+2 SCL(Seoul Clinical Laboratories) C-Kit 유전자 돌연변이 검사 W3162
+2 SCL(Seoul Clinical Laboratories) 항암제 반응성 검사 6종 W3157A
+3 SCL(Seoul Clinical Laboratories) PDGFRA 유전자 염기서열검사 W3642
+4 SCL(Seoul Clinical Laboratories) 위암예후예측 유전자 진단검사 W3709
+5 SCL(Seoul Clinical Laboratories) PIK3CA동반진단검사 W3729
+2. 수탁 검사 기관 목록
+N 기관명 비고
+Muscle,
+1 녹십자 의료재단
+면역병리,분자병리
+2 삼광의료재단 면역병리
+1

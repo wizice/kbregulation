@@ -1,0 +1,99 @@
+4.3.5.부록4.
+제정일: 2022.3 개정일: 2025.1.
+검토일: 2022.11.
+기안부서: 약무국 전해질 대체요법에 대한 표준 프로토콜 [저칼륨혈증 (Hypokalemia)]
+
+1. 정의 : K+<3.5 mEq/L
+
+2. 분류
+1) 3.0-3.5 mEq/L : 치료가 급한 것은 아님.
+
+2) 응급 치료의 적응증 ∙ 응급 수술 예정, 관상동맥질환 존재시, digitalis 복용 중 ∙ 급성심근경색, 유의한 심실기외수축(ventricular ectopy)이 있는 경우 ∙ 골격근력 저하(호흡 부전 위험성 있는 경우)
+
+3. 임상양상
+1) K+<3.0 mEq/L : 무력감, 근육통, 장마비, 변비, 하지의 근력저하
+
+2) K+<2.5 mEq/L : 이완성마비, 반사저하(hyporeflexia), 강축(tetany), 호흡마비, 횡문근융해증
+
+3) 부정맥, 대사성 알칼리증, 저칼륨성 신증(hypokalemic nephropathy)
+
+4. 치료
+1) 경구 치료 : 만성, 경증 저칼륨혈증인 경우
+(1) 혈청 K+ 1 mmol/L 감소는 total body K+ deficit 200-400 mmol를 의미
+
+(2) 예방적 목적으로 20 mEq/day 정도의 경구 제재로 충분
+
+(3) 치료 목적으로 40-100 mEq/day 정도의 경구 복용(K-contin 8mEq/tab)
+
+2) 정맥 치료 : 중증 저칼륨혈증 or EKG 변화 동반시
+(1) 말초 정맥 <40 mEq/L, 중심 정맥 <60 mEq/L
+
+(2) 주입 속도: 말초정맥 <10 mEq/hr, 중심정맥 <20 mEq/hr
+
+(3) 응급시 5-10 mEq KCl을 15-20분에 걸쳐 투여
+
+(4) KCl은 normal saline에 투여 : DW 투여시 insulin-mediated shift 됨
+
+(5) 하루에 투여되는 총 K+ 양이 200 mEq를 넘지 않도록 함 [소아]
+
+1) 증세가 없는 경우 : 원인 질환에 대한 치료 및 필요시 경구 2~4 mEq/kg/d, 최대 120~240 mEq/d를 분복
+
+2) 증세가 있는 경우 : 경정맥 0.5~1 mEq/kg 을 1시간에 걸쳐 투여. (최대 40 mEq)
+
+4.3.5.부록4.
+
+5. 원내 약품 목록
+◈ 시판 KCl 함유 수액 7종 K+함량 공급 약품명 성분명 단위/제형 비고 (mEq) 회사 Dextrose 50 g 1,000ml/Ba K+ 30mEq를 함유한 DW 5% NAK1 inj Potassium Chloride 2.2 g 30 중외 g half saline과 5% DW 혼합액 Sodium Chloride 4.5 g Dextrose 50 g 1,000ml/Ba K+ 20mEq를 함유한 DW 5% NAK2 inj Potassium Chloride 1.5 g 20 중외 g half saline과 5% DW 혼합액 Sodium Chloride 4.5 g Dextrose 25 g Potassium Chloride 0.75 K+ 10mEq를 함유한 DW 5% NAK3 inj 500ml/bag 10 CJ g 0.23% NaCl과 5% DW 혼합액 Sodium Chloride 1.0 g Dextrose 100g 1,000ml/Ba K+ 30mEq를 함유한 DW 10% NAK1 inj Potassium Chloride 2.2g 30 중외 g half saline과 10% DW 혼합액 Sodium Chloride 4.5g Dextrose 100g DW 10% NAK2 inj 1,000ml/Ba K+ 20mEq를 함유한 Potassium Chloride 1.5g 20 중외 g half saline과 10% DW 혼합액 Sodium Chloride 4.5g Potassium Chloride 3g 1,000ml/Ba NS 0.9% NAK 40 inj 40 중외 K+ 40mEq를 함유한 saline Sodium Chloride 9g g NaK inj 200 Potassium Chloride 1.5g 100ml/Btl 20 중외 K+ 20mEq를 함유한 saline (중심정맥용) Sodium Chloride 0.9g
+
+◈ 조제 KCl inj 2종 약품명 조성 제형 K+햠량 비고 K20 D5W100 K 20 mEq + D5W 100 ml 100 ml/Btl 20 mEq 중심정맥용 K40 NS500 K 40 mEq + NS 500 ml 500 ml/Bag 40 mEq 말초정맥용
+
+◈ 경구제 2종 약품명 성분명 함량/제형 비고 K-Contin Potassium chloride 600mg/Tab 8 mEq/tab
+
+4.3.5.부록4.
+[저나트륨혈증 (Hyponatremia)]
+
+1. 정의 : 혈청 Na 농도<135 mEq/L
+
+2. 임상양상
+1) 혈청 Na 농도 130~135 mEq/L : 대부분 무증상
+
+2) 혈청 Na 농도 125~130 mEq/L : 일반적으로 무증상. 만성적인 경우 집중력 저하, 자세 및 보행 이상
+
+3) 혈청 Na 농도 110~125 mEq/L : 신경학적 증상 동반
+
+4) 혈청 Na 농도 <110 mEq/L : 응급치료 필요
+* 혈청 Na 농도가 120 mEq/L 이상에서는 대부분 무증상이나, 급성(즉, 2일 이내)으로 발병할 경우 이보다 높은 농도에서도 두통, 오심, 구토, 권태감, 기면, 발작, 혼수 등의 증상이 올 수 있 으며, 영구적인 신경학적 손상이 발생할 수 있다. 만성(기간 3일 이상)일 경우에는 세포내 용적 을 방어하기 위한 적응기전이 일어나므로 증상이 심하지 않을수 있다.
+
+3. 치료
+1) 저나트륨혈증 치료의 일반적인 권고사항 ∙ Initial rapid correction if associated with severe symptoms ∙ Maximum brain volume expansion: 8-10% (rigidity of the skull). Theoretically no need to increase initial SNa by more than 8% ∙ Maximum SNa correction <10-15 mEq/L/24 hours and lower than 10mEq/L/24 hours if associated risk factors for myelinolysis: hypokalemia, malnutrition, alcoholism, liver disese, burns ∙ Close monitoring of SNa : every 1-2 hours initially, then every 4 hours, particularly if urine output is high (>150 mL/hr)
+
+2) 급성 저나트륨혈증의 치료 ∙ Hypertonic saline (3% NaCl): 1-2 mL/kg of body weight/hr ∙ If severe antidiuresis, SNa will increase by about 1-2 mEq/L/hr and by 2-4 mEq/L/hr If combined with furosemide.
+∙ If associated with severe symptoms (seizure, obtundation, coma):
+➡ treat with 3% NaCl 4-5 mL/kg of body weight/hr for 1 or 2 hours.
+∙ Target: increase SNa by 4-6 mEq/L and interrupt correction when symptoms regress ※ 중심성 교탈수초증(central pontine myelinolysis, CPM) : 저나트륨혈증을 너무 빨리 교정하게 될 경우, 세포 밖으로 체액의 삼투성 이동 때문에 수초 (myelin sheath)로부터 신경세포(neuron)의 수축이 일어나 발생함. 대부분 24시간 이내 혈장 Na 농도를 12 mEq/L이상 교정할 때 발생 가능성 높음.
+[소아]
+
+4.3.5.부록4.
+
+1) 증세가 있는 경우 : 3% NaCl 주입(1mL/kg 주입 시 혈청 Na 1mEq/L가 오름).
+증세가 없어지면 하루에 12mEq/L 이상을 교정하지 않는다.
+
+2) 만성의 경우: 교정 속도를 더욱 천천히 한다.
+
+4. 원내 약품 목록 약품명 성분명 단위/제형 비고 NaCl 3% inj Sodium chloride(NaCl) 500ml/Btl NS 중외 inj 0.9% NaCl 100ml/Bag NS 이노엔 inj 0.9% NaCl 1000ml/Bag NS 이노엔 bag inj 0.9% NaCl 3000ml/Bag NS 중외 inj 0.9% NaCl 500ml/Bag Na-40 inj 11.7% Sodium chloride(NaCl) 20ml/A 40mEq/20ml/A Sodium chloride reagent Sodium chloride(NaCl) 1g/g 경구제(원료의약품) Sodium acetate inj Sodium acetate 100ml/V 200mEq/100ml/V
+
+4.3.5.부록4.
+[저인산혈증(Hypophosphatemia)]
+
+1. 정의 : 혈중 인산 농도 <2.5 mg/dL
+
+2. 임상양상 및 치료
+1) 혈중 인산 농도 1.5 mg/dL 이상인 경우: 대부분 무증상이므로 인산 투여는 필요하지 않고 원인 질환 치료로 충분하다.
+
+2) 증상이 있거나 만성적으로 인산 소실이 있는 경우: 인산을 보충한다. 경정맥 인산 투여는 칼슘과 결합하여 침전물을 형성하는 부작용(저칼슘혈증, 신부전, 부정맥)을 초래할 수 있기 때문 에 경구 인산 투여가 우선이다.
+(1) 경구 인산 투여는 하루 750-2000 mg을 분할 투여한다.
+
+(2) 경정맥 인산 투여는 최대 2.5 mg (0.08 mmol)/kg/6hours를 넘지않도록 하고 혈중 인산 농도가 2.0 mg/dL에 도달하면 경구 투여로 전환한다.
+
+3. 원내 약품 목록 약품명 성분명 단위/제형 비고 Phosphorus 250mg, Phospha sodium 298mg(13mEq), 1T/T 경구제 250 neutral potassium 45mg(1.1mEq) ∙ 칼륨결핍을 수반하는 저인산혈증 Phosten inj KH 2 PO 4 (IVF) 20ml/A ∙ K:20mmol/V (K+ 1mmol, PO 3- 1mmol/ml) 참고자료:
+내과전공의를 위한 진료지침 홍창의 소아과학 제10판

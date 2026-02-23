@@ -1,0 +1,20 @@
+13.2.1. 부록 2.
+수련의 의무기록 작성 권한 및 감독 수준 담당부서 의무기록위원회 제정일 2012.12. 최종개정일 최종검토일 2025.03.
+
+수련의 의무기록 작성 권한 및 감독 수준 Medical trainee Supervision Medical Record Documentation 의무기록 서식명 레지던트 인턴 구분 Name of medical record Resident Intern 입원기록  / Once Admission note 치료계획  / Daily  / Daily Care plan 의사지시
+
+* NA 입원 Expire Note Inpatient 협의진료의뢰서
+
+* NA Consultation Answer Sheet 타기관 이송 중 기록
+
+* NA Operation note 마취기록
+
+* NA Anesthesia record 수술 전 환자 상태 평가 기록  / Once Pre-operation Patient Assessment 수술 후 환자 상태 평가 기록  / Once  / Once Post-operation evaluation note 마취 전 환자 상태 평가
+
+* NA Referral letter/certificate 외래 외래기록
+
+* NA Outpatient OPD medical record
+
+* = 작성할 수 있음(Authorized for documentation)  = 주치의 공동서명 필요함 (Authorized for documentation with countersign from attending physician) / = 주치의 공동서명 빈도 및 주기 (Deadline or frequency of countersign) NA=작성할 수 없음Not applicable (Not authorized for documentation)
+
+주) 의과대학생은 의무기록 기록 및 처방 권한 없음 The medical student cannot document for patient medical record and have no authority for doctor’s order.

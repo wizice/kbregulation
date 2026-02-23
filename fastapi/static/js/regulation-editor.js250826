@@ -1,0 +1,808 @@
+// regulation-editor.js - 메인 편집기 기능
+
+const RegulationEditor = {
+    // 상태 관리
+    regulations: [],
+    selectedRegulations: new Set(),
+    openEditWindows: new Map(),
+    
+    // 샘플 데이터 (개정일과 분류 추가)
+    sampleRegulations: [
+        {
+            id: 1,
+            title: '인사관리규정',
+            department: '인사팀',
+            revisionDate: '2024-03-01',  // 개정일 추가
+            classification: '2.1',         // 분류 추가
+            announceDate: '2024-01-15',
+            effectiveDate: '2024-02-01',
+            status: 'active',
+            version: '1.0',
+            content: {
+                articles: [
+                    { number: 1, title: '목적', content: '이 규정은 회사의 인사관리에 관한 사항을 정함을 목적으로 한다.' },
+                    { number: 2, title: '적용범위', content: '이 규정은 전 직원에게 적용된다.' }
+                ],
+                appendix: '이 규정은 2024년 2월 1일부터 시행한다.',
+                history: []
+            }
+        },
+        {
+            id: 2,
+            title: '재무관리규정',
+            department: '재무팀',
+            revisionDate: '2024-03-15',  // 개정일 추가
+            classification: '3.1',         // 분류 추가
+            announceDate: '2024-03-01',
+            effectiveDate: '2024-03-15',
+            status: 'review',
+            version: '2.1',
+            content: {
+                articles: [],
+                appendix: '',
+                history: [
+                    { date: '2023-01-01', type: '제정', description: '최초 제정' },
+                    { date: '2024-03-01', type: '일부개정', description: '예산 관리 조항 수정' }
+                ]
+            }
+        },
+        {
+            id: 3,
+            title: '정보보안규정',
+            department: 'IT팀',
+            revisionDate: '2024-02-20',  // 개정일 추가
+            classification: '5.2',         // 분류 추가
+            announceDate: '2024-02-20',
+            effectiveDate: '2024-03-01',
+            status: 'draft',
+            version: '1.0',
+            content: {
+                articles: [],
+                appendix: '',
+                history: []
+            }
+        }
+    ],
+
+    // 날짜 형식 변환 함수
+    formatDateForDisplay(dateString) {
+        if (!dateString) return '-';
+        
+        // YYYY-MM-DD 형식을 YYYY.MM.DD. 형식으로 변환
+        if (dateString.includes('-')) {
+            const parts = dateString.split('-');
+            if (parts.length === 3) {
+                return `${parts[0]}.${parts[1]}.${parts[2]}.`;
+            }
+        }
+        
+        // 이미 올바른 형식이면 그대로 반환
+        return dateString;
+    },
+
+    // 초기화
+    init() {
+        this.regulations = [...this.sampleRegulations];
+        this.loadRegulations();
+        this.setupEventListeners();
+    },
+
+    // 규정 목록 로드
+    loadRegulations() {
+        const tbody = document.getElementById('regulationList');
+        tbody.innerHTML = '';
+
+        this.regulations.forEach(reg => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>
+                    <input type="checkbox" class="row-checkbox" value="${reg.id}" 
+                           onchange="RegulationEditor.toggleSelection(${reg.id})">
+                </td>
+                <td><strong>${reg.title}</strong></td>
+                <td>${reg.revisionDate ? this.formatDateForDisplay(reg.revisionDate) : '-'}</td>
+                <td>
+                    <span class="classification-badge">${reg.classification || '미분류'}</span>
+                </td>
+                <td>${reg.department}</td>
+                <td>${reg.announceDate ? this.formatDateForDisplay(reg.announceDate) : '-'}</td>
+                <td>${reg.effectiveDate ? this.formatDateForDisplay(reg.effectiveDate) : '-'}</td>
+                <td>
+                    <span class="status-badge status-${reg.status}">
+                        ${this.getStatusText(reg.status)}
+                    </span>
+                </td>
+                <td>${reg.version}</td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="action-btn btn-primary" onclick="RegulationEditor.openEditWindow(${reg.id})">
+                            ✏️ 편집
+                        </button>
+                        <button class="action-btn btn-info" onclick="RegulationEditor.viewRegulation(${reg.id})">
+                            👁️ 보기
+                        </button>
+                        <button class="action-btn btn-warning" onclick="RegulationEditor.duplicateRegulation(${reg.id})">
+                            📋 개정
+                        </button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    },
+
+    // 상태 텍스트 변환
+    getStatusText(status) {
+        const statusMap = {
+            'active': '시행중',
+            'draft': '작성중',
+            'review': '검토중',
+            'revision': '개정중'
+        };
+        return statusMap[status] || status;
+    },
+
+    // 탭 전환
+    switchTab(tab) {
+        // 탭 버튼 활성화
+        document.querySelectorAll('.nav-tab').forEach(t => {
+            t.classList.remove('active');
+        });
+        event.target.classList.add('active');
+        
+        // 탭 컨텐츠 전환
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        
+        const tabContent = document.getElementById(tab + 'Tab');
+        if (tabContent) {
+            tabContent.classList.add('active');
+        }
+        
+        // 탭별 데이터 로드
+        switch(tab) {
+            case 'history':
+                this.loadHistoryList();
+                break;
+            case 'department':
+                if (typeof DepartmentManager !== 'undefined') {
+                    DepartmentManager.init();
+                }
+                break;
+            case 'classification':
+                if (typeof ClassificationManager !== 'undefined') {
+                    ClassificationManager.loadData();
+                }
+                break;
+            case 'elasticsearch':
+                if (typeof SearchEngine !== 'undefined') {
+                    SearchEngine.loadStatus();
+                }
+                break;
+            case 'service':
+                if (typeof ServiceManager !== 'undefined') {
+                    ServiceManager.loadStatus();
+                }
+                break;
+        }
+    },
+
+    // 연혁 목록 로드
+    loadHistoryList() {
+        const historyData = [
+            { regulation: '인사관리규정', revision: 3, date: '2024-03-15', type: '일부개정', reason: '승진 기준 변경' },
+            { regulation: '재무관리규정', revision: 2, date: '2024-03-01', type: '일부개정', reason: '예산 관리 조항 수정' },
+            { regulation: '연명의료결정 환자 진료', revision: 5, date: '2025-03-25', type: '전면개정', reason: '연명의료결정법 개정' }
+        ];
+        
+        const tbody = document.getElementById('historyList');
+        if (!tbody) return;
+        
+        tbody.innerHTML = '';
+        
+        historyData.forEach(item => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${item.regulation}</td>
+                <td>${item.revision}차</td>
+                <td>${item.date}</td>
+                <td><span class="status-badge status-active">${item.type}</span></td>
+                <td>${item.reason}</td>
+                <td>
+                    <button class="action-btn btn-primary">상세보기</button>
+                    <button class="action-btn btn-secondary">비교</button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    },
+
+    // 제정 모달 열기
+    openNewModal() {
+        document.getElementById('newModal').classList.add('active');
+        this.clearNewForm();
+    },
+
+    closeNewModal() {
+        document.getElementById('newModal').classList.remove('active');
+    },
+
+    clearNewForm() {
+        document.getElementById('newTitle').value = '';
+        document.getElementById('newDepartment').value = '';
+        document.getElementById('newType').value = 'new';
+        document.getElementById('fileUploadSection').style.display = 'none';
+    },
+
+    // 신규 등록
+    createNew() {
+        const title = document.getElementById('newTitle').value;
+        const department = document.getElementById('newDepartment').value;
+        const type = document.getElementById('newType').value;
+
+        if (!title || !department) {
+            alert('필수 항목을 입력해주세요.');
+            return;
+        }
+
+        // 새 규정 생성
+        const newRegulation = {
+            id: Date.now(),
+            title: title,
+            department: department,
+            revisionDate: new Date().toISOString().split('T')[0],  // 개정일 추가
+            classification: '',  // 분류는 나중에 설정
+            announceDate: new Date().toISOString().split('T')[0],
+            effectiveDate: '',
+            status: 'draft',
+            version: '1.0',
+            content: {
+                articles: [],
+                appendix: '',
+                attachments: [],
+                history: [{
+                    date: new Date().toISOString().split('T')[0],
+                    type: '제정',
+                    description: '신규 제정'
+                }]
+            }
+        };
+
+        this.regulations.push(newRegulation);
+        this.loadRegulations();
+        this.closeNewModal();
+
+        // 편집 창 열기
+        setTimeout(() => {
+            this.openEditWindow(newRegulation.id, true);
+        }, 300);
+
+        this.showNotification(`"${title}" 규정이 생성되었습니다. 편집 창을 엽니다.`, 'success');
+    },
+
+    // 개정 모달
+    openRevisionModal() {
+        if (this.selectedRegulations.size !== 1) {
+            alert('개정할 규정을 하나만 선택해주세요.');
+            return;
+        }
+
+        const regId = Array.from(this.selectedRegulations)[0];
+        const regulation = this.regulations.find(r => r.id == regId);
+
+        if (regulation) {
+            // 날짜 갱신 팝업
+            const today = new Date().toISOString().split('T')[0];
+            const announceDate = prompt('공포일자를 입력하세요 (YYYY-MM-DD):', today);
+            
+            if (!announceDate) {
+                return; // 취소
+            }
+            
+            const effectiveDate = prompt('시행일자를 입력하세요 (YYYY-MM-DD):', today);
+            
+            if (!effectiveDate) {
+                return; // 취소
+            }
+            
+            const revisionReason = prompt('개정 사유를 입력하세요:', '');
+            
+            if (!revisionReason) {
+                alert('개정 사유를 입력해주세요.');
+                return;
+            }
+            
+            // 개정 처리
+            this.createRevisionWithDates(regId, announceDate, effectiveDate, revisionReason);
+        }
+    },
+
+    // 날짜 정보와 함께 개정 생성
+    createRevisionWithDates(regId, announceDate, effectiveDate, revisionReason) {
+        const original = this.regulations.find(r => r.id == regId);
+        
+        // 원본 복사하여 새 버전 생성
+        const revision = JSON.parse(JSON.stringify(original));
+        revision.id = Date.now();
+        revision.title = `${original.title}`;
+        revision.status = 'revision';
+        revision.version = this.incrementVersion(original.version);
+        revision.announceDate = announceDate;
+        revision.effectiveDate = effectiveDate;
+        revision.revisionDate = new Date().toISOString().split('T')[0];  // 개정일 업데이트
+        
+        // 개정 이력 추가
+        revision.content.history.push({
+            date: new Date().toISOString().split('T')[0],
+            type: '일부개정',
+            description: revisionReason,
+            previousVersion: original.version
+        });
+
+        this.regulations.push(revision);
+        this.loadRegulations();
+        
+        // 편집 창 열기
+        setTimeout(() => {
+            this.openEditWindow(revision.id, false, true);
+        }, 300);
+
+        this.showNotification(`"${original.title}" 규정이 개정되었습니다.\n공포일: ${announceDate}\n시행일: ${effectiveDate}`, 'success');
+    },
+
+    closeRevisionModal() {
+        document.getElementById('revisionModal').classList.remove('active');
+    },
+
+    // 개정 생성 (기존 메서드는 제거하거나 위 메서드로 대체)
+    createRevision() {
+        const regId = Array.from(this.selectedRegulations)[0];
+        const original = this.regulations.find(r => r.id == regId);
+        const revisionType = document.getElementById('revisionType').value;
+        const revisionReason = document.getElementById('revisionReason').value;
+
+        if (!revisionReason) {
+            alert('개정 사유를 입력해주세요.');
+            return;
+        }
+
+        // 원본 복사하여 새 버전 생성
+        const revision = JSON.parse(JSON.stringify(original));
+        revision.id = Date.now();
+        revision.title = `${original.title} (개정)`;
+        revision.status = 'revision';
+        revision.version = this.incrementVersion(original.version);
+        revision.announceDate = new Date().toISOString().split('T')[0];
+        revision.revisionDate = new Date().toISOString().split('T')[0];  // 개정일 업데이트
+        
+        // 개정 이력 추가
+        revision.content.history.push({
+            date: new Date().toISOString().split('T')[0],
+            type: revisionType === 'full' ? '전면개정' : revisionType === 'partial' ? '일부개정' : '경미한 수정',
+            description: revisionReason,
+            previousVersion: original.version
+        });
+
+        this.regulations.push(revision);
+        this.loadRegulations();
+        this.closeRevisionModal();
+
+        // 편집 창 열기
+        setTimeout(() => {
+            this.openEditWindow(revision.id, false, true);
+        }, 300);
+
+        this.showNotification(`"${original.title}" 규정의 개정 버전이 생성되었습니다.`, 'success');
+    },
+
+    // 버전 증가
+    incrementVersion(version) {
+        const parts = version.split('.');
+        const minor = parseInt(parts[1] || 0) + 1;
+        return `${parts[0]}.${minor}`;
+    },
+
+    // 편집 창 열기 (새 창)
+    openEditWindow(regId, isNew = false, isRevision = false) {
+        // 이미 열려있는지 확인
+        if (this.openEditWindows.has(regId)) {
+            const existingWindow = this.openEditWindows.get(regId);
+            if (!existingWindow.closed) {
+                existingWindow.focus();
+                return;
+            }
+        }
+
+        const regulation = this.regulations.find(r => r.id == regId);
+        if (!regulation) return;
+
+        // 편집 창 URL 생성
+        const editUrl = `edit.html?id=${regId}&new=${isNew}&revision=${isRevision}`;
+        
+        // 새 창 열기
+        const features = 'width=1200,height=800,menubar=no,toolbar=no,location=no,status=yes,resizable=yes,scrollbars=yes';
+        const editWindow = window.open('', `edit_${regId}`, features);
+        
+        // 편집 창 내용 생성
+        if (typeof EditWindow !== 'undefined') {
+            editWindow.document.write(EditWindow.generateHTML(regulation, isNew, isRevision));
+        } else {
+            // EditWindow 모듈이 로드되지 않은 경우 기본 HTML
+            editWindow.document.write(this.generateBasicEditHTML(regulation));
+        }
+        
+        // 창 관리
+        this.openEditWindows.set(regId, editWindow);
+        this.updateOpenWindowsList();
+        
+        // 창 닫힘 감지
+        editWindow.onbeforeunload = () => {
+            this.openEditWindows.delete(regId);
+            this.updateOpenWindowsList();
+        };
+    },
+
+    // 기본 편집 HTML 생성
+    generateBasicEditHTML(regulation) {
+        return `
+            <!DOCTYPE html>
+            <html lang="ko">
+            <head>
+                <meta charset="UTF-8">
+                <title>편집 - ${regulation.title}</title>
+                <style>
+                    body { font-family: sans-serif; padding: 20px; }
+                    h1 { color: #667eea; }
+                </style>
+            </head>
+            <body>
+                <h1>${regulation.title} 편집</h1>
+                <p>부서: ${regulation.department}</p>
+                <p>버전: ${regulation.version}</p>
+                <button onclick="window.close()">닫기</button>
+            </body>
+            </html>
+        `;
+    },
+
+    // 열린 창 목록 업데이트
+    updateOpenWindowsList() {
+        const windowList = document.getElementById('windowList');
+        const container = document.getElementById('openWindows');
+        
+        if (this.openEditWindows.size === 0) {
+            container.style.display = 'none';
+            return;
+        }
+        
+        container.style.display = 'block';
+        windowList.innerHTML = '';
+        
+        this.openEditWindows.forEach((window, regId) => {
+            if (!window.closed) {
+                const regulation = this.regulations.find(r => r.id == regId);
+                const item = document.createElement('div');
+                item.className = 'window-item';
+                item.innerHTML = `
+                    <span>${regulation.title}</span>
+                    <button onclick="RegulationEditor.focusEditWindow(${regId})">이동</button>
+                `;
+                windowList.appendChild(item);
+            }
+        });
+    },
+
+    // 편집 창 포커스
+    focusEditWindow(regId) {
+        const window = this.openEditWindows.get(regId);
+        if (window && !window.closed) {
+            window.focus();
+        }
+    },
+
+    // 선택 관리
+    toggleSelection(regId) {
+        const checkbox = document.querySelector(`input[value="${regId}"]`);
+        const row = checkbox.closest('tr');
+        
+        if (this.selectedRegulations.has(regId)) {
+            this.selectedRegulations.delete(regId);
+            row.classList.remove('selected');
+        } else {
+            this.selectedRegulations.add(regId);
+            row.classList.add('selected');
+        }
+        
+        this.updateSelectionUI();
+    },
+
+    toggleSelectAll() {
+        const selectAll = document.getElementById('selectAll').checked;
+        const checkboxes = document.querySelectorAll('.row-checkbox');
+        
+        checkboxes.forEach(cb => {
+            cb.checked = selectAll;
+            const regId = parseInt(cb.value);
+            const row = cb.closest('tr');
+            
+            if (selectAll) {
+                this.selectedRegulations.add(regId);
+                row.classList.add('selected');
+            } else {
+                this.selectedRegulations.delete(regId);
+                row.classList.remove('selected');
+            }
+        });
+        
+        this.updateSelectionUI();
+    },
+
+    updateSelectionUI() {
+        document.getElementById('selectedCount').textContent = this.selectedRegulations.size;
+        
+        const hasSelection = this.selectedRegulations.size > 0;
+        document.getElementById('deleteBtn').disabled = !hasSelection;
+        document.getElementById('revisionBtn').disabled = this.selectedRegulations.size !== 1;
+    },
+
+    // 규정 복사
+    duplicateRegulation(regId) {
+        const original = this.regulations.find(r => r.id == regId);
+        if (!original) return;
+        
+        const copy = JSON.parse(JSON.stringify(original));
+        copy.id = Date.now();
+        copy.title = `${original.title} (복사본)`;
+        copy.status = 'draft';
+        copy.announceDate = new Date().toISOString().split('T')[0];
+        copy.revisionDate = new Date().toISOString().split('T')[0];  // 개정일 업데이트
+        
+        this.regulations.push(copy);
+        this.loadRegulations();
+        
+        this.showNotification(`"${original.title}" 규정이 복사되었습니다.`, 'success');
+        
+        // 복사본 편집 창 열기
+        setTimeout(() => {
+            this.openEditWindow(copy.id);
+        }, 300);
+    },
+
+    // 규정 보기
+    viewRegulation(regId) {
+        const regulation = this.regulations.find(r => r.id == regId);
+        if (regulation) {
+            const viewWindow = window.open('', `view_${regId}`, 'width=800,height=600');
+            viewWindow.document.write(`
+                <html>
+                <head>
+                    <title>${regulation.title}</title>
+                    <style>
+                        body { font-family: sans-serif; padding: 20px; }
+                        h1 { color: #667eea; }
+                        .info-row { margin: 5px 0; }
+                    </style>
+                </head>
+                <body>
+                    <h1>${regulation.title}</h1>
+                    <div class="info-row"><strong>부서:</strong> ${regulation.department}</div>
+                    <div class="info-row"><strong>분류:</strong> ${regulation.classification || '미분류'}</div>
+                    <div class="info-row"><strong>개정일:</strong> ${regulation.revisionDate ? this.formatDateForDisplay(regulation.revisionDate) : '-'}</div>
+                    <div class="info-row"><strong>시행일:</strong> ${regulation.effectiveDate ? this.formatDateForDisplay(regulation.effectiveDate) : '-'}</div>
+                    <div class="info-row"><strong>버전:</strong> ${regulation.version}</div>
+                    <hr>
+                    <h2>조문</h2>
+                    ${regulation.content.articles.map(a => `
+                        <h3>제${a.number}조 (${a.title})</h3>
+                        <p>${a.content}</p>
+                    `).join('')}
+                </body>
+                </html>
+            `);
+        }
+    },
+
+    // 선택 삭제
+    deleteSelected() {
+        if (!confirm(`선택한 ${this.selectedRegulations.size}개 규정을 삭제하시겠습니까?`)) {
+            return;
+        }
+        
+        this.regulations = this.regulations.filter(r => !this.selectedRegulations.has(r.id));
+        this.selectedRegulations.clear();
+        this.loadRegulations();
+        this.updateSelectionUI();
+        
+        this.showNotification('선택한 규정이 삭제되었습니다.', 'success');
+    },
+
+    // 내보내기
+    exportSelected() {
+        if (this.selectedRegulations.size === 0) {
+            alert('내보낼 규정을 선택해주세요.');
+            return;
+        }
+        
+        const selectedRegs = this.regulations.filter(r => this.selectedRegulations.has(r.id));
+        const dataStr = JSON.stringify(selectedRegs, null, 2);
+        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+        
+        const exportFileDefaultName = `regulations_export_${new Date().toISOString().split('T')[0]}.json`;
+        
+        const linkElement = document.createElement('a');
+        linkElement.setAttribute('href', dataUri);
+        linkElement.setAttribute('download', exportFileDefaultName);
+        linkElement.click();
+        
+        this.showNotification('선택한 규정이 내보내기되었습니다.', 'success');
+    },
+
+    // 검색
+    searchRegulations() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const department = document.getElementById('departmentFilter').value;
+        const status = document.getElementById('statusFilter').value;
+        const period = document.getElementById('periodFilter').value;
+        
+        let filtered = [...this.regulations];
+        
+        // 검색어 필터
+        if (searchTerm) {
+            filtered = filtered.filter(reg => 
+                reg.title.toLowerCase().includes(searchTerm) ||
+                reg.department.toLowerCase().includes(searchTerm)
+            );
+        }
+        
+        // 부서 필터
+        if (department) {
+            filtered = filtered.filter(reg => reg.department === department);
+        }
+        
+        // 상태 필터
+        if (status) {
+            filtered = filtered.filter(reg => reg.status === status);
+        }
+        
+        // 기간 필터
+        if (period) {
+            const now = new Date();
+            const filterDate = new Date();
+            
+            switch(period) {
+                case '1m':
+                    filterDate.setMonth(now.getMonth() - 1);
+                    break;
+                case '3m':
+                    filterDate.setMonth(now.getMonth() - 3);
+                    break;
+                case '6m':
+                    filterDate.setMonth(now.getMonth() - 6);
+                    break;
+                case '1y':
+                    filterDate.setFullYear(now.getFullYear() - 1);
+                    break;
+            }
+            
+            filtered = filtered.filter(reg => 
+                new Date(reg.announceDate) >= filterDate
+            );
+        }
+        
+        // 결과 표시
+        this.displayFilteredRegulations(filtered);
+        this.showNotification(`${filtered.length}개의 규정이 검색되었습니다.`, 'info');
+    },
+
+    // 필터링된 규정 표시
+    displayFilteredRegulations(filtered) {
+        const tbody = document.getElementById('regulationList');
+        tbody.innerHTML = '';
+        
+        if (filtered.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 40px;">검색 결과가 없습니다.</td></tr>';
+            return;
+        }
+        
+        filtered.forEach(reg => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>
+                    <input type="checkbox" class="row-checkbox" value="${reg.id}" 
+                           onchange="RegulationEditor.toggleSelection(${reg.id})">
+                </td>
+                <td><strong>${reg.title}</strong></td>
+                <td>${reg.revisionDate ? this.formatDateForDisplay(reg.revisionDate) : '-'}</td>
+                <td>
+                    <span class="classification-badge">${reg.classification || '미분류'}</span>
+                </td>
+                <td>${reg.department}</td>
+                <td>${reg.announceDate ? this.formatDateForDisplay(reg.announceDate) : '-'}</td>
+                <td>${reg.effectiveDate ? this.formatDateForDisplay(reg.effectiveDate) : '-'}</td>
+                <td>
+                    <span class="status-badge status-${reg.status}">
+                        ${this.getStatusText(reg.status)}
+                    </span>
+                </td>
+                <td>${reg.version}</td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="action-btn btn-primary" onclick="RegulationEditor.openEditWindow(${reg.id})">
+                            ✏️ 편집
+                        </button>
+                        <button class="action-btn btn-info" onclick="RegulationEditor.viewRegulation(${reg.id})">
+                            👁️ 보기
+                        </button>
+                        <button class="action-btn btn-warning" onclick="RegulationEditor.duplicateRegulation(${reg.id})">
+                            📋 복사
+                        </button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    },
+
+    // 알림 표시
+    showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type}`;
+        notification.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px; animation: slideUp 0.3s;';
+        
+        const icon = {
+            'success': '✅',
+            'error': '❌',
+            'warning': '⚠️',
+            'info': 'ℹ️'
+        }[type] || 'ℹ️';
+        
+        notification.innerHTML = `
+            <span>${icon}</span>
+            <span>${message}</span>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.animation = 'fadeOut 0.3s';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    },
+
+    // 이벤트 리스너 설정
+    setupEventListeners() {
+        // 등록 유형 변경시 파일 업로드 섹션 표시/숨김
+        const newType = document.getElementById('newType');
+        if (newType) {
+            newType.addEventListener('change', (e) => {
+                document.getElementById('fileUploadSection').style.display = 
+                    e.target.value === 'hwpx' ? 'block' : 'none';
+            });
+        }
+        
+        // 엔터키로 검색
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    this.searchRegulations();
+                }
+            });
+        }
+    },
+
+    // 로그아웃
+    logout() {
+        if (confirm('로그아웃 하시겠습니까?')) {
+            alert('로그아웃되었습니다.');
+            // 실제 구현시 로그아웃 처리
+            // window.location.href = '/logout';
+        }
+    }
+};
+
+// 페이지 로드시 초기화
+document.addEventListener('DOMContentLoaded', () => {
+    RegulationEditor.init();
+});

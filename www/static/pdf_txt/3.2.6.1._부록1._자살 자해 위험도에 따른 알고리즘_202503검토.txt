@@ -1,0 +1,3 @@
+3.2.6.1. 부록1. 자살 자해 위험도에 따른 알고리즘 담당부서 정신건강의학과, 소아정신과 제정일 2018.09. 최종개정일 2021.01. 최종검토일 2025.03.
+
+* 자살, 자해위험도에 따른 알고리즘 임상적 자살 위험도평가 (SSS; Severance Suicide Scale) 임상적자해 위험도평가(SDSHS: Severance Deliberate Self Harm Scale) 저위험군 중등도 위험군 고위험군 SSS 0~5점, SDSHS 0~6점 SSS 6~13점, SDSHS 7~12점 SSS 14~20점, SDSHS 13~18점 Suicidal, Self-Harm precaution No Harm Contract 자해 및 자살 예방을위한안내문설명, 협조 요청 치료진판단 하에 개방병동(43B 병동) 또는 보호병동 (43A 병동)으로입원 보호병동(43A 병동)으로입원 보호자keep 여부 치료진이 결정 반드시보호자24 시간 keep 임상적 관찰 주 2회 재평가

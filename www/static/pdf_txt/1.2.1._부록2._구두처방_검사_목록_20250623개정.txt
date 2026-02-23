@@ -1,0 +1,11 @@
+1.2.1. 부록 2. 구두처방 검사 목록 담당부서 의료질향상 및 환자안전위원회 제정일 2024.08. 최종개정일 2025.06. 최종검토일 2025.06.
+
+구두처방 검사 목록
+
+1. 진단검사 분류 처방명 처방코드 일반혈액 CBC+PLT[Whole blood] YD0002C_1 WBC Differential Count[Whole blood] B109101 일반화학 K[Serum] C379204 Na[Serum] C379104 Cl[Serum] C379309 tCO2[Serum] C381202 Calcium[Serum] C379501 Inorganic P[Serum] C379401 BUN[Serum] C373001 Creatinine[Serum] C375002 Glucose[Serum] C371101 Uric Acid[Serum] C378001 Total Protein[Serum] C220001 Albumin[Serum] C221002 T. Bilirubin[Serum] C372001 Alk. Phos[Serum] B260201 AST(GOT)[Serum] B257001 ALT(GPT)[Serum] B258001 Ammonia(NH3)[Plasma] C387001 혈액응고 Prothrombin Time(PT)[Plasma] B154001 aPTT[Plasma] B153001 혈액가스 Venous Blood Gas Analysis[Venous Whole blood] C3815_1 Lacate[Venous Whole blood] C385002 Ca++ (Ionized)[Venous Whole blood] C379602 Mg++(Ionized)[Venous Whole blood] CX27602 Arterial Blood Gas Analysis(ABGA)[Arterial Whole blood] C381502 Lactate[Arterial Whole blood] C385001 Ca++ (Ionized)[Arterial Whole blood] C379603 Mg++(Ionized)[Arterial Whole blood] CX27601 Na[Arterial Whole blood] C379106 K[Arterial Whole blood] C379201 Cl[Arterial Whole blood] C379313 POCT Glucose(POCT)[Whole blood] C3710_2 (EG7+) Capillary ABG, Na, K, iCa [Capillary blood] YD0410_3 (G3+) Capillary pH, pCO2, pO2 [Capillary blood] D0410B_2 신속대응 (EG7+)ABG+ Na, K, iCa YD0410_1 신속대응 (CG4) ABG+ Lactate YD0410A_1 신속대응 (CHEM8+) Arterial Blood Chemistry YD2800_1
+
+2. 병리검사 분류 처방명 처방코드 동결절편 Frozen section -
+
+3. 영상검사 분류 처방명 처방코드 X-ray Chest AP(portable) YG2101A_7 Chest AP(PED)(portable) YG2101A_8 Abdomen flat(portable) YG2401_9 Neck AP, Lat(soft tissue) (portable) YG4102_7
+
+4. EKG 분류 처방명 처방코드 EKG Portable EKG(Routine) By Doctor E6541_5 Portable EKG(Routine) – 세브란스 E6541_3 Portable EKG(Routine) – 심혈관 by 임상병리사 E6541_64

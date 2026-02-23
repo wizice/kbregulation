@@ -1,0 +1,2989 @@
+let hospitalRegulations = {};
+
+let currentRegulation = null;
+let currentChapter = null;
+
+// 즐겨찾기
+let favoriteRegulations = JSON.parse(localStorage.getItem('favoriteRegulations') || '[]');
+let filteredFavorites = []; // 검색 필터링용
+
+// 검색 관련 전역 변수
+let currentSearchResults = [];
+let currentSearchTerm = '';
+let activeSearchType = 'all';
+
+// 레이아웃 설정 관련 전역 변수
+let currentLayoutMode = 2; // 기본값: 표준 모드
+// 글꼴 설정 관련 전역 변수
+let currentFontFamily = 'nanumsquare'; // 기본값: 연세체
+// ================================
+
+// 메인페이지로 새로고침 함수
+function refreshToMainPage() {
+    // 페이지 완전 새로고침
+    window.location.reload();
+}
+
+async function loadHospitalRegulations() {
+    try {
+        const response = await fetch('static/json/severance.json');
+        if (!response.ok) {
+            throw new Error('JSON 파일을 불러올 수 없습니다.');
+        }
+        const data = await response.json();
+        hospitalRegulations = data;
+        
+        // JSON 로드 완료 후 초기화 함수들 실행
+        initializeApplication();
+        
+    } catch (error) {
+        console.error('JSON 파일 로드 실패:', error);
+        // 에러 발생 시 사용자에게 알림
+        showToast('데이터 로드에 실패했습니다. 페이지를 새로고침해주세요.', 'error');
+    }
+}
+
+function initializeApplication() {
+    // 트리 메뉴 생성
+    generateTreeMenu();
+    
+    // 기타 초기화 작업이 필요한 경우 여기에 추가
+    console.log('애플리케이션 초기화 완료');
+}
+
+// ================================
+
+// 검색 탭 클릭 이벤트 처리
+// DOM이 완전히 로드된 후 실행
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM 로드 완료 - 검색 기능 초기화');
+   
+    // JSON 파일 로드 시작
+    loadHospitalRegulations();
+ 
+    // 페이지 로드 시 즐겨찾기 목록 초기화
+    updateFavoritesList();
+
+    // 검색 폼 이벤트 리스너 (기존 onsubmit 대신 addEventListener 사용)
+    const searchForm = document.querySelector('.search-form');
+    if (searchForm) {
+        // 기존 onsubmit 속성 제거
+        searchForm.removeAttribute('onsubmit');
+        
+        // 새로운 이벤트 리스너 추가
+        searchForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('검색 폼 제출됨');
+            performSearch(e);
+        });
+    }
+    
+    // 검색 버튼 직접 이벤트 리스너 추가
+    const searchBtn = document.querySelector('.search-btn');
+    if (searchBtn) {
+        searchBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('검색 버튼 클릭됨');
+            performSearch(e);
+        });
+    }
+    
+    // Enter 키 이벤트 추가
+    const searchInput = document.getElementById('mainSearchInput');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                console.log('Enter 키 눌림');
+                performSearch(e);
+            }
+        });
+    }
+    
+    // 검색 탭 이벤트 리스너 추가
+    document.querySelectorAll('.search-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            console.log('검색 탭 클릭:', this.dataset.type);
+            
+            // 모든 탭에서 active 클래스 제거
+            document.querySelectorAll('.search-tab').forEach(t => t.classList.remove('active'));
+            // 클릭한 탭에 active 클래스 추가
+            this.classList.add('active');
+            // 현재 검색 타입 업데이트
+            activeSearchType = this.dataset.type;
+            
+            // 이미 검색한 결과가 있다면 재검색
+            if (currentSearchTerm) {
+                console.log('기존 검색어로 재검색:', currentSearchTerm);
+                performSearchByType(currentSearchTerm, activeSearchType);
+            }
+        });
+    });
+
+    // 새창에서 보낸 메시지 처리
+    window.addEventListener('message', function(event) {
+        // 보안을 위해 origin 체크 (필요에 따라)
+        // if (event.origin !== window.location.origin) return;
+        
+        if (event.data && event.data.type === 'FAVORITES_UPDATED') {
+            // 새창에서 즐겨찾기가 업데이트되었을 때
+            favoriteRegulations = event.data.favoriteRegulations;
+            localStorage.setItem('favoriteRegulations', JSON.stringify(favoriteRegulations));
+            updateFavoritesList();
+            
+            // 현재 즐겨찾기 페이지가 열려있다면 업데이트
+            if (document.getElementById('contentBody').style.display !== 'none' && 
+                document.querySelector('.favorites-page')) {
+                displayFavoritesContent();
+            }
+            
+            // 현재 보고 있는 내규의 즐겨찾기 상태 업데이트
+            if (currentRegulation && currentChapter) {
+                const favoriteBtn = document.querySelector('.regulation-actions .action-btn[data-tooltip="즐겨찾기"]') ||
+                                   document.querySelector('.page-actions .action-btn[data-tooltip="즐겨찾기"]');
+                if (favoriteBtn) {
+                    if (isFavorite(currentRegulation, currentChapter)) {
+                        favoriteBtn.classList.add('active');
+                    } else {
+                        favoriteBtn.classList.remove('active');
+                    }
+                }
+            }
+        }
+    });
+    
+    console.log('검색 기능 초기화 완료');
+
+    // 저장된 레이아웃 설정 불러오기
+    loadLayoutSettings();
+    loadFontSettings(); // 글꼴 설정 별도 함수로 분리
+});
+
+// 메인 검색 함수
+function performSearch(event) {
+    console.log('performSearch 함수 실행됨');
+    
+    if (event) {
+        event.preventDefault();
+    }
+    
+    const searchInput = document.getElementById('mainSearchInput');
+    if (!searchInput) {
+        console.error('검색 입력 필드를 찾을 수 없습니다.');
+        return;
+    }
+    
+    const searchTerm = searchInput.value.trim();
+    console.log('검색어:', searchTerm);
+    console.log('검색 타입:', activeSearchType);
+    
+    if (!searchTerm) {
+        alert('검색어를 입력해주세요.');
+        return;
+    }
+    
+    currentSearchTerm = searchTerm;
+    performSearchByType(searchTerm, activeSearchType);
+}
+
+
+// 검색 타입별 검색 수행
+function performSearchByType(searchTerm, searchType) {
+    if (!isDataLoaded()) {
+        showToast('데이터를 불러오는 중입니다. 잠시 후 다시 시도해주세요.', 'info');
+        return;
+    }
+
+    let results = [];
+    
+    // hospitalRegulations 데이터에서 검색
+    Object.keys(hospitalRegulations).forEach(chapter => {
+        const chapterData = hospitalRegulations[chapter];
+        
+        // ✅ regulations 배열 확인
+        if (!Array.isArray(chapterData.regulations)) {
+            console.warn(`검색 중 오류: Chapter ${chapter}의 regulations가 배열이 아닙니다`);
+            return;
+        }
+        
+        chapterData.regulations.forEach(regulation => {
+            // ✅ regulation 객체 확인
+            if (!regulation || !regulation.name) {
+                console.warn(`검색 중 오류: 유효하지 않은 regulation`, regulation);
+                return;
+            }
+            
+            // ✅ appendix 안전 확인 및 정규화
+            let appendixArray = [];
+            if (regulation.appendix) {
+                if (Array.isArray(regulation.appendix)) {
+                    appendixArray = regulation.appendix;
+                } else if (typeof regulation.appendix === 'string') {
+                    appendixArray = [regulation.appendix];
+                    console.warn(`Chapter ${chapter}, regulation ${regulation.code}.: appendix가 문자열입니다. 배열로 변환합니다.`);
+                } else if (typeof regulation.appendix === 'object' && regulation.appendix !== null) {
+                    try {
+                        appendixArray = Object.values(regulation.appendix).filter(item => item != null);
+                        console.warn(`Chapter ${chapter}, regulation ${regulation.code}.: appendix가 객체입니다. 배열로 변환합니다.`);
+                    } catch (error) {
+                        console.error(`Chapter ${chapter}, regulation ${regulation.code}.: appendix 변환 실패`, error);
+                        appendixArray = [];
+                    }
+                } else {
+                    console.warn(`Chapter ${chapter}, regulation ${regulation.code}.: appendix가 예상치 못한 타입입니다:`, typeof regulation.appendix);
+                    appendixArray = [];
+                }
+            }
+            
+            let isMatch = false;
+            let matchType = '';
+            let matchContent = '';
+            
+            switch (searchType) {
+                case 'all':
+                    // ✅ 통합검색: 내규명, 담당부서, 부록에서 모두 검색 (안전한 방식)
+                    if (regulation.name.includes(searchTerm) || 
+                        (regulation.detail && 
+                         regulation.detail.documentInfo && 
+                         regulation.detail.documentInfo.담당부서 && 
+                         regulation.detail.documentInfo.담당부서.includes(searchTerm)) ||
+                        (appendixArray.length > 0 && appendixArray.some(app => app && typeof app === 'string' && app.includes(searchTerm)))) {
+                        isMatch = true;
+                        if (regulation.name.includes(searchTerm)) {
+                            matchType = '내규명';
+                            matchContent = regulation.name;
+                        } else if (regulation.detail && 
+                                   regulation.detail.documentInfo && 
+                                   regulation.detail.documentInfo.담당부서 && 
+                                   regulation.detail.documentInfo.담당부서.includes(searchTerm)) {
+                            matchType = '담당부서';
+                            matchContent = regulation.detail.documentInfo.담당부서;
+                        } else {
+                            matchType = '부록';
+                            matchContent = appendixArray.find(app => app && typeof app === 'string' && app.includes(searchTerm)) || '';
+                        }
+                    }
+                    break;
+                    
+                case 'regu_name':
+                    // ✅ 내규명에서만 검색
+                    if (regulation.name && regulation.name.includes(searchTerm)) {
+                        isMatch = true;
+                        matchType = '내규명';
+                        matchContent = regulation.name;
+                    }
+                    break;
+                    
+                case 'regu_sup':
+                    // ✅ 부록에서만 검색 (안전한 방식)
+                    if (appendixArray.length > 0 && appendixArray.some(app => app && typeof app === 'string' && app.includes(searchTerm))) {
+                        isMatch = true;
+                        matchType = '부록';
+                        matchContent = appendixArray.find(app => app && typeof app === 'string' && app.includes(searchTerm)) || '';
+                    }
+                    break;
+                    
+                case 'regu_dep':
+                    // ✅ 담당부서에서만 검색 (안전한 방식)
+                    if (regulation.detail && 
+                        regulation.detail.documentInfo && 
+                        regulation.detail.documentInfo.담당부서 && 
+                        regulation.detail.documentInfo.담당부서.includes(searchTerm)) {
+                        isMatch = true;
+                        matchType = '담당부서';
+                        matchContent = regulation.detail.documentInfo.담당부서;
+                    }
+                    break;
+                    
+                case 'regu_content':
+                    // ✅ 내규 본문에서 검색 (새로 추가)
+                    let contentMatch = false;
+                    if (regulation.detail && regulation.detail.articles) {
+                        regulation.detail.articles.forEach(article => {
+                            if (article.content && article.content.includes(searchTerm)) {
+                                contentMatch = true;
+                            }
+                            if (article.subsections) {
+                                article.subsections.forEach(subsection => {
+                                    if (subsection.items) {
+                                        subsection.items.forEach(item => {
+                                            if (item && item.includes(searchTerm)) {
+                                                contentMatch = true;
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                        });
+                    }
+                    if (contentMatch) {
+                        isMatch = true;
+                        matchType = '내규본문';
+                        matchContent = regulation.name;
+                    }
+                    break;
+            }
+            
+            if (isMatch) {
+                results.push({
+                    regulation: regulation,
+                    chapter: chapter,
+                    chapterTitle: chapterData.title,
+                    matchType: matchType,
+                    matchContent: matchContent
+                });
+            }
+        });
+    });
+    
+    currentSearchResults = results;
+    displaySearchResults(results, searchTerm, searchType);
+}
+
+// 검색 결과 표시
+function displaySearchResults(results, searchTerm, searchType) {
+    const searchResultsSection = document.getElementById('searchResultsSection');
+    const resultsBody = document.getElementById('resultsBody');
+    // 검색 결과 섹션 표시
+    searchResultsSection.style.display = 'block';
+    // 검색 타입에 따른 추가 정보
+    const searchTypeText = getSearchTypeText(searchType);
+    // results-meta 요소가 존재하는지 확인하고 업데이트
+    const resultsMeta = document.querySelector('.results-meta');
+    if (resultsMeta) {
+        resultsMeta.innerHTML = `
+            <span>총 <span id="resultCount">${results.length}</span>건</span>
+            <span>검색어: "${searchTerm}" (${searchTypeText})</span>
+        `;
+    }
+    if (results.length === 0) {
+        resultsBody.innerHTML = `
+            <div class="empty-results">
+                <i class="fas fa-search"></i>
+                <h3>검색 결과가 없습니다</h3>
+                <p>"${searchTerm}"에 대한 검색 결과를 찾을 수 없습니다.</p>
+            </div>
+        `;
+        return;
+    }
+    // 검색 타입에 따라 다른 표시 방식
+    if (searchType === 'all') {
+        // 통합검색: 매칭 타입별로 그룹화하여 표시
+        displayIntegratedResultsByMatchType(results, resultsBody);
+    } else {
+        // 분류별 검색: 간단한 형태로 표시
+        displaySimpleResults(results, resultsBody);
+    }
+}
+// 통합검색 결과 표시 (매칭 타입별 그룹)
+function displayIntegratedResultsByMatchType(results, container) {
+    // 매칭 타입별로 그룹화
+    const groupedResults = {
+        '내규명': [],
+        '내규본문': [],
+        '부록': [],
+        '담당부서': []
+    };
+    
+    results.forEach(result => {
+        if (groupedResults[result.matchType]) {
+            groupedResults[result.matchType].push(result);
+        }
+    });
+
+    // HTML 생성 - 모든 그룹을 한번에 표시
+    let html = '';
+    Object.keys(groupedResults).forEach(matchType => {
+        const items = groupedResults[matchType];
+        if (items.length > 0) {
+            html += `
+                <div class="search-group">
+                    <div class="group-header">
+                        <span>${matchType}</span>
+                        <span class="group-count">(${items.length}건)</span>
+                    </div>
+                    <div class="group-content">
+                        ${items.map((item, index) => `
+                            <div class="integrated-simple-result-item" onclick="openRegulationDetailNew('${item.chapter}', '${item.regulation.code}')">
+                                <span class="integrated-simple-result-code">${item.regulation.code}.</span>
+                                <div class="integrated-simple-result-content">
+                                    <div class="integrated-simple-result-title">${item.regulation.name}</div>
+                                    <div class="integrated-simple-result-meta">
+                                        <div class="integrated-simple-result-chapter">${item.chapter}. ${item.chapterTitle}</div>
+                                        <div>${getDepartment(item.regulation)}</div>
+                                        ${item.regulation.appendix && item.regulation.appendix.length > 0 ? 
+                                            `<span>부록 ${item.regulation.appendix.length}건</span>` : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+    });
+
+    container.innerHTML = html;
+}
+// 통합검색 결과 표시 (매칭 타입별 그룹) - 6건 제한 + 더보기
+function displayIntegratedResultsByMatchType(results, container) {
+    // 매칭 타입별로 그룹화
+    const groupedResults = {
+        '내규명': [],
+        '내규본문': [],
+        '부록': [],
+        '담당부서': []
+    };
+    
+    results.forEach(result => {
+        if (groupedResults[result.matchType]) {
+            groupedResults[result.matchType].push(result);
+        }
+    });
+
+    // HTML 생성 - 모든 그룹을 한번에 표시 (처음엔 6건씩만)
+    let html = '';
+    Object.keys(groupedResults).forEach(matchType => {
+        const items = groupedResults[matchType];
+        if (items.length > 0) {
+            // 처음에 보여줄 6건
+            const initialItems = items.slice(0, 6);
+            // 숨겨진 나머지 항목들
+            const hiddenItems = items.slice(6);
+            
+            html += `
+                <div class="search-group">
+                    <div class="group-header">
+                        <span>${matchType}</span>
+                        <span class="group-count">(${items.length}건)</span>
+                    </div>
+                    <div class="group-content">
+                        ${initialItems.map((item, index) => {
+                            const globalIndex = currentSearchResults.findIndex(r => 
+                                r.regulation.code === item.regulation.code && r.chapter === item.chapter
+                            );
+                            return `
+                                <div class="integrated-simple-result-item" onclick="openRegulationDetail(${globalIndex})">
+                                    <span class="integrated-simple-result-code">${item.regulation.code}.</span>
+                                    <div class="integrated-simple-result-content">
+                                        <div class="integrated-simple-result-title">${item.regulation.name}</div>
+                                        <div class="integrated-simple-result-meta">
+                                            <div class="integrated-simple-result-chapter">${item.chapter}. ${item.chapterTitle}</div>
+                                            <div>${(item.regulation.detail && item.regulation.detail.documentInfo) ? item.regulation.detail.documentInfo['담당부서'] : '담당부서 미지정'}</div>
+                                            ${item.regulation.appendix && item.regulation.appendix.length > 0 ? 
+                                                `<span>부록 ${item.regulation.appendix.length}건</span>` : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                        ${hiddenItems.length > 0 ? `
+                            <div class="hidden-items" style="display: none;">
+                                ${hiddenItems.map((item, index) => {
+                                    const globalIndex = currentSearchResults.findIndex(r => 
+                                        r.regulation.code === item.regulation.code && r.chapter === item.chapter
+                                    );
+                                    return `
+                                        <div class="integrated-simple-result-item" onclick="openRegulationDetail(${globalIndex})">
+                                            <span class="integrated-simple-result-code">${item.regulation.code}.</span>
+                                            <div class="integrated-simple-result-content">
+                                                <div class="integrated-simple-result-title">${item.regulation.name}</div>
+                                                <div class="integrated-simple-result-meta">
+                                                    <div class="integrated-simple-result-chapter">${item.chapter}. ${item.chapterTitle}</div>
+                                                    <div>${(item.regulation.detail && item.regulation.detail.documentInfo) ? item.regulation.detail.documentInfo['담당부서'] : '담당부서 미지정'}</div>
+                                                    ${item.regulation.appendix && item.regulation.appendix.length > 0 ? 
+                                                        `<span>부록 ${item.regulation.appendix.length}건</span>` : ''}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                            <button class="group-more-btn" onclick="toggleMoreItems(this)">
+                                <i class="fas fa-chevron-down"></i>
+                                <span>더 보기 (${hiddenItems.length}건)</span>
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+    });
+
+    container.innerHTML = html;
+}
+
+// 더보기/접기 토글 함수
+function toggleMoreItems(button) {
+    const groupContent = button.closest('.group-content');
+    const hiddenItems = groupContent.querySelector('.hidden-items');
+    const icon = button.querySelector('i');
+    const span = button.querySelector('span');
+    if (hiddenItems.style.display === 'none') {
+        // 더보기
+        hiddenItems.style.display = 'block';
+        icon.className = 'fas fa-chevron-up';
+        span.textContent = '접기';
+    } else {
+        // 접기
+        hiddenItems.style.display = 'none';
+        icon.className = 'fas fa-chevron-down';
+        const hiddenCount = hiddenItems.children.length;
+        span.textContent = `더 보기 (${hiddenCount}건)`;
+    }
+}
+
+// 담당부서 추출 헬퍼 함수
+function getDepartment(regulation) {
+    if (regulation.detail && regulation.detail.documentInfo && regulation.detail.documentInfo['담당부서']) {
+        return regulation.detail.documentInfo['담당부서'];
+    }
+    return '담당부서 미지정';
+}
+
+// 분류별 검색 결과 표시 (간단한 형태)
+function displaySimpleResults(results, container) {
+    const html = results.map((result, index) => {
+        // currentSearchResults에서의 전체 인덱스 찾기
+        const globalIndex = currentSearchResults.findIndex(r => 
+            r.regulation.code === result.regulation.code && r.chapter === result.chapter
+        );
+        return `
+            <div class="simple-result-item" onclick="openRegulationDetail(${globalIndex})">
+                <span class="simple-result-code">${result.regulation.code}.</span>
+                <div class="simple-result-content">
+                    <div class="simple-result-title">${result.regulation.name}</div>
+                    <div class="simple-result-meta">
+                        <span class="simple-result-chapter">${result.chapter}. ${result.chapterTitle}</span>
+                        <span>${getDepartment(result.regulation)}</span>
+                        ${result.regulation.appendix && result.regulation.appendix.length > 0 ? 
+                            `<span>부록 ${result.regulation.appendix.length}건</span>` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    container.innerHTML = html;
+}
+
+// 검색 타입 텍스트 반환
+function getSearchTypeText(searchType) {
+    const searchTypeMap = {
+        'all': '통합검색',
+        'regu_name': '내규명',
+        'regu_content': '내규본문',
+        'regu_sup': '부록',
+        'regu_dep': '담당부서'
+    };
+    return searchTypeMap[searchType] || '통합검색';
+}
+
+// 내규 요약 텍스트 생성
+function getRegulationSummary(regulation) {
+    if (regulation.detail && regulation.detail.articles.length > 0) {
+        const firstArticle = regulation.detail.articles[0];
+        return firstArticle.content || `${regulation.name}에 관한 내규입니다.`;
+    }
+    return `${regulation.name}에 관한 내규입니다.`;
+}
+
+// 내규 상세보기 열기
+function openRegulationDetail(resultIndex) {
+    const result = currentSearchResults[resultIndex];
+    const regulation = result.regulation;
+    const chapter = result.chapter;
+    
+    // 모바일인지 확인
+    const isMobile = window.innerWidth <= 768;
+    
+    if (isMobile) {
+        openMobileRegulationView(regulation, chapter, result.chapterTitle);
+    } else {
+        // 팝업으로 보여주는 기능 숨김.
+        //openRegulationModal(regulation, chapter, result.chapterTitle);
+
+        openRegulationInNewWindow(regulation, chapter, result.chapterTitle);
+    }
+}
+
+// PC에서 새창으로 열기
+function openRegulationInNewWindow(regulation, chapter, chapterTitle) {
+    // 더 깔끔한 URL 구조
+    const url = `/severance/${encodeURIComponent(chapter)}/${encodeURIComponent(regulation.code)}`;
+    
+    const newWindow = window.open(url, '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes');
+    
+    if (!newWindow) {
+        alert('팝업이 차단되었습니다. 브라우저 설정에서 팝업을 허용해주세요.');
+    }
+
+    // 새창이 닫힐 때 즐겨찾기 상태 동기화
+    const checkClosed = setInterval(() => {
+        if (newWindow.closed) {
+            clearInterval(checkClosed);
+            // 새창이 닫혔을 때 localStorage에서 최신 즐겨찾기 정보 다시 로드
+            const updatedFavorites = JSON.parse(localStorage.getItem('favoriteRegulations') || '[]');
+            if (JSON.stringify(favoriteRegulations) !== JSON.stringify(updatedFavorites)) {
+                favoriteRegulations = updatedFavorites;
+                updateFavoritesList();
+                
+                // 현재 즐겨찾기 페이지가 열려있다면 업데이트
+                if (document.getElementById('contentBody').style.display !== 'none' && 
+                    document.querySelector('.favorites-page')) {
+                    displayFavoritesContent();
+                }
+                
+                // 현재 보고 있는 내규의 즐겨찾기 상태 업데이트
+                if (currentRegulation && currentChapter) {
+                    const favoriteBtn = document.querySelector('.regulation-actions .action-btn[data-tooltip="즐겨찾기"]') ||
+                                       document.querySelector('.page-actions .action-btn[data-tooltip="즐겨찾기"]');
+                    if (favoriteBtn) {
+                        if (isFavorite(currentRegulation, currentChapter)) {
+                            favoriteBtn.classList.add('active');
+                        } else {
+                            favoriteBtn.classList.remove('active');
+                        }
+                    }
+                }
+            }
+        }
+    }, 1000);
+
+}
+
+// 데스크톱 모달 열기
+function openRegulationModal(regulation, chapter, chapterTitle) {
+    const modal = document.getElementById('regulationModal');
+    const title = document.getElementById('modalRegulationTitle');
+    const body = document.getElementById('modalRegulationBody');
+    
+    title.textContent = `${regulation.code}. ${regulation.name}`;
+    
+    // 내규 내용 생성 (기존 showRegulationDetail 함수의 로직 재사용)
+    const regulationContent = generateRegulationContent(regulation, chapter, chapterTitle);
+    body.innerHTML = regulationContent;
+    
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden'; // 배경 스크롤 방지
+}
+
+// 모바일 전체화면 뷰 열기
+function openMobileRegulationView(regulation, chapter, chapterTitle) {
+    const view = document.getElementById('mobileRegulationView');
+    const title = document.getElementById('mobileRegulationTitle');
+    const body = document.getElementById('mobileRegulationBody');
+    
+    title.textContent = `${regulation.code}. ${regulation.name}`;
+    
+    // 내규 내용 생성
+    const regulationContent = generateRegulationContent(regulation, chapter, chapterTitle);
+    body.innerHTML = regulationContent;
+    
+    view.style.display = 'flex';
+}
+
+// 내규 내용 HTML 생성
+function generateRegulationContent(regulation, chapter, chapterTitle) {
+    let contentHtml = '';
+    let appendixHtml = '';
+    
+    // 부록 HTML 생성
+    if (regulation.appendix && regulation.appendix.length > 0) {
+        appendixHtml = `
+            <div class="appendix-section">
+                <div class="appendix-title">관련 부록 (${regulation.appendix.length}건)</div>
+                <div class="appendix-list">
+                    ${regulation.appendix.map(item => 
+                        `<div class="appendix-item">• ${item}</div>`
+                    ).join('')}
+                </div>
+            </div>
+        `;
+    }
+    
+    // 내규 상세 내용 생성 (안전성 검사 추가)
+    if (regulation.detail) {
+        const detail = regulation.detail;
+        
+        // articles 배열 존재 여부 확인
+        if (detail.articles && Array.isArray(detail.articles) && detail.articles.length > 0) {
+            detail.articles.forEach(article => {
+                // article 객체 존재 여부 확인
+                if (!article) {
+                    console.warn('Empty article found in regulation:', regulation.code);
+                    return;
+                }
+                
+                // article.title 존재 여부 확인
+                if (article.title) {
+                    contentHtml += `<div style="color: #1565c0; font-size: 16px; font-weight: 600; margin: 20px 0 10px 0; padding: 10px 0; border-bottom: 1px solid #e3f2fd;">${article.title}</div>`;
+                }
+                
+                // article.content 존재 여부 확인
+                if (article.content) {
+                    contentHtml += `<div style="margin: 10px 0; padding-left: 20px;">${article.content}</div>`;
+                }
+                
+                // article.subsections 존재 여부 및 배열 확인
+                if (article.subsections && Array.isArray(article.subsections)) {
+                    article.subsections.forEach(subsection => {
+                        // subsection 객체 존재 여부 확인
+                        if (!subsection) {
+                            console.warn('Empty subsection found in regulation:', regulation.code);
+                            return;
+                        }
+                        
+                        // subsection.title 존재 여부 확인
+                        if (subsection.title) {
+                            contentHtml += `<div style="margin: 10px 0; padding-left: 20px;"><strong>${subsection.title}</strong></div>`;
+                        }
+                        
+                        // subsection.items 존재 여부 및 배열 확인
+                        if (subsection.items && Array.isArray(subsection.items)) {
+                            subsection.items.forEach(item => {
+                                // item 존재 여부 확인
+                                if (item) {
+                                    contentHtml += `<div style="margin: 8px 0; padding-left: 40px; color: #555;">${item}</div>`;
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        } else {
+            // articles가 없거나 비어있는 경우 기본 메시지
+            console.warn('No articles found for regulation:', regulation.code);
+            contentHtml = `
+                <div style="color: #1565c0; font-size: 16px; font-weight: 600; margin: 20px 0 10px 0;">내규 내용</div>
+                <div style="margin: 10px 0; padding-left: 20px;">이 내규의 상세 내용은 관련 부서에서 별도로 관리됩니다.</div>
+            `;
+        }
+
+        // 모바일 여부 확인
+        const isMobile = window.innerWidth <= 768;
+
+        let modalMetaHTML = '';
+
+        if (isMobile) {
+            // 모바일용 카드 형태 HTML
+            modalMetaHTML = `
+                <div class="regulation-meta-container">
+                    <div class="mobile-meta-cards">
+                        <!-- 기본 정보 카드 -->
+                        <div class="mobile-meta-card">
+                            <div class="mobile-meta-card-content">
+                                <div class="mobile-meta-item">
+                                    <div class="mobile-meta-label">제정일</div>
+                                    <div class="mobile-meta-value ${detail.documentInfo && detail.documentInfo.제정일 ? '' : 'empty'}">
+                                        ${detail.documentInfo && detail.documentInfo.제정일 ? detail.documentInfo.제정일 : '-'}
+                                    </div>
+                                </div>
+                                <div class="mobile-meta-item">
+                                    <div class="mobile-meta-label">최종<br>개정일</div>
+                                    <div class="mobile-meta-value ${detail.documentInfo && detail.documentInfo.최종개정일 ? '' : 'empty'}">
+                                        ${detail.documentInfo && detail.documentInfo.최종개정일 ? detail.documentInfo.최종개정일 : '-'}
+                                    </div>
+                                </div>
+                                <div class="mobile-meta-item">
+                                    <div class="mobile-meta-label">최종<br>검토일</div>
+                                    <div class="mobile-meta-value ${detail.documentInfo && detail.documentInfo.최종검토일 ? '' : 'empty'}">
+                                        ${detail.documentInfo && detail.documentInfo.최종검토일 ? detail.documentInfo.최종검토일 : '-'}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 부서 정보 카드 -->
+                        <div class="mobile-meta-card">
+                            <div class="mobile-meta-card-content">
+                                <div class="mobile-meta-item">
+                                    <div class="mobile-meta-label">담당<br>부서</div>
+                                    <div class="mobile-meta-value ${detail.documentInfo && detail.documentInfo.담당부서 ? '' : 'empty'}">
+                                        ${detail.documentInfo && detail.documentInfo.담당부서 ? detail.documentInfo.담당부서 : '-'}
+                                    </div>
+                                </div>
+                                <div class="mobile-meta-item">
+                                    <div class="mobile-meta-label">유관<br>부서</div>
+                                    <div class="mobile-meta-value ${detail.documentInfo && detail.documentInfo.유관부서 ? '' : 'empty'}">
+                                        ${detail.documentInfo && detail.documentInfo.유관부서 ? detail.documentInfo.유관부서 : '-'}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 관련기준 카드 -->
+                        <div class="mobile-meta-card">
+                            <div class="mobile-meta-card-content">
+                                <div class="mobile-meta-item">
+                                    <div class="mobile-meta-label">관련<br>기준</div>
+                                    <div class="mobile-meta-value long-content ${detail.documentInfo && detail.documentInfo.관련기준 ? '' : 'empty'}">
+                                        ${detail.documentInfo && detail.documentInfo.관련기준 ? 
+                                            (Array.isArray(detail.documentInfo.관련기준) ? 
+                                                detail.documentInfo.관련기준.join('<br>') : 
+                                                detail.documentInfo.관련기준) :
+                                            '-'}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 부록 정보 카드 -->
+                        <div class="mobile-meta-card">
+                            <div class="mobile-meta-card-content">
+                                <div class="mobile-meta-item">
+                                    <div class="mobile-meta-label">부록</div>
+                                    <div class="mobile-meta-value">
+                                        ${regulation.appendix ? regulation.appendix.length : 0}건
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            // 기존 PC용 테이블 형태 HTML (기존 코드 그대로)
+            modalMetaHTML = `
+                <div class="regulation-meta-container">
+                    <!-- 기본 정보 테이블 -->
+                    <table class="regulation-meta-table">
+                        <tr>
+                            <th class="header-cell">제정일</th>
+                            <td class="content-cell" style="text-align:center;">${detail.documentInfo && detail.documentInfo.제정일 ? detail.documentInfo.제정일 : '-'}</td>
+                            <th class="header-cell">최종개정일</th>
+                            <td class="content-cell" style="text-align:center;">${detail.documentInfo && detail.documentInfo.최종개정일 ? detail.documentInfo.최종개정일 : '-'}</td>
+                            <th class="header-cell">최종검토일</th>
+                            <td class="content-cell" style="text-align:center;">${detail.documentInfo && detail.documentInfo.최종검토일 ? detail.documentInfo.최종검토일 : '-'}</td>
+                        </tr>
+                        <tr>
+                            <th class="header-cell">담당부서</th>
+                            <td class="content-cell" colspan="5">${detail.documentInfo && detail.documentInfo.담당부서 ? detail.documentInfo.담당부서 : '-'}</td>
+                        </tr>
+                        <tr>
+                            <th class="header-cell">유관부서</th>
+                            <td class="content-cell" colspan="5">${detail.documentInfo && detail.documentInfo.유관부서 ? detail.documentInfo.유관부서 : '-'}</td>
+                        </tr>
+                    </table>
+                    
+                    <!-- 관련기준 테이블 -->
+                    <table class="regulation-meta-table">
+                        <tr>
+                            <th class="header-cell">관련기준</th>
+                            <td class="content-cell long-content">
+                                ${detail.documentInfo && detail.documentInfo.관련기준 ? 
+                                    (Array.isArray(detail.documentInfo.관련기준) ? 
+                                        detail.documentInfo.관련기준.join('<br>') : 
+                                        detail.documentInfo.관련기준) :
+                                    '-'}
+                            </td>
+                        </tr>
+                    </table>
+                    
+                    <!-- 부록 테이블 -->
+                    <table class="regulation-meta-table">
+                        <tr>
+                            <th class="header-cell">부록</th>
+                            <td class="content-cell">
+                                <span class="appendix-count">${regulation.appendix ? regulation.appendix.length : 0}건</span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            `;
+        }
+
+        return `
+            <div style="background: white; border-radius: 8px; padding: 10px 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                <div class="page-actions" style="display:flex; justify-content:end; margin-bottom : 0.5rem">
+                    <button class="action-btn " onclick="toggleFavorite(currentRegulation, currentChapter)" data-tooltip="즐겨찾기">
+                        <i class="fas fa-star"></i>
+                    </button>
+                </div>
+                ${modalMetaHTML}
+                <div style="line-height: 1.8; font-size: 14px;">
+                    ${contentHtml}
+                </div>
+                ${appendixHtml}
+            </div>
+        `;
+    } else {
+        // 기본 템플릿
+        contentHtml = `
+            <div style="margin: 10px 0; padding-left: 20px;">내규데이터 업로드 중.</div>
+        `;
+    }
+    
+    return `
+        <div style="background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
+            <div style="border-bottom: 1px solid #e0e0e0; padding-bottom: 15px; margin-bottom: 20px;">
+                <div style="display: flex; gap: 15px; font-size: 12px; color: #666; flex-wrap: wrap;">
+                    <span>부록: ${regulation.appendix ? regulation.appendix.length : 0}건</span>
+                    ${regulation.detail ? `
+                        <span>제정일: ${regulation.detail.documentInfo.제정일}</span>
+                        <span>최종개정일: ${regulation.detail.documentInfo.최종개정일}</span>
+                        <span>담당부서: ${regulation.detail.documentInfo.담당부서}</span>
+                    ` : `
+                        <span>제정일: 정보 없음</span>
+                        <span>담당부서: 정보 없음</span>
+                    `}
+                </div>
+            </div>
+            <div style="line-height: 1.8; font-size: 14px;">
+                ${contentHtml}
+            </div>
+            ${appendixHtml}
+        </div>
+    `;
+}
+
+// 모달 닫기
+function closeRegulationModal() {
+    const modal = document.getElementById('regulationModal');
+    modal.style.display = 'none';
+    document.body.style.overflow = 'auto'; // 배경 스크롤 복원
+}
+
+// 모바일 뷰 닫기
+function closeMobileRegulationView() {
+    const view = document.getElementById('mobileRegulationView');
+    view.style.display = 'none';
+}
+
+// 윈도우 리사이즈 시 모달/모바일 뷰 처리
+window.addEventListener('resize', function() {
+    // 기존 모달/모바일 뷰 처리 코드
+    const modal = document.getElementById('regulationModal');
+    const mobileView = document.getElementById('mobileRegulationView');
+    
+    if (window.innerWidth <= 768) {
+        if (modal && modal.style.display === 'flex') {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+    } else {
+        if (mobileView && mobileView.style.display === 'flex') {
+            mobileView.style.display = 'none';
+        }
+    }
+
+    // 내규 상세보기가 열려있다면 다시 렌더링
+    if (currentRegulation && currentChapter) {
+        const contentBody = document.getElementById('contentBody');
+        if (contentBody && contentBody.style.display !== 'none') {
+            showRegulationDetail(currentRegulation, currentChapter);
+        }
+    }
+
+    // (셋팅부분) 모바일에서는 항상 모드 2로 강제 설정
+    if (window.innerWidth <= 768 && currentLayoutMode === 1) {
+        setLayoutMode(2, false); // 저장하지 않고 임시로만 변경
+    }
+});
+
+// 페이지 로드 시 초기화
+document.addEventListener('DOMContentLoaded', function() {
+    generateTreeMenu();
+});
+
+// 트리 메뉴 생성
+function generateTreeMenu() {
+    // hospitalRegulations가 비어있다면 아직 로드되지 않았으므로 리턴
+    if (!hospitalRegulations || Object.keys(hospitalRegulations).length === 0) {
+        console.log('hospitalRegulations가 아직 로드되지 않음');
+        return;
+    }
+
+    const treeMenu = document.getElementById('treeMenu');
+    
+    Object.keys(hospitalRegulations).forEach(chapter => {
+        const chapterData = hospitalRegulations[chapter];
+        
+        const treeItem = document.createElement('div');
+        treeItem.className = 'tree-item';
+        
+        const treeHeader = document.createElement('div');
+        treeHeader.className = 'tree-header';
+        treeHeader.innerHTML = `
+            <span>${chapter}. ${chapterData.title}</span>
+            <i class="fas fa-chevron-right tree-icon"></i>
+        `;
+        treeHeader.onclick = () => toggleTreeItem(treeHeader, chapter);
+        
+        const treeChildren = document.createElement('div');
+        treeChildren.className = 'tree-children';
+        
+        chapterData.regulations.forEach(regulation => {
+            const childNode = document.createElement('div');
+            childNode.className = 'tree-child';
+            if (regulation.appendix.length > 0) {
+                childNode.classList.add('has-appendix');
+            }
+            childNode.textContent = `${regulation.code}. ${regulation.name}`;
+            childNode.onclick = (event) => {
+                event.stopPropagation();
+                selectRegulation(regulation, chapter, childNode);
+            };
+            
+            treeChildren.appendChild(childNode);
+            
+            // 부록이 있는 경우 서브 레벨 추가
+            if (regulation.appendix.length > 0) {
+                const subChildren = document.createElement('div');
+                subChildren.className = 'tree-sub-children';
+               
+                if (regulation.appendix && Array.isArray(regulation.appendix)) {
+                    regulation.appendix.forEach((appendixItem, index) => {
+                        const subChild = document.createElement('div');
+                        subChild.className = 'tree-sub-child';
+                        subChild.textContent = `부록 ${index + 1}. ${appendixItem}`;
+                        subChild.onclick = (event) => {
+                            event.stopPropagation();
+                            selectAppendix(regulation, appendixItem, chapter);
+                        };
+                        subChildren.appendChild(subChild);
+                    });
+                } 
+                treeChildren.appendChild(subChildren);
+            }
+        });
+        
+        treeItem.appendChild(treeHeader);
+        treeItem.appendChild(treeChildren);
+        treeMenu.appendChild(treeItem);
+    });
+}
+
+function isDataLoaded() {
+    return hospitalRegulations && Object.keys(hospitalRegulations).length > 0;
+}
+
+// 트리 메뉴 토글
+function toggleTreeItem(header, chapter) {
+    const children = header.nextElementSibling;
+    const isOpen = children.classList.contains('open');
+    
+    // 모든 트리 아이템 닫기
+    document.querySelectorAll('.tree-children').forEach(child => {
+        child.classList.remove('open');
+    });
+    document.querySelectorAll('.tree-header').forEach(h => {
+        h.classList.remove('active');
+    });
+    
+    // 클릭한 아이템만 열기/닫기
+    if (!isOpen) {
+        children.classList.add('open');
+        header.classList.add('active');
+        
+    }
+}
+
+// 내규 선택
+function selectRegulation(regulation, chapter, element) {
+    // 현재 요소가 이미 active인지 확인
+    const isCurrentlyActive = element.classList.contains('active');
+
+    // 기존 선택 해제
+    document.querySelectorAll('.tree-child.active').forEach(child => {
+        child.classList.remove('active');
+    });
+    document.querySelectorAll('.tree-sub-child.active').forEach(subChild => {
+        subChild.classList.remove('active');
+    });
+    
+    // 현재 선택 표시
+    element.classList.add('active');
+    
+    // 부록이 있는 경우만 토글 처리
+    if (regulation.appendix && regulation.appendix.length > 0) {
+        const subChildren = element.nextElementSibling;
+        if (subChildren && subChildren.classList.contains('tree-sub-children')) {
+            const isOpen = subChildren.classList.contains('open');
+            
+            // 모든 서브 메뉴 닫기
+            document.querySelectorAll('.tree-sub-children').forEach(sub => {
+                sub.classList.remove('open');
+                sub.style.display = 'none'; // 강제로 숨기기
+            });
+            document.querySelectorAll('.has-appendix').forEach(hasApp => {
+                hasApp.classList.remove('expanded');
+            });
+
+            // 현재 요소가 active이고 이미 열려있으면 닫기만, 아니면 열기
+            if (!isCurrentlyActive || !isOpen) {
+                subChildren.classList.add('open');
+                subChildren.style.display = 'block'; // 강제로 보이기
+                element.classList.add('expanded');
+            }
+            
+            // active 상태는 항상 유지
+            element.classList.add('active');
+        }
+    }
+    
+    // 상세보기 표시
+    showRegulationDetail(regulation, chapter);
+}
+
+// 부록 선택
+function selectAppendix(regulation, appendixItem, chapter) {
+    // 기존 선택 해제
+    document.querySelectorAll('.tree-sub-child.active').forEach(subChild => {
+        subChild.classList.remove('active');
+    });
+    
+    // 현재 선택 표시
+    event.target.classList.add('active');
+    
+    // 부록 상세보기 표시
+    showAppendixDetail(regulation, appendixItem, chapter);
+}
+
+// sidebar active 상태 업데이트
+function updateSidebarActiveState(regulation, chapter) {
+    // 모든 active 상태 초기화
+    document.querySelectorAll('.tree-children').forEach(child => {
+        child.classList.remove('open');
+    });
+    document.querySelectorAll('.tree-header').forEach(h => {
+        h.classList.remove('active');
+    });
+    document.querySelectorAll('.tree-child').forEach(child => {
+        child.classList.remove('active');
+    });
+    document.querySelectorAll('.tree-sub-children').forEach(sub => {
+        sub.classList.remove('open');
+    });
+
+    // 1. 해당 챕터의 tree-header 활성화 (정확한 매칭)
+    const chapterHeaders = document.querySelectorAll('.tree-header');
+    chapterHeaders.forEach(header => {
+        const headerText = header.textContent.trim();
+        // 정규식을 사용하여 정확한 챕터 매칭
+        const chapterPattern = new RegExp(`^\\s*${chapter.replace(/\./g, '\\.')}\\.\\s+`);
+        if (chapterPattern.test(headerText)) {
+            header.classList.add('active');
+            // 해당 챕터의 tree-children 열기
+            const children = header.nextElementSibling;
+            if (children) {
+                children.classList.add('open');
+            }
+        }
+    });
+
+    // 2. 해당 내규의 tree-child 활성화 (정확한 매칭)
+    const treeChildren = document.querySelectorAll('.tree-child');
+    treeChildren.forEach(child => {
+        const childText = child.textContent.trim();
+        // 정규식을 사용하여 정확한 코드 매칭
+        const codePattern = new RegExp(`^\\s*${regulation.code.replace(/\./g, '\\.')}\\s+`);
+        if (codePattern.test(childText)) {
+            child.classList.add('active');
+            // 3. 부록이 있는 경우 tree-sub-children도 활성화
+            if (regulation.appendix && regulation.appendix.length > 0) {
+                child.classList.add('expanded');
+                const subChildren = child.nextElementSibling;
+                if (subChildren && subChildren.classList.contains('tree-sub-children')) {
+                    subChildren.classList.add('open');
+                }
+            }
+        }
+    });
+}
+
+// 내규 상세보기
+function showRegulationDetail(regulation, chapter) {
+    console.log('showRegulationDetail 호출됨:', regulation, chapter);
+   
+    // 모바일 감지 코드 추가
+    const isMobile = window.innerWidth <= 768;
+ 
+    // 전역 변수에 현재 규정 정보 저장
+    currentRegulation = regulation;
+    currentChapter = chapter;
+    
+    // 페이지 상태 설정 - 이 순서가 중요!
+    document.getElementById('sidebar').style.display = 'block';
+    document.getElementById('mainPageContent').style.display = 'none';
+    document.getElementById('contentBody').style.display = 'block';
+    document.getElementById('main-content-header').style.display = 'block';
+    
+    // 네비게이션 활성화
+    updateNavigation('분류');  // '분류'로 수정
+    
+    const chapterData = hospitalRegulations[chapter];
+    document.getElementById('breadcrumbActive').textContent = `${chapter}. ${chapterData.title} > ${regulation.code}. ${regulation.name}`;
+    document.getElementById('pageTitle').textContent = `${regulation.code}. ${regulation.name}`;
+    
+    // sidebar active 상태 업데이트
+    updateSidebarActiveState(regulation, chapter);
+    
+    // 내규 상세 내용 생성
+    const contentBody = document.getElementById('contentBody');
+    
+    // 액션 버튼 HTML
+    const actionButtonsHtml = isMobile ? `
+        <div class="regulation-actions">
+            <button class="action-btn ${isFavorite(regulation, chapter) ? 'active' : ''}" 
+                    onclick="toggleFavorite(currentRegulation, currentChapter)" 
+                    data-tooltip="즐겨찾기">
+                <i class="fas fa-star"></i>
+            </button>
+        </div>
+    ` : `
+        <div class="regulation-actions">
+            <button class="action-btn" onclick="decreaseFontSize()" data-tooltip="글꼴 작게">
+                <i class="fas fa-minus"></i>
+            </button>
+            <button class="action-btn" onclick="increaseFontSize()" data-tooltip="글꼴 크게">
+                <i class="fas fa-plus"></i>
+            </button>
+            <button class="action-btn" onclick="resetFontSize()" data-tooltip="글꼴 원래대로">
+                <i class="fas fa-undo"></i>
+            </button>
+            <button class="action-btn" 
+                    onclick="openInNewWindow()" 
+                    data-tooltip="새창으로 열기">
+                <i class="fas fa-external-link-alt"></i>
+            </button>
+            <button class="action-btn ${isFavorite(regulation, chapter) ? 'active' : ''}" 
+                    onclick="toggleFavorite(currentRegulation, currentChapter)" 
+                    data-tooltip="즐겨찾기">
+                <i class="fas fa-star"></i>
+            </button>
+            <button class="action-btn" 
+                    onclick="printRegulation()" 
+                    data-tooltip="인쇄">
+                <i class="fas fa-print"></i>
+            </button>
+            <button class="action-btn" style="display:none;" 
+                    onclick="showRegulationHierarchy(currentRegulation, currentChapter)" 
+                    data-tooltip="체계도">
+                <i class="fas fa-sitemap"></i>
+            </button>
+        </div>
+    `;
+        
+    // 부록 HTML 생성 (안전한 방식)
+    let appendixHtml = '';
+    let safeAppendixArray = [];
+    
+    if (regulation.appendix) {
+        if (Array.isArray(regulation.appendix)) {
+            safeAppendixArray = regulation.appendix;
+        } else if (typeof regulation.appendix === 'string') {
+            safeAppendixArray = [regulation.appendix];
+        } else if (typeof regulation.appendix === 'object' && regulation.appendix !== null) {
+            try {
+                safeAppendixArray = Object.values(regulation.appendix).filter(item => item != null);
+            } catch (error) {
+                console.error('appendix 변환 실패:', error);
+                safeAppendixArray = [];
+            }
+        }
+    }
+    
+    if (safeAppendixArray.length > 0) {
+        appendixHtml = `
+            <div class="appendix-section">
+                <div class="appendix-title">관련 부록 (${safeAppendixArray.length}건)</div>
+                <div class="appendix-list">
+                    ${safeAppendixArray.map(item => 
+                        `<div class="appendix-item">• ${item}</div>`
+                    ).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    // 내규 내용 HTML 생성
+    let contentHtml = '';
+    let metaHtml = '';
+   
+    if (regulation.detail && regulation.detail.documentInfo) {
+        const docInfo = regulation.detail.documentInfo;
+        
+        if (isMobile) {
+            // 모바일용 카드 형태 HTML
+            metaHtml = `
+                <div class="regulation-meta-container">
+                    <div class="mobile-meta-cards">
+                        <!-- 기본 정보 카드 -->
+                        <div class="mobile-meta-card">
+                            <div class="mobile-meta-card-content">
+                                <div class="mobile-meta-item">
+                                    <div class="mobile-meta-label">제정일</div>
+                                    <div class="mobile-meta-value ${docInfo.제정일 ? '' : 'empty'}">
+                                        ${docInfo.제정일 || '-'}
+                                    </div>
+                                </div>
+                                <div class="mobile-meta-item">
+                                    <div class="mobile-meta-label">최종<br>개정일</div>
+                                    <div class="mobile-meta-value ${docInfo.최종개정일 ? '' : 'empty'}">
+                                        ${docInfo.최종개정일 || '-'}
+                                    </div>
+                                </div>
+                                <div class="mobile-meta-item">
+                                    <div class="mobile-meta-label">최종<br>검토일</div>
+                                    <div class="mobile-meta-value ${docInfo.최종검토일 ? '' : 'empty'}">
+                                        ${docInfo.최종검토일 || '-'}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 부서 정보 카드 -->
+                        <div class="mobile-meta-card">
+                            <div class="mobile-meta-card-content">
+                                <div class="mobile-meta-item">
+                                    <div class="mobile-meta-label">담당<br>부서</div>
+                                    <div class="mobile-meta-value ${docInfo.담당부서 ? '' : 'empty'}">
+                                        ${docInfo.담당부서 || '-'}
+                                    </div>
+                                </div>
+                                <div class="mobile-meta-item">
+                                    <div class="mobile-meta-label">유관<br>부서</div>
+                                    <div class="mobile-meta-value ${docInfo.유관부서 ? '' : 'empty'}">
+                                        ${docInfo.유관부서 || '-'}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 관련기준 카드 -->
+                        <div class="mobile-meta-card">
+                            <div class="mobile-meta-card-content">
+                                <div class="mobile-meta-item">
+                                    <div class="mobile-meta-label">관련<br>기준</div>
+                                    <div class="mobile-meta-value long-content ${docInfo.관련기준 ? '' : 'empty'}">
+                                        ${docInfo.관련기준 ? 
+                                            (Array.isArray(docInfo.관련기준) ? 
+                                                docInfo.관련기준.join('<br>') : 
+                                                docInfo.관련기준) :
+                                            '-'}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 부록 정보 카드 -->
+                        <div class="mobile-meta-card">
+                            <div class="mobile-meta-card-content">
+                                <div class="mobile-meta-item">
+                                    <div class="mobile-meta-label">부록</div>
+                                    <div class="mobile-meta-value">
+                                        ${safeAppendixArray.length}건
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            // 기존 PC용 테이블 형태 HTML
+            metaHtml = `
+                <div class="regulation-meta-container">
+                    <!-- 기본 정보 테이블 -->
+                    <table class="regulation-meta-table">
+                        <tr>
+                            <th class="header-cell">제정일</th>
+                            <td class="content-cell" style="text-align:center;">${docInfo.제정일 || '-'}</td>
+                            <th class="header-cell" style="border-left:1px solid #000">최종개정일</th>
+                            <td class="content-cell" style="text-align:center;">${docInfo.최종개정일 || '-'}</td>
+                            <th class="header-cell" style="border-left:1px solid #000">최종검토일</th>
+                            <td class="content-cell" style="text-align:center;">${docInfo.최종검토일 || '-'}</td>
+                        </tr>
+                        <tr>
+                            <th class="header-cell">담당부서</th>
+                            <td class="content-cell" colspan="5">${docInfo.담당부서 || '-'}</td>
+                        </tr>
+                        <tr>
+                            <th class="header-cell">유관부서</th>
+                            <td class="content-cell" colspan="5">${docInfo.유관부서 || '-'}</td>
+                        </tr>
+                    </table>
+                    
+                    <!-- 관련기준 테이블 -->
+                    <table class="regulation-meta-table">
+                        <tr>
+                            <th class="header-cell">관련기준</th>
+                            <td class="content-cell long-content">
+                                ${docInfo.관련기준 ? 
+                                    (Array.isArray(docInfo.관련기준) ? 
+                                        docInfo.관련기준.join('<br>') : 
+                                        docInfo.관련기준) :
+                                    '-'}
+                            </td>
+                        </tr>
+                    </table>
+                    
+                    <!-- 부록 테이블 -->
+                    <table class="regulation-meta-table">
+                        <tr>
+                            <th class="header-cell">부록</th>
+                            <td class="content-cell">
+                                <span class="appendix-count">${safeAppendixArray.length}건</span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            `;
+        }
+    } else {
+        // detail이 없는 경우도 모바일/PC 구분
+        if (isMobile) {
+            metaHtml = `
+                <div class="regulation-meta-container">
+                    <div class="mobile-meta-cards">
+                        <div class="mobile-meta-card">
+                            <div class="mobile-meta-card-content">
+                                <div class="mobile-meta-item">
+                                    <div class="mobile-meta-label">제정일</div>
+                                    <div class="mobile-meta-value empty">-</div>
+                                </div>
+                                <!-- 나머지 빈 정보들... -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            // 기존 PC용 빈 테이블...
+            metaHtml = `기존 PC용 빈 테이블 HTML`;
+        }
+    } 
+    
+    // articles 내용 생성
+    if (regulation.detail && regulation.detail.articles && Array.isArray(regulation.detail.articles)) {
+        regulation.detail.articles.forEach(article => {
+            if (!article) return;
+
+            if (article.title) {
+                contentHtml += `<div class="article-title">${article.title}</div>`;
+            }
+
+            if (article.content) {
+                contentHtml += `<div class="article-item">${article.content}</div>`;
+            }
+            
+            if (article.subsections && Array.isArray(article.subsections)) {
+                article.subsections.forEach(subsection => {
+                    if (!subsection) return;
+                    if (subsection.title) {
+                        contentHtml += `<div class="article-item"><strong>${subsection.title}</strong></div>`;
+                    }
+                    if (subsection.items && Array.isArray(subsection.items)) {
+                        subsection.items.forEach(item => {
+                            if (item) {
+                                contentHtml += `<div class="article-sub-item">${item}</div>`;
+                            }
+                        });
+                    }
+                }); 
+            }
+        }); 
+    } else {
+        // detail이 없거나 articles가 없는 경우
+        contentHtml = `
+            <div class="article-title">내규 내용</div>
+            <div class="article-item">
+                이 내규는 <strong>${regulation.name}</strong>에 관한 사항을 규정합니다.
+                <br><br>
+                상세한 내용은 관련 부서에서 별도로 관리되며, 
+                필요시 담당 부서에 문의하시기 바랍니다.
+            </div>
+        `;
+    }
+
+    // 최종 HTML 조합
+    contentBody.innerHTML = `
+        <div class="regulation-detail mal-font">
+            ${actionButtonsHtml}
+            <div class="regulation-header">
+                ${metaHtml}
+            </div>
+            <div class="regulation-content">
+                ${contentHtml}
+            </div>
+            ${appendixHtml}
+        </div>
+    `;
+    console.log('내규 상세보기 렌더링 완료');
+}
+
+// 부록 상세보기
+function showAppendixDetail(regulation, appendixItem, chapter, index = null) {
+    // sidebar 보이도록
+    document.getElementById('sidebar').style.display = 'block';
+    document.getElementById('mainPageContent').style.display = 'none';
+    document.getElementById('contentBody').style.display = 'block';
+    document.getElementById('main-content-header').style.display = 'none';
+    // 네비게이션 활성화
+    updateNavigation('분류별 내규');
+    const chapterData = hospitalRegulations[chapter];
+    document.getElementById('breadcrumbActive').textContent = `${chapter}. ${chapterData.title} > ${regulation.code}. ${regulation.name} > 부록${index + 1}. ${appendixItem}`;
+    document.getElementById('pageTitle').textContent = `부록${index + 1}. ${appendixItem}`;
+    // sidebar active 상태 업데이트 (부록용)
+    updateSidebarActiveStateForAppendix(regulation, appendixItem, chapter, index);
+    const contentBody = document.getElementById('contentBody');
+    contentBody.innerHTML = `
+        <div class="regulation-detail">
+            <div class="regulation-header">
+                <div class="regulation-meta">
+                    <span>문서 유형: 부록</span>
+                    <span>제정일: 0000.00.00</span>
+                    <span>최종개정일: 0000.00.00</span>
+                    <span>담당부서: 000부서</span>
+                    <span>관련기준: 00기준</span>
+                </div>
+            </div>
+            <div class="regulation-content">
+                <h4 style="color: #1565c0; margin-bottom: 15px;">부록 개요</h4>
+                <p>이 부록은 <strong>${regulation.name}</strong> 내규의 시행을 위한 세부 지침입니다.</p>
+                <h4 style="color: #1565c0; margin-top: 20px; margin-bottom: 10px;">주요 내용</h4>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+                    <ul style="padding-left: 20px; line-height: 1.8;">
+                        <li>관련 절차 및 방법론</li>
+                        <li>필요한 서식 및 양식</li>
+                        <li>담당자별 역할 및 책임</li>
+                        <li>관련 기준 및 지표</li>
+                    </ul>
+                </div>
+                <h4 style="color: #1565c0; margin-top: 20px; margin-bottom: 10px;">적용 범위</h4>
+                <p>이 부록은 ${regulation.name}과 관련된 모든 업무에 적용되며, 관련 부서는 이를 준수하여야 한다.</p>
+                <div style="margin-top: 20px; padding: 15px; background: #e8f5e8; border-radius: 6px; border-left: 4px solid #4caf50;">
+                    <h5 style="color: #2e7d32; margin-bottom: 8px;"> 참고사항</h5>
+                    <p style="font-size: 13px; color: #2e7d32; margin: 0;">
+                        이 부록의 세부 내용은 관련 부서에서 별도로 관리하며, 
+                        최신 버전은 병원 내규 시스템에서 확인할 수 있습니다.
+                    </p>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// 즐겨찾기 토글
+function toggleFavorite(regulation, chapter) {
+    if (!regulation || !chapter) return;
+    const favoriteKey = `${regulation.code}.-${regulation.name}`;
+    const index = favoriteRegulations.indexOf(favoriteKey);
+    const favoriteBtn = document.querySelector('.regulation-actions .action-btn[data-tooltip="즐겨찾기"]');
+
+    if (index > -1) {
+        // 즐겨찾기에서 제거
+        favoriteRegulations.splice(index, 1);
+        favoriteBtn.classList.remove('active');
+        showToast(`"${regulation.name}"이(가) 즐겨찾기에서 제거되었습니다.`, 'info');
+    } else {
+        // 즐겨찾기에 추가
+        favoriteRegulations.push(favoriteKey);
+        favoriteBtn.classList.add('active');
+        showToast(`"${regulation.name}"이(가) 즐겨찾기에 추가되었습니다.`, 'success');
+    }
+    // localStorage에 저장
+    localStorage.setItem('favoriteRegulations', JSON.stringify(favoriteRegulations));
+    // 사이드바 즐겨찾기 목록 업데이트
+    updateFavoritesList();
+}
+
+// 즐겨찾기 여부 확인
+function isFavorite(regulation, chapter) {
+    if (!regulation || !chapter) return false;
+    const favoriteKey = `${chapter}-${regulation.code}.`;
+    return favoriteRegulations.includes(favoriteKey);
+}
+
+// 인쇄 기능
+function printRegulation() {
+    // 인쇄 스타일 추가
+    const printStyle = document.createElement('style');
+    printStyle.textContent = `
+        @media print {
+            body * { visibility: hidden; }
+            #contentBody, #contentBody * { visibility: visible; }
+            #main-content-header, #main-content-header * { visibility: visible; }  /* 페이지 헤더 추가 */
+         
+            /* 우측 상단 대외비 표시 */
+            body::after {
+                content: "대외비";
+                position: fixed;
+                top: 0px !important;
+                right: 10px !important;
+                color: #dc3545 !important;
+                font-size: 12px;
+                font-weight: bold;
+                font-family: 'NanumSquare', 'Malgun Gothic', sans-serif;
+                padding: 2px 6px; 
+                border: 1px solid #dc3545;
+                border-radius: 3px;
+    
+                opacity: 0.4;
+            }
+ 
+            #main-content-header {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 90px;
+                padding: 15px 20px;
+                border-bottom: 1px solid #e7e6e6;
+                margin-bottom: 20px;
+            }
+            #contentBody { 
+                position: absolute; 
+                left: 0; 
+                top: 110px;    /* 헤더 공간 확보 */
+                width: 100%; 
+            }
+            .regulation-actions { display: none !important; }
+            .sidebar { display: none !important; }
+            .header { display: none !important; }
+            .footer { display: none !important; }
+            
+            /* 페이지 헤더 스타일 */
+            /*.breadcrumb { font-size: 12px; margin-bottom: 5px; color: #666;}
+            .page-title { font-size: 18px; margin-bottom: 8px; color: #2786dd;}*/
+        }
+    `;
+    document.head.appendChild(printStyle);
+    
+    // 인쇄 실행
+    window.print();
+    
+    // 인쇄 후 스타일 제거
+    setTimeout(() => {
+        document.head.removeChild(printStyle);
+    }, 1000);
+}
+
+// 규정체계도 표시
+function showRegulationHierarchy(regulation, chapter) {
+    if (!regulation || !chapter) return;
+    const chapterData = hospitalRegulations[chapter];
+    // 모달 생성
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">규정 체계도</h3>
+                <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="text-align: center; padding: 20px;">
+                    <div style="border: 2px solid #1565c0; border-radius: 8px; padding: 15px; margin-bottom: 20px; background: #f0f7ff;">
+                        <h4 style="color: #1565c0; margin: 0;">${chapter}. ${chapterData.title}</h4>
+                        <p style="margin: 5px 0 0 0; color: #666;">총 ${chapterData.regulations.length}개 내규</p>
+                    </div>
+                    <div style="border: 3px solid #ff9800; border-radius: 8px; padding: 15px; margin-bottom: 20px; background: #fff8e1;">
+                        <h4 style="color: #ff9800; margin: 0;">${regulation.code}. ${regulation.name}</h4>
+                        <p style="margin: 5px 0 0 0; color: #666;">현재 보고 있는 내규</p>
+                    </div>
+                    ${regulation.appendix && regulation.appendix.length > 0 ? `
+                        <div style="border: 2px solid #4caf50; border-radius: 8px; padding: 15px; background: #f1f8e9;">
+                            <h5 style="color: #4caf50; margin-bottom: 10px;">관련 부록 (${regulation.appendix.length}건)</h5>
+                            ${regulation.appendix.map((item, index) => `
+                                <div style="padding: 5px; border-left: 3px solid #4caf50; margin: 5px 0; background: white;">
+                                    부록${index + 1}: ${item}
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : '<p style="color: #999;">관련 부록이 없습니다.</p>'}
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    // 모달 외부 클릭 시 닫기
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+    showToast(`"${regulation.name}" 체계도를 표시했습니다.`, 'info');
+}
+
+// 토스트 메시지 함수
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#4caf50' : type === 'error' ? '#f44336' : '#2196f3'};
+        color: white;
+        padding: 12px 20px;
+        border-radius: 4px;
+        z-index: 10000;
+        font-size: 14px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+    `;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    // 애니메이션
+    setTimeout(() => {
+        toast.style.transform = 'translateX(0)';
+    }, 100);
+    // 3초 후 제거
+    setTimeout(() => {
+        toast.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 300);
+    }, 3000);
+}
+
+
+// 부록용 sidebar active 상태 업데이트 함수
+function updateSidebarActiveStateForAppendix(regulation, appendixItem, chapter, index) {
+    // 먼저 기본 상태 업데이트
+    updateSidebarActiveState(regulation, chapter);
+    // 특정 부록 활성화
+    if (index !== null) {
+        const subChildren = document.querySelectorAll('.tree-sub-child');
+        subChildren.forEach(subChild => {
+            if (subChild.textContent.includes(appendixItem)) {
+                subChild.classList.add('active');
+            }
+        });
+    }
+}
+
+// 빠른 검색
+function quickSearch() {
+    const searchTerm = document.getElementById('quickSearchInput').value.trim();
+    if (searchTerm) {
+        alert(`"${searchTerm}" 검색 기능은 구현 예정입니다.`);
+    }
+}
+
+// 분류별 내규 페이지 표시
+function showCategoryListPage() {
+    if (!isDataLoaded()) {
+        showToast('데이터를 불러오는 중입니다. 잠시 후 다시 시도해주세요.', 'info');
+        return;
+    }
+
+    // '분류'탭 선택 시 sidebar 숨기기
+    document.getElementById('sidebar').style.display = 'none';
+    document.getElementById('main-content-header').style.display = 'none';
+
+    // 네비게이션 활성화
+    updateNavigation('분류');
+    document.getElementById('breadcrumbActive').textContent = '세브란스병원 내규';
+    document.getElementById('pageTitle').textContent = '세브란스병원 내규 시스템';
+    document.getElementById('mainPageContent').style.display = 'none';
+    document.getElementById('contentBody').style.display = 'block';
+    closeSidebar();
+    // 동적으로 챕터 카드들 생성
+    function generateChapterCards() {
+        return Object.keys(hospitalRegulations).map(chapter => {
+            const chapterData = hospitalRegulations[chapter];
+            
+            // ✅ regulations 배열 확인
+            if (!Array.isArray(chapterData.regulations)) {
+                console.warn(`generateChapterCards: Chapter ${chapter}의 regulations가 배열이 아닙니다`);
+                return '';
+            }
+            
+            // 각 챕터의 내규들을 동적으로 생성
+            const regulationsHTML = chapterData.regulations.map((regulation, regIndex) => {
+                // regulation 객체 확인
+                if (!regulation || !regulation.code || !regulation.name) {
+                    console.warn(`generateChapterCards: Chapter ${chapter}, regulation ${regIndex}가 유효하지 않습니다`, regulation);
+                    return '';
+                }
+                
+                // appendix 안전성 검사 및 정규화
+                let appendixArray = [];
+                if (regulation.appendix) {
+                    if (Array.isArray(regulation.appendix)) {
+                        appendixArray = regulation.appendix;
+                    } else if (typeof regulation.appendix === 'string') {
+                        appendixArray = [regulation.appendix];
+                        console.warn(`generateChapterCards: Chapter ${chapter}, regulation ${regulation.code}.: appendix가 문자열입니다.`);
+                    } else if (typeof regulation.appendix === 'object' && regulation.appendix !== null) {
+                        try {
+                            appendixArray = Object.values(regulation.appendix).filter(item => item != null);
+                            console.warn(`generateChapterCards: Chapter ${chapter}, regulation ${regulation.code}.: appendix가 객체입니다.`);
+                        } catch (error) {
+                            console.error(`generateChapterCards: Chapter ${chapter}, regulation ${regulation.code}.: appendix 변환 실패`, error);
+                            appendixArray = [];
+                        }
+                    } else {
+                        console.warn(`generateChapterCards: Chapter ${chapter}, regulation ${regulation.code}.: appendix가 예상치 못한 타입입니다:`, typeof regulation.appendix);
+                        appendixArray = [];
+                    }
+                }
+                
+                if (appendixArray.length > 0) {
+                    // 하위 부록이 있는 경우
+                    const subRegulationsHTML = appendixArray.map((appendixItem, appendixIndex) => {
+                        // ✅ appendixItem이 유효한 문자열인지 확인
+                        if (typeof appendixItem !== 'string' || !appendixItem.trim()) {
+                            console.warn(`generateChapterCards: Chapter ${chapter}, regulation ${regulation.code}., appendix ${appendixIndex}가 유효하지 않습니다:`, appendixItem);
+                            return '';
+                        }
+                        
+                        return `
+                            <div class="regulation-chip sub-regulation" 
+                                 data-chapter="${chapter}" 
+                                 data-regulation-code="${regulation.code}."
+                                 data-appendix-index="${appendixIndex}"
+                                 onclick="event.stopPropagation(); showAppendixFromGallery('${chapter}', ${regIndex}, ${appendixIndex})">
+                                <span class="reg-code">부록${appendixIndex + 1}</span>
+                                <span class="reg-name">${appendixItem}</span>
+                            </div>
+                        `;
+                    }).filter(html => html !== '').join(''); // 빈 문자열 제거
+                    
+                    return `
+                        <div class="regulation-group">
+                            <div class="regulation-chip main-regulation" onclick="showRegulationDetail(hospitalRegulations['${chapter}'].regulations[${regIndex}], '${chapter}')">
+                                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                                    <span class="reg-code">${regulation.code}.</span>
+                                    <span class="reg-name">${regulation.name}</span>
+                                </div>
+                                <div class="sub-toggle" onclick="event.stopPropagation(); toggleSubRegulations(this)">
+                                    <i class="fas fa-chevron-down"></i>
+                                </div>
+                                <div class="sub-regulations" style="display: none;">
+                                    ${subRegulationsHTML}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // 하위 부록이 없는 경우
+                    return `
+                        <div class="regulation-chip" 
+                             onclick="showRegulationDetail(hospitalRegulations['${chapter}'].regulations[${regIndex}], '${chapter}')">
+                            <span class="reg-code">${regulation.code}.</span>
+                            <span class="reg-name">${regulation.name}</span>
+                        </div>
+                    `;
+                }
+            }).filter(html => html !== '').join(''); // 빈 문자열 제거
+            
+            return `
+                <div class="chapter-card" data-chapter="${chapter}">
+                    <div class="chapter-card-header">
+                        <div class="chapter-icon">
+                            <i class="${chapterData.icon}"></i>
+                        </div>
+                        <div class="chapter-info">
+                            <h2>${chapter}. ${chapterData.title}</h2>
+                            <span class="regulation-count">${chapterData.regulations.length}개 내규</span>
+                        </div>
+                        <div class="chapter-toggle">
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                    <div class="chapter-regulations" style="display: none;">
+                        <div class="regulations-grid">
+                            ${regulationsHTML}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).filter(html => html !== '').join(''); // 빈 문자열 제거
+    }
+
+    // 웰컴 메시지 표시
+    const contentBody = document.getElementById('contentBody');
+    contentBody.innerHTML = `
+        <div id="welcomeMessage" class="regulation-detail">
+            <div class="regulation-header" style="display:none;">
+                <div style="display: flex; gap: 1.5rem; font-size: 12px; color: #666;">
+                    <div>총 : 13개 장</div>
+                    <div>전체 내규 수: 200여 개</div>
+                    <div>마지막 업데이트: 2025.03.25</div>
+                </div>
+            </div>
+            <div class="regulation-content">
+                <div class="welcome-intro">
+                    <div class="control-buttons">
+                        <button id="expandAllBtn" class="control-btn">
+                            <i class="fas fa-expand-arrows-alt"></i> 모두 펼치기
+                        </button>
+                        <button id="collapseAllBtn" class="control-btn" style="display: none;">
+                            <i class="fas fa-compress-arrows-alt"></i> 모두 접기
+                        </button>
+                    </div>
+                </div>
+                <div class="chapters-gallery" id="chaptersGallery">
+                    ${generateChapterCards()}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// 갤러리에서 부록 상세보기를 위한 새로운 함수
+function showAppendixFromGallery(chapter, regulationIndex, appendixIndex) {
+    const regulation = hospitalRegulations[chapter].regulations[regulationIndex];
+    const appendixItem = regulation.appendix[appendixIndex];
+    showAppendixDetail(regulation, appendixItem, chapter, appendixIndex);
+}
+
+// 갤러리에서 부록 상세보기를 위한 새로운 함수
+function showAppendixFromGallery(chapter, regulationIndex, appendixIndex) {
+    const regulation = hospitalRegulations[chapter].regulations[regulationIndex];
+    const appendixItem = regulation.appendix[appendixIndex];
+    showAppendixDetail(regulation, appendixItem, chapter, appendixIndex);
+}
+
+// 사이드바 토글 (모바일)
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.querySelector('.overlay');
+    
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('active');
+}
+
+// 사이드바 닫기
+function closeSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.querySelector('.overlay');
+    
+    sidebar.classList.remove('open');
+    overlay.classList.remove('active');
+}
+
+// Enter 키로 검색
+/*
+document.getElementById('quickSearchInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        quickSearch();
+    }
+});
+*/
+//-- END
+
+
+
+
+// 전역 변수
+let currentCategory = '법인';
+let currentRegulations = [
+    {
+        id: 1,
+        name: '정확한 환자 확인',
+        category: '환자안전보장활동',
+        enacted: '2020.03.01',
+        revised: '2024.11.15',
+        content: '이 내규은 정확한 환자 확인에 관한 사항을 정함으로써 환자 안전과 의료 질 향상에 기여함을 목적으로 한다.',
+        status: '시행'
+    },
+    {
+        id: 2,
+        name: '협의진료체계',
+        category: '환자진료',
+        enacted: '2019.09.01',
+        revised: '2024.11.10',
+        content: '이 내규은 협의진료체계에 관한 사항을 정함으로써 환자 안전과 의료 질 향상에 기여함을 목적으로 한다.',
+        status: '시행'
+    },
+    {
+        id: 3,
+        name: '시술관리',
+        category: '수술 및 마취진정관리',
+        enacted: '2018.12.01',
+        revised: '2024.11.05',
+        content: '이 내규은 시술관리에 관한 사항을 정함으로써 환자 안전과 의료 질 향상에 기여함을 목적으로 한다.',
+        status: '시행'
+    },
+    {
+        id: 4,
+        name: '진료평가',
+        category: '인적자원 관리',
+        enacted: '2017.03.01',
+        revised: '2024.10.28',
+        content: '이 내규은 진료평가에 관한 사항을 정함으로써 환자 안전과 의료 질 향상에 기여함을 목적으로 한다.',
+        status: '시행'
+    },
+    {
+        id: 5,
+        name: '약어 사용',
+        category: '의무기록/의료정보 관리',
+        enacted: '2016.09.01',
+        revised: '2024.11.01',
+        content: '이 내규은 약어 사용에 관한 사항을 정함으로써 환자 안전과 의료 질 향상에 기여함을 목적으로 한다.',
+        status: '시행'
+    }
+];
+
+let searchResults = [];
+let recentRegulations = ['환자안전보장활동', '환자진료'];
+let searchHistory = [];
+let isVoiceSearching = false;
+
+// 초기화
+document.addEventListener('DOMContentLoaded', function() {
+    displayInitialResults();
+});
+
+// 초기 검색 결과 표시
+function displayInitialResults() {
+    searchResults = currentRegulations;
+    //updateResultsDisplay();
+}
+
+// 검색 결과 업데이트
+function updateResultsDisplay() {
+    const resultCount = document.getElementById('resultCount');
+    const resultsBody = document.getElementById('resultsBody');
+    
+    resultCount.textContent = searchResults.length;
+    
+    if (searchResults.length === 0) {
+        resultsBody.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>검색 결과가 없습니다.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    resultsBody.innerHTML = searchResults.map(reg => `
+        <div class="result-item">
+            <div class="result-title">${reg.name}</div>
+            <div class="result-info">
+                <span><i class="fas fa-tag"></i> ${reg.category}</span>
+                <span><i class="fas fa-calendar"></i> 개정일: ${reg.revised}</span>
+                <span><i class="fas fa-check-circle"></i> ${reg.status}</span>
+            </div>
+            <div class="result-content">${reg.content}</div>
+        </div>
+    `).join('');
+}
+
+// 제안 적용
+function applySuggestion(suggestion) {
+    document.getElementById('mainSearchInput').value = suggestion;
+    performSearch();
+}
+
+// 음성 검색
+function startVoiceSearch() {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        alert('음성 검색을 지원하지 않는 브라우저입니다.');
+        return;
+    }
+
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    const voiceBtn = document.querySelector('.voice-search-btn');
+    
+    recognition.lang = 'ko-KR';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onstart = function() {
+        isVoiceSearching = true;
+        voiceBtn.classList.add('listening');
+        voiceBtn.innerHTML = '<i class="fas fa-stop"></i>';
+    };
+
+    recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById('mainSearchInput').value = transcript;
+        performSearch();
+    };
+
+    recognition.onerror = function(event) {
+        alert('음성 인식 오류: ' + event.error);
+    };
+
+    recognition.onend = function() {
+        isVoiceSearching = false;
+        voiceBtn.classList.remove('listening');
+        voiceBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+    };
+
+    if (isVoiceSearching) {
+        recognition.stop();
+    } else {
+        recognition.start();
+    }
+}
+
+// 고급 필터 토글
+function toggleAdvancedFilters() {
+    const filtersBody = document.getElementById('filtersBody');
+    const toggleIcon = document.getElementById('filterToggleIcon');
+    
+    filtersBody.classList.toggle('open');
+    toggleIcon.style.transform = filtersBody.classList.contains('open') ? 'rotate(180deg)' : 'rotate(0deg)';
+}
+
+// 고급 필터 적용
+function applyAdvancedFilters() {
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    const department = document.getElementById('departmentFilter').value;
+    const status = document.getElementById('statusFilter').value;
+
+    let filteredResults = currentRegulations.filter(reg => {
+        let match = true;
+        
+        if (startDate && reg.enacted < startDate) match = false;
+        if (endDate && reg.enacted > endDate) match = false;
+        if (department && reg.department !== department) match = false;
+        if (status && reg.status !== status) match = false;
+        
+        return match;
+    });
+
+    searchResults = filteredResults;
+    //updateResultsDisplay();
+    
+    alert(`고급 필터가 적용되었습니다.\n총 ${filteredResults.length}개의 내규이 검색되었습니다.`);
+}
+
+// 트리 메뉴 토글
+function toggleTreeItem(header) {
+    const children = header.nextElementSibling;
+    const isOpen = children.classList.contains('open');
+    
+    // 모든 트리 아이템 닫기
+    document.querySelectorAll('.tree-children').forEach(child => {
+        child.classList.remove('open');
+    });
+    document.querySelectorAll('.tree-header').forEach(h => {
+        h.classList.remove('active');
+    });
+    
+    // 클릭한 아이템만 열기/닫기
+    if (!isOpen) {
+        children.classList.add('open');
+        header.classList.add('active');
+    }
+}
+
+// 내규 검색 (사이드바에서)
+function searchRegulation(name) {
+    alert(`"${name}" 검색 기능은 구현 예정입니다.`);
+    updateRecentRegulations(name);
+    closeSidebar();
+}
+
+// 내규 로드 (트리에서)
+function loadRegulation(name) {
+    // 트리 child 활성화
+    document.querySelectorAll('.tree-child').forEach(child => {
+        child.classList.remove('active');
+    });
+    if (event && event.target) {
+        event.target.classList.add('active');
+    }
+    
+    searchRegulation(name);
+}
+
+// 최근 본 내규 업데이트
+function updateRecentRegulations(regulationName) {
+    const index = recentRegulations.indexOf(regulationName);
+    if (index > -1) {
+        recentRegulations.splice(index, 1);
+    }
+    
+    recentRegulations.unshift(regulationName);
+    
+    if (recentRegulations.length > 5) {
+        recentRegulations.pop();
+    }
+    
+    const recentBody = document.getElementById('recentBody');
+    recentBody.innerHTML = recentRegulations.map((name, index) => {
+        const timeText = index === 0 ? '방금 전' : 
+                       index === 1 ? '5분 전' : 
+                       index === 2 ? '1시간 전' : 
+                       '오늘';
+        
+        return `
+            <div class="panel-item" onclick="searchRegulation('${name}')">
+                <div>
+                    <div class="item-name">${name}</div>
+                    <div class="item-date">${timeText}</div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// 메인 페이지 표시
+function showMainPage() {
+    // sidebar 보이도록
+    document.getElementById('sidebar').style.display = 'block';
+    document.getElementById('main-content-header').style.display = 'none';
+
+
+    document.getElementById('breadcrumbActive').textContent = '세브란스병원 내규';
+    document.getElementById('pageTitle').textContent = '세브란스병원 내규 시스템';
+    
+    document.getElementById('mainPageContent').style.display = 'block';
+    document.getElementById('contentBody').style.display = 'none';
+    
+    // 네비게이션 활성화
+    updateNavigation('검색');
+    
+    // 데스크톱에서만 사이드바 닫기
+    if (window.innerWidth > 768) {
+        closeSidebar();
+    }
+}
+
+// 보기 모드 설정
+let currentViewMode = 'gallery';
+
+// AI 어시스턴트 기능들
+function toggleAIChat() {
+    const panel = document.getElementById('aiChatPanel');
+    panel.classList.toggle('active');
+}
+
+function sendAIMessage(messageOrEvent) {
+    let message;
+    
+    if (typeof messageOrEvent === 'string') {
+        message = messageOrEvent;
+    } else {
+        messageOrEvent.preventDefault();
+        message = document.getElementById('aiInput').value.trim();
+        if (!message) return;
+        document.getElementById('aiInput').value = '';
+    }
+
+    const chatBody = document.getElementById('aiChatBody');
+    chatBody.innerHTML += `
+        <div class="ai-message user">
+            <div class="message-avatar user">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="message-content user">${message}</div>
+        </div>
+    `;
+
+
+    chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+function performAISearch(searchTerm) {
+    document.getElementById('mainSearchInput').value = searchTerm;
+    showMainPage();
+    performSearch();
+}
+
+// 특정 분류 내규 페이지 표시
+function showCategoryPage(category) {
+    document.getElementById('mainPageContent').style.display = 'none';
+    document.getElementById('contentBody').style.display = 'block';
+    
+    // 현재 카테고리 설정
+    currentCategory = category;
+    
+    // 네비게이션 활성화
+    updateNavigation('분류별 내규');
+    
+    // 카테고리 탭 활성화
+    updateCategoryTabs(category);
+    
+    closeSidebar();
+}
+
+// 카테고리 선택
+function selectCategory(category, event) {
+    if (event) {
+        event.preventDefault();
+    }
+    showCategoryPage(category);
+}
+
+// 글꼴 설정 함수
+function setFontFamily(fontName, saveToStorage = true) {
+    // 기존 글꼴 클래스 제거
+    document.body.classList.remove('font-yonsei', 'font-noto', 'font-spoqa', 'font-pretendard', 'font-malgun', 'font-nanum', 'font-nanumsquare');
+    
+    // 새 글꼴 클래스 추가 (연세체가 아닌 경우에만)
+    if (fontName !== 'yonsei') {
+        document.body.classList.add(`font-${fontName}`);
+    }
+    
+    // 활성 옵션 업데이트
+    document.querySelectorAll('.font-option').forEach(option => {
+        option.classList.remove('active');
+        if (option.dataset.font === fontName) {
+            option.classList.add('active');
+        }
+    });
+    
+    currentFontFamily = fontName;
+    
+    // localStorage에 저장
+    if (saveToStorage) {
+        localStorage.setItem('fontFamily', fontName);
+    }
+}
+// 글꼴 설정만 별도로 불러오는 함수
+function loadFontSettings() {
+    const savedFont = localStorage.getItem('fontFamily');
+    console.log('저장된 글꼴 설정:', savedFont); // 디버깅용
+    
+    if (savedFont) {
+        currentFontFamily = savedFont;
+        setFontFamily(currentFontFamily, false);
+        console.log('글꼴 설정 적용됨:', savedFont); // 디버깅용
+    } else {
+        // 저장된 글꼴이 없으면 나눔스퀘어를 기본으로 설정하고 저장
+        setFontFamily('nanumsquare', true);
+        console.log('기본 글꼴(나눔스퀘어) 설정 및 저장'); // 디버깅용
+    }
+}
+
+// 레이아웃 설정 불러오기
+function loadLayoutSettings() {
+    const savedLayout = localStorage.getItem('layoutMode');
+    
+    if (savedLayout) {
+        currentLayoutMode = parseInt(savedLayout);
+        setLayoutMode(currentLayoutMode, false); // 저장하지 않고 적용만
+    }
+}
+
+// 레이아웃 설정 패널 토글
+function toggleLayoutSettings() {
+    const panel = document.getElementById('layoutSettingsPanel');
+    const overlay = document.getElementById('settingsOverlay');
+    
+    panel.classList.add('active');
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+// 레이아웃 설정 패널 닫기
+function closeLayoutSettings() {
+    const panel = document.getElementById('layoutSettingsPanel');
+    const overlay = document.getElementById('settingsOverlay');
+    
+    panel.classList.remove('active');
+    overlay.classList.remove('active');
+    document.body.style.overflow = 'auto';
+}
+
+// 레이아웃 모드 설정
+function setLayoutMode(mode, saveToStorage = true) {
+    document.body.classList.remove('layout-mode-1', 'layout-mode-2', 'layout-mode-3');
+    document.body.classList.add(`layout-mode-${mode}`);
+    
+    document.querySelectorAll('.layout-option').forEach(option => {
+        option.classList.remove('active');
+        if (parseInt(option.dataset.layout) === mode) {
+            option.classList.add('active');
+        }
+    });
+    
+    // 수정된 코드
+    if (window.innerWidth > 768) {  // ← 데스크톱에서만 적용
+        if (mode === 1) {
+            if (sidebar) sidebar.style.display = 'none';
+        } else {
+            if (sidebar) sidebar.style.display = 'block';
+        }
+    } else {
+        if (sidebar) sidebar.style.display = 'block';
+    }   
+ 
+    currentLayoutMode = mode;
+    
+    if (saveToStorage) {
+        localStorage.setItem('layoutMode', mode.toString());
+    }
+}
+
+// 네비게이션 업데이트
+function updateNavigation(activeTab) {
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+        if (link.textContent.trim() === activeTab) {
+            link.classList.add('active');
+        }
+    });
+}
+
+// 카테고리 탭 업데이트
+function updateCategoryTabs(category) {
+    document.querySelectorAll('.category-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    const activeTab = Array.from(document.querySelectorAll('.category-tab')).find(tab => 
+        tab.onclick.toString().includes(`'${category}'`)
+    );
+    if (activeTab) {
+        activeTab.classList.add('active');
+    }
+}
+
+// 모달 닫기
+function closeModal() {
+    document.getElementById('detailModal').style.display = 'none';
+}
+
+// 챕터 카드 클릭 이벤트 (이벤트 위임 방식)
+document.addEventListener('click', function(e) {
+    // 챕터 카드 헤더 클릭
+    if (e.target.closest('.chapter-card-header')) {
+        const header = e.target.closest('.chapter-card-header');
+        const card = header.closest('.chapter-card');
+        toggleChapterCard(card);
+    }
+    // 하위 내규 토글 클릭
+    if (e.target.closest('.sub-toggle')) {
+        const toggleBtn = e.target.closest('.sub-toggle');
+        toggleSubRegulations(toggleBtn);
+    } 
+   
+    // 모두 펼치기 버튼 클릭
+    if (e.target.closest('#expandAllBtn')) {
+        expandAllChapters();
+    }
+    
+    // 모두 접기 버튼 클릭
+    if (e.target.closest('#collapseAllBtn')) {
+        collapseAllChapters();
+    }
+    // 부록 클릭 이벤트 추가
+    if (e.target.closest('.sub-regulation')) {
+        e.stopPropagation(); // 상위 이벤트 전파 방지
+        const subRegulation = e.target.closest('.sub-regulation');
+        const regulationGroup = subRegulation.closest('.regulation-group');
+        const mainRegulation = regulationGroup.querySelector('.main-regulation');
+        // 데이터 속성에서 정보 추출
+        const chapter = subRegulation.dataset.chapter;
+        const regulationCode = subRegulation.dataset.regulationCode;
+        const appendixIndex = parseInt(subRegulation.dataset.appendixIndex);
+        const appendixName = subRegulation.querySelector('.reg-name').textContent;
+        // 해당 내규 찾기
+        const regulation = hospitalRegulations[chapter].regulations.find(reg => reg.code === regulationCode);
+        if (regulation) {
+            showAppendixDetail(regulation, appendixName, chapter, appendixIndex);
+        }
+    }
+});
+
+// 개별 챕터 카드 토글
+function toggleChapterCard(card) {
+    if (!card) return;
+    
+    const regulations = card.querySelector('.chapter-regulations');
+    const isExpanded = card.classList.contains('expanded');
+    
+    if (isExpanded) {
+        // 접기
+        card.classList.remove('expanded');
+        regulations.style.display = 'none';
+    } else {
+        // 펼치기
+        card.classList.add('expanded');
+        regulations.style.display = 'block';
+    }
+}
+// 하위 내규 토글 함수
+function toggleSubRegulations(toggleBtn) {
+    const regulationGroup = toggleBtn.closest('.regulation-group');
+    const mainRegulation = regulationGroup.querySelector('.main-regulation');
+    const subRegulations = regulationGroup.querySelector('.sub-regulations');
+    const isExpanded = toggleBtn.classList.contains('expanded');
+    
+    if (isExpanded) {
+        // 접기
+        toggleBtn.classList.remove('expanded');
+        mainRegulation.classList.remove('expanded');
+        subRegulations.style.display = 'none';
+        subRegulations.classList.remove('show');
+    } else {
+        // 펼치기
+        toggleBtn.classList.add('expanded');
+        mainRegulation.classList.add('expanded');
+        subRegulations.style.display = 'flex';
+        subRegulations.classList.add('show');
+    }
+}
+
+// 모든 챕터 펼치기
+function expandAllChapters() {
+    const chapterCards = document.querySelectorAll('.chapter-card');
+    const expandBtn = document.getElementById('expandAllBtn');
+    const collapseBtn = document.getElementById('collapseAllBtn');
+    
+    chapterCards.forEach(card => {
+        const regulations = card.querySelector('.chapter-regulations');
+        if (regulations) {
+            card.classList.add('expanded');
+            regulations.style.display = 'block';
+            
+            // 하위 내규들도 모두 펼치기
+            const subToggles = card.querySelectorAll('.sub-toggle');
+            subToggles.forEach(toggle => {
+                const regulationGroup = toggle.closest('.regulation-group');
+                const mainRegulation = regulationGroup.querySelector('.main-regulation');
+                const subRegulations = regulationGroup.querySelector('.sub-regulations');
+                
+                toggle.classList.add('expanded');
+                mainRegulation.classList.add('expanded');
+                if (subRegulations) {
+                    subRegulations.style.display = 'flex';
+                    subRegulations.classList.add('show');
+                }
+            });
+        }
+    });
+    
+    // 버튼 표시 전환
+    if (expandBtn) expandBtn.style.display = 'none';
+    if (collapseBtn) collapseBtn.style.display = 'flex';
+}
+
+// 모든 챕터 접기
+function collapseAllChapters() {
+    const chapterCards = document.querySelectorAll('.chapter-card');
+    const expandBtn = document.getElementById('expandAllBtn');
+    const collapseBtn = document.getElementById('collapseAllBtn');
+    
+    chapterCards.forEach(card => {
+        const regulations = card.querySelector('.chapter-regulations');
+        if (regulations) {
+            card.classList.remove('expanded');
+            regulations.style.display = 'none';
+            
+            // 하위 내규들도 모두 접기
+            const subToggles = card.querySelectorAll('.sub-toggle');
+            subToggles.forEach(toggle => {
+                const regulationGroup = toggle.closest('.regulation-group');
+                const mainRegulation = regulationGroup.querySelector('.main-regulation');
+                const subRegulations = regulationGroup.querySelector('.sub-regulations');
+                
+                toggle.classList.remove('expanded');
+                mainRegulation.classList.remove('expanded');
+                if (subRegulations) {
+                    subRegulations.style.display = 'none';
+                    subRegulations.classList.remove('show');
+                }
+            });
+        }
+    });
+    
+    // 버튼 표시 전환
+    if (expandBtn) expandBtn.style.display = 'flex';
+    if (collapseBtn) collapseBtn.style.display = 'none';
+}
+
+// 챕터별 내규 개수 업데이트 (실제 데이터 기반)
+function updateRegulationCounts() {
+    const chapterData = {
+        '1장': 9,
+        '2장': 25,
+        '3장': 18,
+        '4장': 12,
+        '5장': 8,
+        '6장': 15,
+        '7장': 10,
+        '8장': 12,
+        '9장': 14,
+        '10장': 16,
+        '11장': 20,
+        '12장': 8,
+        '13장': 6
+    };
+    
+    Object.keys(chapterData).forEach(chapter => {
+        const card = document.querySelector(`[data-chapter="${chapter}"]`);
+        if (card) {
+            const countSpan = card.querySelector('.regulation-count');
+            if (countSpan) {
+                countSpan.textContent = `${chapterData[chapter]}개 내규`;
+            }
+        }
+    });
+}
+// 현재 보고 있는 내규를 새창으로 열기
+function openInNewWindow() {
+    if (currentRegulation && currentChapter) {
+        const chapterData = hospitalRegulations[currentChapter];
+        openRegulationInNewWindow(currentRegulation, currentChapter, chapterData.title);
+    }
+}
+
+// ========== 즐겨찾기 관련 함수들 ==========
+
+// 즐겨찾기 토글 함수 (기존 함수 수정)
+function toggleFavorite(regulation, chapter) {
+    if (!regulation || !chapter) return;
+    
+    const favoriteKey = `${chapter}|${regulation.code}|${regulation.name}`;
+    const index = favoriteRegulations.findIndex(fav => fav.key === favoriteKey);
+    const favoriteBtn = document.querySelector('.regulation-actions .action-btn[data-tooltip="즐겨찾기"]') ||
+                       document.querySelector('.page-actions .action-btn[data-tooltip="즐겨찾기"]');
+
+    if (index > -1) {
+        // 즐겨찾기에서 제거
+        favoriteRegulations.splice(index, 1);
+        if (favoriteBtn) favoriteBtn.classList.remove('active');
+        showToast(`"${regulation.name}"이(가) 즐겨찾기에서 제거되었습니다.`, 'info');
+    } else {
+        // 즐겨찾기에 추가
+        const favoriteItem = {
+            key: favoriteKey,
+            chapter: chapter,
+            chapterTitle: hospitalRegulations[chapter]?.title || '',
+            code: regulation.code,
+            name: regulation.name,
+            dateAdded: new Date().toISOString(),
+            department: regulation.detail?.documentInfo?.['담당부서'] || '담당부서 미지정'
+        };
+        favoriteRegulations.push(favoriteItem);
+        if (favoriteBtn) favoriteBtn.classList.add('active');
+        showToast(`"${regulation.name}"이(가) 즐겨찾기에 추가되었습니다.`, 'success');
+    }
+    
+    // localStorage에 저장
+    localStorage.setItem('favoriteRegulations', JSON.stringify(favoriteRegulations));
+    
+    // 사이드바 및 즐겨찾기 페이지 업데이트
+    updateFavoritesList();
+    
+    // 현재 즐겨찾기 페이지가 열려있다면 업데이트
+    if (document.getElementById('contentBody').style.display !== 'none' && 
+        document.querySelector('.favorites-page')) {
+        displayFavoritesContent();
+    }
+}
+
+// 즐겨찾기 여부 확인 함수 (기존 함수 수정)
+function isFavorite(regulation, chapter) {
+    if (!regulation || !chapter) return false;
+    const favoriteKey = `${chapter}|${regulation.code}|${regulation.name}`;
+    return favoriteRegulations.some(fav => fav.key === favoriteKey);
+}
+
+// 사이드바 즐겨찾기 목록 업데이트 함수 (기존 함수 수정)
+function updateFavoritesList() {
+    const favoritesBody = document.getElementById('favoritesBody');
+    const favoritesCount = document.getElementById('favoritesCount');
+    
+    if (!favoritesBody || !favoritesCount) return;
+    
+    favoritesCount.textContent = favoriteRegulations.length;
+    
+    if (favoriteRegulations.length === 0) {
+        favoritesBody.innerHTML = `
+            <div style="text-align: center; padding: 20px 10px; color: #666; font-size: 12px;">
+                <i class="fas fa-star" style="font-size: 20px; color: #ddd; margin-bottom: 8px;"></i>
+                <div>즐겨찾기가 없습니다</div>
+            </div>
+        `;
+        return;
+    }
+    
+    // 최근 추가된 순으로 정렬하여 최대 5개만 표시
+    const recentFavorites = favoriteRegulations
+        .sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded))
+        .slice(0, 5);
+    
+    favoritesBody.innerHTML = recentFavorites.map(favorite => `
+        <div class="panel-item" onclick="openFavoriteRegulation('${favorite.key}')">
+            <div>
+                <div class="item-name">${favorite.code}. ${favorite.name}</div>
+                <div class="item-date">${favorite.chapter}. ${favorite.chapterTitle}</div>
+            </div>
+            <i class="fas fa-times item-remove" onclick="removeFavoriteFromSidebar(event, '${favorite.key}')"></i>
+        </div>
+    `).join('');
+}
+
+// 사이드바에서 즐겨찾기 제거
+function removeFavoriteFromSidebar(event, favoriteKey) {
+    event.stopPropagation();
+    
+    const index = favoriteRegulations.findIndex(fav => fav.key === favoriteKey);
+    if (index > -1) {
+        const favorite = favoriteRegulations[index];
+        favoriteRegulations.splice(index, 1);
+        localStorage.setItem('favoriteRegulations', JSON.stringify(favoriteRegulations));
+        updateFavoritesList();
+        
+        // 현재 보고 있는 내규가 제거된 즐겨찾기라면 버튼 상태 업데이트
+        if (currentRegulation && currentChapter) {
+            const currentKey = `${currentChapter}|${currentRegulation.code}|${currentRegulation.name}`;
+            if (currentKey === favoriteKey) {
+                const favoriteBtn = document.querySelector('.regulation-actions .action-btn[data-tooltip="즐겨찾기"]') ||
+                                   document.querySelector('.page-actions .action-btn[data-tooltip="즐겨찾기"]');
+                if (favoriteBtn) favoriteBtn.classList.remove('active');
+            }
+        }
+        
+        showToast(`"${favorite.name}"이(가) 즐겨찾기에서 제거되었습니다.`, 'info');
+        
+        // 즐겨찾기 페이지가 열려있다면 업데이트
+        if (document.getElementById('contentBody').style.display !== 'none' && 
+            document.querySelector('.favorites-page')) {
+            displayFavoritesContent();
+        }
+    }
+}
+
+// 사이드바에서 즐겨찾기 내규 열기
+function openFavoriteRegulation(favoriteKey) {
+    const favorite = favoriteRegulations.find(fav => fav.key === favoriteKey);
+    if (!favorite) return;
+    
+    // 해당 내규 찾기
+    const regulation = hospitalRegulations[favorite.chapter]?.regulations?.find(reg => 
+        reg.code === favorite.code && reg.name === favorite.name
+    );
+    
+    if (regulation) {
+        showRegulationDetail(regulation, favorite.chapter);
+        closeSidebar();
+    } else {
+        showToast('해당 내규를 찾을 수 없습니다.', 'error');
+    }
+}
+
+// 즐겨찾기 페이지 표시
+function showFavoritesPage() {
+    // 사이드바 표시
+    document.getElementById('sidebar').style.display = 'block';
+    document.getElementById('mainPageContent').style.display = 'none';
+    document.getElementById('contentBody').style.display = 'block';
+    document.getElementById('main-content-header').style.display = 'none';
+    
+    // 네비게이션 활성화
+    updateNavigation('즐겨찾기');
+    
+    // 즐겨찾기 페이지 내용 생성
+    displayFavoritesPage();
+    
+    // 데스크톱에서는 사이드바 닫기
+    if (window.innerWidth > 768) {
+        closeSidebar();
+    }
+}
+
+// 즐겨찾기 페이지 내용 표시
+function displayFavoritesPage() {
+    const contentBody = document.getElementById('contentBody');
+    
+    contentBody.innerHTML = `
+        <div class="favorites-page">
+            <div class="favorites-controls">
+                <div class="favorites-search">
+                    <input type="text" id="favoritesSearchInput" placeholder="즐겨찾기에서 검색..." onkeyup="filterFavorites(this.value)">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="favorites-actions">
+                    <button class="favorites-btn danger" onclick="clearAllFavorites()">
+                        <i class="fas fa-trash"></i>
+                        전체 삭제
+                    </button>
+                </div>
+            </div>
+            
+            <div class="favorites-content" id="favoritesContent">
+                <!-- 동적으로 생성됨 -->
+            </div>
+        </div>
+    `;
+    
+    displayFavoritesContent();
+}
+
+// 즐겨찾기 내용 표시
+function displayFavoritesContent() {
+    const favoritesContent = document.getElementById('favoritesContent');
+    if (!favoritesContent) return;
+    
+    if (favoriteRegulations.length === 0) {
+        favoritesContent.innerHTML = `
+            <div class="favorites-empty">
+                <i class="fas fa-star"></i>
+                <h3>즐겨찾기가 비어있습니다</h3>
+                <p>
+                    자주 사용하는 내규를 즐겨찾기에 추가해보세요.<br>
+                    내규 상세보기에서 별표 버튼을 클릭하면 즐겨찾기에 추가됩니다.
+                </p>
+            </div>
+        `;
+        return;
+    }
+    
+    // 사용할 즐겨찾기 목록 (필터링된 것이 있으면 사용)
+    const favoritesToShow = filteredFavorites.length > 0 ? filteredFavorites : favoriteRegulations;
+    
+    // 챕터별로 그룹화
+    const groupedFavorites = favoritesToShow.reduce((groups, favorite) => {
+        const chapterKey = `${favorite.chapter}. ${favorite.chapterTitle}`;
+        if (!groups[chapterKey]) {
+            groups[chapterKey] = {
+                chapter: favorite.chapter,
+                chapterTitle: favorite.chapterTitle,
+                items: []
+            };
+        }
+        groups[chapterKey].items.push(favorite);
+        return groups;
+    }, {});
+    
+    // 챕터 순서대로 정렬
+    const sortedGroups = Object.keys(groupedFavorites).sort().map(key => groupedFavorites[key]);
+    
+    let html = '';
+    
+    sortedGroups.forEach(group => {
+        // 각 그룹 내에서 코드 순으로 정렬
+        group.items.sort((a, b) => a.code.localeCompare(b.code));
+        
+        html += `
+            <div class="favorites-chapter-group">
+                <div class="favorites-chapter-header">
+                    <div class="favorites-chapter-title">
+                        ${group.chapter}. ${group.chapterTitle}
+                    </div>
+                    <div class="favorites-chapter-count">${group.items.length}개</div>
+                </div>
+                <div class="favorites-regulations">
+                    ${group.items.map(favorite => `
+                        <div class="favorite-regulation-item" data-key="${favorite.key}">
+                            <div class="favorite-regulation-main" onclick="openFavoriteRegulationFromPage('${favorite.key}')">
+                                <span class="favorite-regulation-code">${favorite.code}.</span>
+                                <div class="favorite-regulation-info">
+                                    <div class="favorite-regulation-name">${favorite.name}</div>
+                                    <div class="favorite-regulation-meta">
+                                        <span><i class="fas fa-building"></i> ${favorite.department}</span>
+                                        <span><i class="fas fa-calendar-plus"></i> ${formatDate(favorite.dateAdded)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="favorite-regulation-actions">
+                                <button class="favorite-action-btn remove" onclick="removeFavoriteFromPage('${favorite.key}')" title="즐겨찾기 제거">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    });
+    
+    favoritesContent.innerHTML = html;
+}
+
+// 날짜 포맷팅
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now - date);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 1) {
+        return '오늘';
+    } else if (diffDays === 2) {
+        return '어제';
+    } else if (diffDays <= 7) {
+        return `${diffDays - 1}일 전`;
+    } else {
+        return date.toLocaleDateString('ko-KR', { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+}
+
+// 즐겨찾기 페이지에서 내규 열기
+function openFavoriteRegulationFromPage(favoriteKey) {
+    const favorite = favoriteRegulations.find(fav => fav.key === favoriteKey);
+    if (!favorite) return;
+    
+    const regulation = hospitalRegulations[favorite.chapter]?.regulations?.find(reg => 
+        reg.code === favorite.code && reg.name === favorite.name
+    );
+    
+    if (regulation) {
+        showRegulationDetail(regulation, favorite.chapter);
+    } else {
+        showToast('해당 내규를 찾을 수 없습니다.', 'error');
+    }
+}
+
+// 즐겨찾기 페이지에서 제거
+function removeFavoriteFromPage(favoriteKey) {
+    const favorite = favoriteRegulations.find(fav => fav.key === favoriteKey);
+    if (!favorite) return;
+    
+    if (confirm(`"${favorite.name}"을(를) 즐겨찾기에서 제거하시겠습니까?`)) {
+        const index = favoriteRegulations.findIndex(fav => fav.key === favoriteKey);
+        if (index > -1) {
+            favoriteRegulations.splice(index, 1);
+            localStorage.setItem('favoriteRegulations', JSON.stringify(favoriteRegulations));
+            updateFavoritesList();
+            displayFavoritesContent();
+            showToast(`"${favorite.name}"이(가) 즐겨찾기에서 제거되었습니다.`, 'info');
+        }
+    }
+}
+
+// 즐겨찾기 검색 필터링
+function filterFavorites(searchTerm) {
+    if (!searchTerm.trim()) {
+        filteredFavorites = [];
+    } else {
+        const term = searchTerm.toLowerCase();
+        filteredFavorites = favoriteRegulations.filter(favorite => 
+            favorite.name.toLowerCase().includes(term) ||
+            favorite.code.toLowerCase().includes(term) ||
+            favorite.chapterTitle.toLowerCase().includes(term) ||
+            favorite.department.toLowerCase().includes(term)
+        );
+    }
+    displayFavoritesContent();
+}
+
+// 선택된 항목 수 업데이트
+function updateBulkSelection() {
+    if (!isBulkSelectionMode) return;
+    
+    const selectedCheckboxes = document.querySelectorAll('.favorite-checkbox:checked');
+    const selectedCount = document.getElementById('selectedCount');
+    if (selectedCount) {
+        selectedCount.textContent = selectedCheckboxes.length;
+    }
+}
+
+// 전체 즐겨찾기 삭제
+function clearAllFavorites() {
+    if (favoriteRegulations.length === 0) {
+        showToast('삭제할 즐겨찾기가 없습니다.', 'info');
+        return;
+    }
+    
+    if (confirm(`모든 즐겨찾기(${favoriteRegulations.length}개)를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`)) {
+        favoriteRegulations = [];
+        localStorage.setItem('favoriteRegulations', JSON.stringify(favoriteRegulations));
+        updateFavoritesList();
+        displayFavoritesContent();
+        showToast('모든 즐겨찾기가 삭제되었습니다.', 'info');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // 기존 초기화 함수들 실행 후
+});

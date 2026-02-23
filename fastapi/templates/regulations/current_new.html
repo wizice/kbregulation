@@ -1,0 +1,532 @@
+{% extends "common/base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="/static/styles.css">
+<link rel="stylesheet" href="/static/css/regulations.css">
+<style>
+    /* 분류 배지 스타일 */
+    .classification-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        background: #e7f1ff;
+        color: #667eea;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+        border: 1px solid #667eea33;
+        max-width: 160px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: middle;
+    }
+
+    .classification-badge:hover {
+        max-width: none;
+        overflow: visible;
+        position: relative;
+        z-index: 10;
+        background: #d0e4ff;
+        cursor: help;
+    }
+
+    /* 테이블 컬럼 너비 조정 */
+    .regulation-table th:nth-child(3),
+    .regulation-table td:nth-child(3) {
+        width: 100px;
+    }
+
+    .regulation-table th:nth-child(4),
+    .regulation-table td:nth-child(4) {
+        width: 120px;
+    }
+
+    /* 분류 관리 탭 스타일 추가 */
+    .btn-small {
+        padding: 3px 8px;
+        font-size: 12px;
+    }
+
+    /* 하위 조문 행 스타일 */
+    #classificationList tr:hover {
+        background: #f0f0f0 !important;
+    }
+
+    /* 작업 버튼 스타일 */
+    .action-btn.btn-info {
+        background: #17a2b8;
+        color: white;
+    }
+
+    .action-btn.btn-info:hover {
+        background: #138496;
+    }
+
+    /* 삭제 버튼 위치 조정 */
+    .modal-footer {
+        position: relative;
+    }
+
+    .modal-footer .btn-danger {
+        position: absolute;
+        left: 20px;
+    }
+
+    /* 정렬 가능한 컬럼 헤더 스타일 */
+    .sortable {
+        cursor: pointer;
+        user-select: none;
+        position: relative;
+        padding-right: 20px;
+    }
+
+    .sortable:hover {
+        background-color: #f0f0f0;
+    }
+
+    .sort-indicator {
+        position: absolute;
+        right: 5px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 12px;
+        color: #999;
+    }
+
+    .sort-indicator.asc::after {
+        content: '▲';
+        color: #667eea;
+    }
+
+    .sort-indicator.desc::after {
+        content: '▼';
+        color: #667eea;
+    }
+
+    /* 편집 창 스타일 */
+    .edit-window {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 90%;
+        height: 85%;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        z-index: 2000;
+        overflow: hidden;
+    }
+
+    .edit-window.active {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .edit-header {
+        padding: 15px 20px;
+        background: #667eea;
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .edit-title {
+        font-size: 16px;
+        font-weight: 500;
+    }
+
+    .edit-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+    }
+
+    .edit-body {
+        flex: 1;
+        display: flex;
+        overflow: hidden;
+    }
+
+    .edit-sidebar {
+        width: 250px;
+        background: #f8f9fa;
+        border-right: 1px solid #dee2e6;
+        overflow-y: auto;
+    }
+
+    .edit-content {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+    }
+
+    /* 드래그 오버레이 */
+    .drag-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(102, 126, 234, 0.1);
+        border: 3px dashed #667eea;
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .drag-overlay.active {
+        display: flex;
+    }
+
+    .drag-message {
+        padding: 30px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+
+    .drag-message h3 {
+        color: #667eea;
+        margin: 0 0 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- 헤더 -->
+    <div class="header">
+        <h1>내규자료 현행화 편집기</h1>
+        <div>
+            <span class="username">{{ user.name }}</span>
+            <button class="btn btn-danger btn-sm" onclick="RuleEditor.logout()">로그아웃</button>
+        </div>
+    </div>
+
+    <!-- 탭 메뉴 -->
+    <div class="tabs">
+        <button class="tab active" data-tab="currentTab" onclick="RuleEditor.switchTab('currentTab')">
+            현행 내규목록
+        </button>
+        <button class="tab" data-tab="historyTab" onclick="RuleEditor.switchTab('historyTab')">
+            연혁 목록
+        </button>
+        <button class="tab" data-tab="searchTab" onclick="RuleEditor.switchTab('searchTab')">
+            상세 검색
+        </button>
+        <button class="tab" data-tab="classificationTab" onclick="ClassificationManager.show()">
+            분류 관리
+        </button>
+        <button class="tab" data-tab="departmentTab" onclick="DepartmentManager.show()">
+            부서 관리
+        </button>
+        <button class="tab" data-tab="searchEngineTab" onclick="SearchEngine.show()">
+            검색 엔진
+        </button>
+        <button class="tab" data-tab="serviceTab" onclick="ServiceManager.show()">
+            서비스 관리
+        </button>
+    </div>
+
+    <!-- 탭 컨텐츠 -->
+    <div class="tab-content-wrapper">
+        <!-- 현행 내규목록 탭 -->
+        <div class="tab-content active" id="currentTab">
+            <div class="toolbar">
+                <div class="search-bar">
+                    <select id="deptFilter" onchange="RuleEditor.filterByDepartment(this.value)">
+                        <option value="">전체 부서</option>
+                    </select>
+                    <select id="classFilter" onchange="RuleEditor.filterByClassification(this.value)">
+                        <option value="">전체 분류</option>
+                    </select>
+                    <input type="text" placeholder="검색..." id="searchInput"
+                           onkeyup="RuleEditor.search(this.value)">
+                    <button class="btn btn-primary" onclick="RuleEditor.search()">검색</button>
+                </div>
+                <div>
+                    <button class="btn btn-success btn-sm" onclick="RuleEditor.openNewModal()">
+                        제정
+                    </button>
+                    <button class="btn btn-warning btn-sm" onclick="RuleEditor.exportSelected()" style="display: none;">
+                        선택 내보내기
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="regulation-table">
+                    <thead>
+                        <tr>
+                            <th width="40">
+                                <input type="checkbox" id="selectAll"
+                                       onchange="RuleEditor.toggleSelectAll(this.checked)">
+                            </th>
+                            <th width="80">번호</th>
+                            <th width="140">소관부서</th>
+                            <th width="180">
+                                <span class="classification-badge">분류</span>
+                            </th>
+                            <th class="sortable" onclick="RuleEditor.sortBy('name')">
+                                규정명 <span class="sort-indicator" data-column="name"></span>
+                            </th>
+                            <th width="100" class="sortable" onclick="RuleEditor.sortBy('announceDate')">
+                                제정일 <span class="sort-indicator" data-column="announceDate"></span>
+                            </th>
+                            <th width="100" class="sortable" onclick="RuleEditor.sortBy('revisionDate')">
+                                최종개정일 <span class="sort-indicator" data-column="revisionDate"></span>
+                            </th>
+                            <th width="100" class="sortable" onclick="RuleEditor.sortBy('effectiveDate')">
+                                시행일 <span class="sort-indicator" data-column="effectiveDate"></span>
+                            </th>
+                            <th width="140">작업</th>
+                        </tr>
+                    </thead>
+                    <tbody id="regulationList">
+                        {% if regulations %}
+                            {% for reg in regulations %}
+                            <tr data-id="{{ reg.wzruleseq }}">
+                                <td><input type="checkbox" class="select-item" value="{{ reg.wzruleseq }}"></td>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ reg.wzmgrdptnm or '-' }}</td>
+                                <td><span class="classification-badge">{{ reg.wzlkndname or '-' }}</span></td>
+                                <td class="text-left">
+                                    <a href="#" onclick="RuleEditor.viewDetail({{ reg.wzruleseq }}); return false;">
+                                        {{ reg.wzname }}
+                                    </a>
+                                </td>
+                                <td>{{ reg.wzestabdate or '-' }}</td>
+                                <td>{{ reg.wzlastrevdate or '-' }}</td>
+                                <td>{{ reg.wzexecdate or '-' }}</td>
+                                <td>
+                                    <button class="btn btn-primary btn-sm" onclick="RuleEditor.openEditModal({{ reg.wzruleseq }})">편집</button>
+                                    <button class="btn btn-info btn-sm" onclick="RuleEditor.openRevisionModal({{ reg.wzruleseq }})">개정</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="9" class="text-center">조회된 데이터가 없습니다.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 연혁 목록 탭 -->
+        <div class="tab-content" id="historyTab">
+            <div class="toolbar">
+                <div class="search-bar">
+                    <input type="text" placeholder="규정명 검색..." id="historySearchInput"
+                           onkeyup="RuleEditor.searchHistory(this.value)">
+                    <button class="btn btn-primary" onclick="RuleEditor.searchHistory()">검색</button>
+                </div>
+            </div>
+            <div class="table-container">
+                <table class="regulation-table">
+                    <thead>
+                        <tr>
+                            <th width="80">번호</th>
+                            <th>규정명</th>
+                            <th width="100">버전</th>
+                            <th width="120">개정일</th>
+                            <th width="120">폐지일</th>
+                            <th width="140">작업</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyList">
+                        <!-- 동적으로 생성됨 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 상세 검색 탭 -->
+        <div class="tab-content" id="searchTab">
+            <h3>상세 검색</h3>
+            <div class="search-panel">
+                <div class="form-group">
+                    <label class="form-label">검색어</label>
+                    <input type="text" class="form-input" placeholder="제목, 내용, 분류번호 등">
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">소관부서</label>
+                        <div id="searchDepartmentCheckboxes" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; padding: 10px; background: white;">
+                            <!-- 부서 체크박스가 동적으로 로드됨 -->
+                        </div>
+                    </div>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">공포일자</label>
+                        <div class="date-range">
+                            <input type="text" class="form-input" placeholder="YYYY-MM-DD"
+                                   pattern="\d{4}-\d{2}-\d{2}"
+                                   title="날짜 형식: YYYY-MM-DD">
+                            <span>~</span>
+                            <input type="text" class="form-input" placeholder="YYYY-MM-DD"
+                                   pattern="\d{4}-\d{2}-\d{2}"
+                                   title="날짜 형식: YYYY-MM-DD">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">최종개정일자</label>
+                        <div class="date-range">
+                            <input type="text" class="form-input" placeholder="YYYY-MM-DD"
+                                   pattern="\d{4}-\d{2}-\d{2}"
+                                   title="날짜 형식: YYYY-MM-DD">
+                            <span>~</span>
+                            <input type="text" class="form-input" placeholder="YYYY-MM-DD"
+                                   pattern="\d{4}-\d{2}-\d{2}"
+                                   title="날짜 형식: YYYY-MM-DD">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-primary" onclick="RuleEditor.advancedSearch()">상세 검색</button>
+                    <button class="btn btn-secondary" onclick="RuleEditor.resetSearch()">초기화</button>
+                </div>
+            </div>
+
+            <div class="search-results">
+                <h4>검색 결과</h4>
+                <div id="searchResults"></div>
+            </div>
+        </div>
+
+        <!-- 분류 관리 탭 -->
+        <div class="tab-content" id="classificationTab" style="display: none;">
+            <!-- ClassificationManager가 동적으로 생성 -->
+        </div>
+
+        <!-- 부서 관리 탭 -->
+        <div class="tab-content" id="departmentTab" style="display: none;">
+            <!-- DepartmentManager가 동적으로 생성 -->
+        </div>
+
+        <!-- 검색 엔진 탭 -->
+        <div class="tab-content" id="searchEngineTab" style="display: none;">
+            <!-- SearchEngine이 동적으로 생성 -->
+        </div>
+
+        <!-- 서비스 관리 탭 -->
+        <div class="tab-content" id="serviceTab" style="display: none;">
+            <!-- ServiceManager가 동적으로 생성 -->
+        </div>
+    </div>
+
+    <!-- 제정 모달 -->
+    <div class="modal" id="newModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>신규 내규 제정</h2>
+                <button class="modal-close" onclick="RuleEditor.closeNewModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">
+                        제정 유형
+                    </label>
+                    <select class="form-select" id="newType">
+                        <option value="new">신규 제정</option>
+                        <option value="hwpx">DOCX 파일 업로드</option>
+                    </select>
+                </div>
+                <!-- 나머지 폼 필드 -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="RuleEditor.createNew()">생성</button>
+                <button class="btn btn-secondary" onclick="RuleEditor.closeNewModal()">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 편집/개정 모달 -->
+    <div class="modal" id="editModal" style="display: none;">
+        <div class="modal-content large-modal">
+            <div class="modal-header">
+                <h2 id="editModalTitle">규정 편집</h2>
+                <button class="modal-close" onclick="RuleEditor.closeEditModal()">✕</button>
+            </div>
+            <div class="modal-body" id="editModalBody">
+                <!-- 동적으로 생성됨 -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger" id="deleteBtn" onclick="RuleEditor.deleteRegulation()" style="display: none;">삭제</button>
+                <button class="btn btn-primary" onclick="RuleEditor.saveEdit()">저장</button>
+                <button class="btn btn-secondary" onclick="RuleEditor.closeEditModal()">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 드래그 오버레이 -->
+    <div class="drag-overlay" id="dragOverlay">
+        <div class="drag-message">
+            <h3>📄 파일을 여기에 드롭하세요</h3>
+            <p>PDF, DOCX 파일을 지원합니다</p>
+        </div>
+    </div>
+</div>
+
+<!-- 알림 컨테이너 -->
+<div id="notification-container" class="notification-container"></div>
+{% endblock %}
+
+{% block scripts %}
+<!-- 공통 유틸리티 -->
+<script src="/static/js/common.js"></script>
+<!-- 메인 편집기 -->
+<script src="/static/js/rule-editor.js"></script>
+<!-- 하위 모듈들 -->
+<script src="/static/js/classification-manager.js"></script>
+<script src="/static/js/department-manager.js"></script>
+<script src="/static/js/search-engine.js"></script>
+<script src="/static/js/service-manager.js"></script>
+<script src="/static/js/edit-window.js"></script>
+<script src="/static/js/regulations.js"></script>
+
+<script>
+// 페이지 초기화
+document.addEventListener('DOMContentLoaded', () => {
+    RuleEditor.init();
+
+    // 파일 드래그 앤 드롭
+    document.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        document.getElementById('dragOverlay').classList.add('active');
+    });
+
+    document.addEventListener('dragleave', (e) => {
+        if (e.clientX === 0 && e.clientY === 0) {
+            document.getElementById('dragOverlay').classList.remove('active');
+        }
+    });
+
+    document.addEventListener('drop', (e) => {
+        e.preventDefault();
+        document.getElementById('dragOverlay').classList.remove('active');
+
+        const files = Array.from(e.dataTransfer.files);
+        const validFiles = files.filter(file =>
+            file.type === 'application/pdf' ||
+            file.name.endsWith('.docx')
+        );
+
+        if (validFiles.length > 0) {
+            RuleEditor.handleDroppedFiles(validFiles);
+        } else {
+            RuleEditor.showNotification('PDF 또는 DOCX 파일만 지원합니다.', 'error');
+        }
+    });
+});
+</script>
+{% endblock %}

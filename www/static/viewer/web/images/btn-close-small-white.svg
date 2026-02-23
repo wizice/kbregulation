@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+  <defs>
+    <style>
+      .cls-1 {
+        opacity: 1;
+      }
+
+      .cls-2 {
+        fill: none;
+        opacity: 1;
+      }
+
+      .cls-3 {
+        fill: #ddd;
+      }
+    </style>
+  </defs>
+  <g id="btn_close_small" class="cls-1">
+    <rect id="사각형_138" data-name="사각형 138" class="cls-2" width="20" height="20"/>
+    <path id="패스_70" data-name="패스 70" class="cls-3" d="M515.364,503.05l-1.414-1.414-4.95,4.95-4.95-4.95-1.414,1.414,4.95,4.95-4.95,4.95,1.414,1.414,4.95-4.95,4.95,4.95,1.414-1.414-4.95-4.95Z" transform="translate(-499 -498)"/>
+  </g>
+</svg>

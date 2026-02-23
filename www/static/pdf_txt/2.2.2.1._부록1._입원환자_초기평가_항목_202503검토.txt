@@ -1,0 +1,183 @@
+부록 1. 입원환자 초기평가 항목 담당부서 의무기록팀 제정일 2012.05. 최종개정일 2024.08. 최종검토일 2025.03.
+
+입원환자 초기평가 항목
+
+1. 초기평가 공통항목
+1) 성인 과거력 신체검진 HTN General Appearance Pul. Tbc Skin DM HEENT Hepatitis Neck Smoking, 금연교육 여부 Chest/Lung Alcohol Heart 알레르기 Abdomen Back and Extremity Drug Allergy 감염성질환 초기평가
+
+2) 소아 과거력 신체검진 입원 및 수술력 General Appearance Drug Allergy Skin 알레르기력 HEENT Neck 감염성질환 초기평가 Chest/Lung Heart Abdomen Back and Extremity
+
+2. 임상과(전문분야) 별 입원환자 초기평가 항목
+1) 성인 진료과 과거력 신체검진 Cardiac Disease 내과(내분비) Old CVA Cardiac Disease 내과(노년) Old CVA ADL 예방접종력 내과(소화기) Cancer History Hypercholesterolemia 내과(심장) Cardiac Disease Old CVA 내과(종양) ECOG PS [계통문진] 내과(혈액) ECOG Night Sweat
+
+Neck 외과(갑상선) *Cervical LNs 이외에 Palpable Mass 촉진 여부 수술력 외과(간,담,췌) Cardiac Disease Old CVA Cancer Family History *Breast Cancer 외과(유방분과) Breast *Other Cnacer ECOG 외과(상부위장관) 수술력 외과(하부위장관) 과거수술력 직장수지검사 외과(이식(간)) Body weight 투석종류/기간 외과(이식(신장)) Body weight 이식과거력 Cardiac Disease 비뇨기과 Old CVA Pelvic Exam Hypercholesterolemia Mental State Glasgow coma scale Orientation Cardiovascular or 신경외과 Cranial Nerve Function Coronary Vascular Disease Motor/Sensory Fuction Deep Tendon Reflex Pain Scale 정신과 과거력 입원횟수 정신건강의학과 Mental Status Examination 정신과 가족력 자살사고 Psychiatric History (Depression/Anxiety) Dyslipidemia Vital Sign Cardiac Disease Height/Weight/BMI Old CVA Neurologic Exam 가정의학과 Osteoporosis 우울척도 입원력/수술력 불안척도 약물복용력 가족기능평가 Exercise/Diet 노인기능평가(노인) Family Genogram 건강검진 History Other Cancer History 산부인과(부인과) Cardiac Disease Old CVA
+
+Pelvic Exam 가능여부 산부인과(산과) 산과력 Pelvic Exam 성형외과 약물복용 Cardiac Disease 신경과 Neurologic Exam CNS Disorder Cardiac Disease Old CVA 심장혈관외과 PAOD Hypercholesterolemiag 시력 안과 Ocular Surgery History 안압 약물복용 응급의학과 수술력 이비인후과 질환 병력 치아상태 이비인후과 수술력 Laryngoscope Exam 신경근골격계 기능검사 및 재활의학과 기능수준 흉부외과 Cancer History
+
+2) 소아 진료과 과거력 신체검진 DM HTN 소아청소년과 Pul, Tbc Hepatitis 분만양식 제태주령 Umblical Cord 신생아과 출생체중 Genitalia & Anus Reflex Apgar Score HTN Pul, Tbc DM 소아신경과 신경학적 검사 Hepatitis 출생력 예방접종력 출생력 예방접종 DM 소아혈액종양과 HTN Pul, Tbc Hepatitis HTN 소아심장과 OP 및 Procedure Wound Site Pul. Tbc
+
+DM Hepatitis Smoking(금연교육 여부) Alcohol Cardiac Disease & Past OP History Old CVA Hypercholesterolemia 출생력 예방접종 HTN DM Cardiac Disease 임상유전과 Old CVA Hypercholesterolemia 출생력 DM HTN Pul, Tbc 비뇨기과(소아) External Genitalia Hepatitis 출생력 예방접종 HTN Pul, Tbc DM Hepatitis 신경외과(소아) Smoking(금연교육 여부) Neurologic Examination Alcohol Cardiac Disease Development 출생력 HTN Pul, Tbc DM Hepatitis 외과(소아) Rectal Exam Smoking Alcohol Cardiac Disease 출생력 발달력 가족관계 정신과(소아) 학교생활 Mental Status Examination 신체병력 및 치료력 출산력
+
+출산력 정형외과(소아) 발달과정 타과질환 HTN 국제진료소 Pul, Tbc DM 출산력 신경학적 검사 재활의학과 예방접종력 기능수준 분만양식 제태주령 성형외과 Neonatal Asphysia Neonatal Jaundice 약물 부작용
+
+3. 특수환자 대상 개별화된 평가항목 환자 항목 신생아 1. 출생력(재태주령, 분만양식, 출생체중) (출생~28일)
+
+2. 과거력(예방접종 유무, 병력) <신설 2014.10>
+
+3. 신체검진(전반적인 상태, 피부, 두부, 목, 가슴, 심장, 복부, 등과 사지 등)
+
+4. 영양상태(발육에 문제가 있는 경우 발육곡선 확인) 소아(영유아) 1. 출생력 (1개월~9세)
+
+2. 예방접종력 및 과거력
+
+3. 현병력
+
+4. ADL(Activities of Daily Living) 수행능력
+
+5. 영양 상태
+
+6. 키, 몸무게 청소년 1. 출생력 (10세~19세)
+
+2. 예방접종력 및 과거력
+
+3. 현병력
+
+4. ADL(Activities of Daily Living) 수행능력
+
+5. 영양 상태
+
+6. 키, 몸무게 노인 1. ADL(Activities of Daily Living) 수행능력 (65세~)
+
+2. 영양상태 통증 1. 통증강도 스크리닝
+
+2. 통증점수 1점 이상: 부위, 강도, 양상, 빈도, 지속기간 <개정 2015.4> 임산부 환자 1. 주호소 또는 입원사유 (분만 진행 중)
+
+2. Present Illness
+
+3. 과거력
+
+4. 임신력
+
+5. Vital Sign & Antenatal Lab
+
+6. Medico-Surgical Illness
+
+7. Maternal Condition Affecting Breast Feeding
+
+8. Social History
+
+9. Physical Examination
+1) General Appearance
+
+2) Head
+
+3) Neck
+
+4) Chest/Lung
+
+5) Heart
+
+6) Back & Extremity
+
+7) Abdomen
+
+8) Pelvic Exam
+
+10. 위험도 평가
+
+11. Delivery Plan 임산부 환자 1. Vital Sign (유산 진행 중) 2. History
+1) Hypertention
+
+2) Pulmonary Tuberculosis
+
+3) Diabetes Mellitus
+
+4) Hepatitis
+
+5) Smoking/금연교육 여부,
+
+6) Alcohol
+
+7) Drug Allergy
+
+8) 산과력
+
+3. Physical Exam
+1) Abdomen
+
+2) Fetal Heart Beat
+
+3) Pelvic Exam 가능여부 및 Pelvic Exam
+
+4. Ultrasound 정서 또는 정신질환 1. History
+1) Hypertention
+
+2) Pulmonary Tuberculosis
+
+3) Diabetes Mellitus
+
+4) Hepatitis
+
+2. Physical Examination
+1) General Appearance
+
+2) Skin
+
+3) HEENT(Head, Ear, Eye, Nose and Throat)
+
+4) Neck
+
+5) Chest/Lung
+
+6) Heart
+
+7) Abdomen
+
+8) Back & Extremity
+
+3. 정신상태 약물 또는 알코올 의존 1. Physical Examination (의심) 1) General Appearance
+2) Skin
+
+3) HEENT(Head, Ear, Eye, Nose and Throat)
+
+4) Neck
+
+5) Chest/Lung
+
+6) Heart
+
+7) Abdomen
+
+8) Back & Extremity
+
+9) 필요 시 소변 약물 5종 검사
+
+2. 정신상태 과거력, 신체상태, 성적학대 증상, Shaken Baby Syndrome, 심리 학대와 방임 (의심)환자 정신상태 감염성 질환 1. 감염성 병원균의 역학적 연관성 및 추정감염지역 확인
+
+2. 감염성 병원균에 노출 가능성 있는 의료인, 직원, 대리인, 방문객, 환경
+
+3. 국외 또는 국내 여행력, 직업 및 거주지 등의 역학적 자료 면역저하 1. ANC(Absolute Neutrophil Count) 항암약물요법 진행 1. 신장, 체중, BSA(Body Surface Area)
+
+2. 체온, 맥박, 혈압, 호흡
+
+3. 검사결과 방사선요법 진행 1. CBC(Complete Blood Count) 말기 End of life assessment서식 작성
+
+1. 통증, 구토, 호흡곤란 등 신체적 증상
+
+2. 신체적 증상을 완화 또는 악화요인
+
+3. 현재 증상 관리와 환자의 반응
+
+4. 환자와 가족의 종교적 성향 및 종교 단체에서의 활동 여부
+
+5. 좌절, 고통, 죄책감, 용서 등 환자의 영적 필요 또는 우려
+
+6. 가족관계, 대처기전, 질병에 대한 환자, 가족의 반응 등 가족의 심리적 상태
+
+7. 환자, 대리인에 대한 지원 혹은 휴식 필요 여부
+
+8. 대안적 환경 또는 진료 수준의 필요 여부
+
+9. 가족의 병리적 슬픔 가능성 등 생존자의 위험 요인
+
+10. 부검, 장기기증 등 민감한 문제의 요청 여부 <신설 2015.4>

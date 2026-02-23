@@ -1,0 +1,77 @@
+4.3.5.부록10.
+제정일:
+개정일: 2010.1/2010.4/2012.7/2018.4/2019.3/ 2022.11/2023.1./2025.03 검토일: 2014.10/2015.4.
+기안부서: 약무국 Heparin inj. 안전사용 지침 (The Guidelines for the Safe Use of Heparin Injection)
+
+1. 목적: 고위험의약품인 Heparin의 안전하고 적절한 사용을 관리하여 출혈 등의 부작용을 감소시키기 위함이다.
+
+2. 의약품 정보 [원내 사용하는 Heparin 목록] 약품명 함량 제형 Heparin sodium (5,000 unit/ml) 25,000 uint/5ml vial Heparin sodium (1,000 unit/ml) 20,000 unit/20ml vial Heparin sodium (1,000 unit/ml) 투석용 5,000 unit/5ml vial 1,000 unit/10ml vial Heparin sodium (100 unit/ml) 세정용 500 unit/5ml vial [용법 및 용량]
+1) 체외순환
+① 인공신장
+가. 전신헤파린화법: 투석 전에 1,000-5,000 unit을 투여, 그 후 500-1,500 unit/hr을 지속적 또는 1시간마다 간헐적으로 투여
+
+나. 국소헤파린화법: 1,500-2,500 unit/hr을 지속 투입
+
+② 인공심폐에 의한 혈액관류: 150-300 unit/kg
+
+2) 정맥내 점적주사
+① 1,000-3,000 unit를 N/S, D5W, Ringer soln 1L에 희석하여 30적/분으로 주입
+
+② 심인성 뇌경색 치료 시: 25,000 unit을 생리식염액, 하트만용액 1L에 희석하여 30-50적/분으로 주입
+
+3) 정맥내 간헐주사: 1회 5,000-10,000 unit를 4-8시간마다 정맥내 주사
+
+4) 피하주사: 10,000-20,000 unit를 투여 후 8,000-10,000 unit를 8시간마다 또는 15,000-20,000 unit를 12시간마다 투여
+
+5) 수혈: 혈액 100 ml에 대해 400-500 unit 사용
+
+6) 혈액검사: 혈액 20-30 ml에 대해서 100 unit 사용
+
+3. 보관
+
+4.3.5.부록10.
+
+1) 저장 방법: 차광밀봉용기, 실온(1~30℃)보관, 분리 보관
+
+2) 개봉 후: 즉시 사용 <2022.11 개정>
+
+3) 유사약제와 분리하여 보관
+
+4) ‘고위험의약품-약품명’이 표기된 별도의 보관용기에 분리하여 보관
+
+4. 사용 시 주의사항
+1) 원내 수립된 protocol을 활용하여 체중을 기반으로 정확한 용량을 처방한다.
+
+2) 처방에 따라 혈소판, aPTT를 모니터링한다.
+
+3) 응고 시간이 치료 범위 이상 길어지거나 출혈이 있으면 처방에 따라 투여를 중단한다.
+
+4) 혈종의 위험이 있으므로 근육주사는 피한다.
+
+5) 100 unit/ml의 휴온스 헤파린나트륨 주사(세정용)는 혈관내 카테터나 캐뉼라의 개통성 유지 이외에 항응고 치료제로 사용하지 않는다.
+
+5. 부작용 발생 시 대처방안
+1) 이상출혈 등 부작용 발생 시 투여를 중지하고 처방에 따라 해독제를 투여한다.
+
+2) 해독제인 황산 프로타민(50 mg/5ml)을 헤파린 1000 unit당 1~1.5 ml (10~15 mg)을 투여하며, 1 회 5 ml (50 mg) 미만을 5% 포도당 용액 또는 생리식염액에 희석하여 10분 이상 천천히 정맥 투 여한다.
+
+6. 안전사용지침
+1) 지정된 장소에 다른 의약품과 분리 보관한다.
+
+2) 약무국에서는 약포장 용기 또는 라벨에 ‘고위험의약품’ 스티커를 부착하거나 인쇄하여 제공한다.
+
+3) 처방전달시스템에 적색으로 약품명을 표기한다.
+
+4.3.5.부록10.
+Heparin Protocol 처방 환자의 체중 (kg) : 실체중. 단, 20% 이상의 비만일 경우 Dosing weight 사용 Laboratory
+
+1. 최근 PTT, PT/INR, CBC 확인(만약 24시간 이내의 검사가 있으면 시행하지 않는다.)
+
+2. Heparin을 투여하는 동안 매일 3일마다 CBC (diff를 제외) 확인
+
+3. 6시간 마다 aPTT f/u
+
+4. 초기 Heparin 투여 후 6시간 후/ 매 Heparin bolus 투여 후 / 용량이 바뀐 후 검사.
+
+5. aPTT가 stable ( 60-85 sec ) 해지면 daily 로 검사한다.
+ACS , Afib, Prosthetic valve, PTE.DVT, Other Ischemic Stroke Bolus dose : 70~80 units /Kg N/S 1L with Heparin 25000 units mix 또는, 의사 처방에 따라(Max 12,000 units ) Initial start with 18 units/kg/hr Infusion dose : PTE/DVT : 18 units/kg/hr (예: 60 kg이면 18X60/25=43.2 로 40 ml/hr로 start) ACS : 12 units/kg/hr Dosing Nomogram aPTT(sec) Adjustment aPTT(sec) Adjustment <40 Bolus with 40 units/kg IV AND Increase <35 Increase infusion by 4 units/kg/hr infusion by 2 units/kg/hr 40-59 Increase infusion by 1 unit/kg/hr 35-45 Increase infusion by 3 units/kg/hr 60-85 No change 45-60 Increase infusion by 2 units/kg/hr 86-100 Decrease infusion by 1 unit/kg/hr 60-85 No change 101-150 Hold infusion for 30 minutes AND Decrease 85-100 Decrease infusion by 2 units/kg/hr infusion by 1 unit/kg/hr >151 Hold infusion for 60 minutes AND Decrease >110 Hold infusion for 60 minutes AND Decrease infusion by 3 units/kg/hr infusion by 4 units/kg/hr N/S 1000 mL, Heparin 25000 units mixture 50 60 70 80 90 100 Wt (kg) Increase infusion by 4 units/kg/hr +8 +10 +12 +14 +16 ml/hr Increase infusion by 3 units/kg/hr +6 +8 +10 +12 ml/hr Increase infusion by 2 units/kg/hr +4 +6 +6 +8 +8 ml/hr Increase infusion by 1 units/kg/hr +2 +3 +3 +4 +4 ml/hr Decrease infusion by 1 units/kg/hr -2 -3 -3 -4 -4 ml/hr Decrease infusion by 2 units/kg/hr -4 -6 -6 -8 -8 ml/hr Decrease infusion by 3 units/kg/hr -6 -8 -10 -10 -12 ml/hr Decrease infusion by 4 units/kg/hr -8 -10 -12 -14 -16 ml/hr

@@ -1,0 +1,46 @@
+항암약물요법 투여 시 주의사항 및 부작용 발생 시 대처방안 제정일: 2018.9.
+개정일: 2023.3.
+검토일: 2021.3./2024.3./2025.03.
+기안부서: 약무국 일반명 상품명 Extravasation 투여시 주의 사항 부작용 및 발생시 대처방안 Decontamination Elimination AVASTIN 1 Bevacizumab IV push불가 Severe hypertension: nitroprusside 투여 ONBEVZI CARBOPLATIN Irritant, 1. 주사시 차광 1. Nephrotoxicity: NS 3~6 L/day로 적극적인 IV fluid resuscitation(목표 urine 피부접촉시 비누와 물로 세 2 Carboplatin 응급 혈액투석 실시 NEOPLATIN 냉찜질 2. Al과 반응하여 침전(Al함유의료기기 사용 금지) output: 1 to 3 mL/kg/hr) 척, 눈에 노출 시 물로 씻어냄
+
+1. Nephrotoxicity: 1-2시간 이내 sodium 피부접촉시 비누와 물로 세 Irritant, 1. 주사시 차광 -NS 3~6 L/day로 적극적인 IV fluid resuscitation(목표 urine output: 1 to 3 thiosulfate 투여. large 3 Cisplatin(DDP) CISPLAN 척, 점막에 노출 시 물로 씻어 냉찜질 2. Al와 반응하여 침전(Al함유의료기기 사용 금지) mL/kg/hr) overdoses인 경우 early 냄 -예방: amifostine 투여 plasmapheresis 고려
+
+1. Diarrhea:
+CYTARABINE(Faulding) Irritant or neutral, IV, IVF, SC, IT - Mild to moderate (Grade 1~2) without infection: loperamide(2 mg every 4 hours CYTARABINE 냉찜질 Heparin 배합불가 for 24 hours) 피부접촉시 비누와 물로 세 4 Cytarabine 1. IT only - Progressive, uncontrolled: octreotide, IV fluids, and antibiotics 척, 눈에 노출 시 물로 씻어냄 Early hemodialysis 효과적 DEPOCYTE* irritant, 2. 보존제 미함유로 조제 후 4시간 안에 사용, 투여시 In 2. Seizure: IV benzodiazepines, barbiturates (Liposomal cytarabine) 냉찜질 line 필터 사용금지. 1-5분에 걸쳐 천천히 주입, 3. Acute lung injury: Maintain adequate ventilation and oxygenation
+
+3. 5일간 dexamethasone 4mg bid 투여 4. Intrathecal injection:
+DITAXEL1-VIAL irritants, Antidote: Hyaluronidase 피부접촉시 비누와 물로 세 5 Docetaxel Non-PVC set 사용은 불필요 투석 권장하지 않음 TAXOTERE ONE 냉찜질 Inject 150 to 900 international units subQ around the extravasation area 척, 점막에 노출 시 물로 씻어 CALMTOP Irritant, 1. 주사시 차광 1. Early diarrhea: 24시간 이내 발생. Atropine 투여 즉시 접촉 부위를 비누와 물 6 Irinotecan CAMPTO 냉찜질 2. 90분 이상 IV infusion 2. Late diarrhea: loperamide 로 세척하고 점막부위를 대 ELOXATIN 1. Al과 반응하여 침전(Al함유의료기기 사용 금지) 냉찜질: Apply cold pack for 15 to 20 minutes at least 4 times a day for first 24 Plasma pheresis or plasma Irritant, 피부 또는 점막에 묻은 경우, 7 Oxaliplatin OXALITIN 2. 주입동안 cold temperatures 피함 hours exchange 고려. 혈액투석은 냉or온찜질 즉시 물로 철저하게 씻어냄 OXAPLA 3. 다른 약 투여 전 infusiun line을 D5W로 flush *treat using a warm compress to avoid the risk of paraesthesia which can be 권장하지 않음 TAXOL Irritant (usually) 1. 즉시 접촉 부위를 비누와 물로 세척하고 점막부위를 Hyaluronidase: Inject 150 to 900 international units subQ around the extravasation 즉시 접촉 부위를 비누와 물 과량투여 초기라면, Paclitaxel PADEXOL Vesicant (rare), 대량의 물로 씻어냄 area 로 세척하고 점막부위를 대 plasmapheresis or plasma GENEXOL 냉or온찜질 2. 0.22 microns 이하의 in-line filter 통해 주입 냉찜질: Apply cold pack for 15 to 20 minutes at least 4 times a day for first 24 량의 물로 씻어냄 exchange은 이론상 효과적
+
+1. Hypersensitivity reaction: MILD/MODERATE: Antihistamines with or without 8 inhaled beta agonists, corticosteroids or epinephrine. SEVERE: Oxygen, aggressive Activated charcoal and/or Paclitaxel Irritant, airway management, antihistamines, epinephrine, corticosteroids, ECG monitoring, gastric lavage are generally ABRAXANE in-line filter set 사용 불필요 (Albumin 안정제) 냉찜질 and IV fluids. not indicated, ingestion is
+
+2. Airway management: Consider orotracheal intubation in patients with significant unlikely CNS depression or respiratory failure.
+
+1. IV push, bolus 금지
+
+2. First infusion
+- 50 mg/hr로 IV
+
+- infusion reaction 발생하지 않으면 30분 간격으로 50 mg/hr 단위로 속도 증가하여 최대 400 mg/hr
+
+- infusion reaction 발생하면 천천히 중단: 증상 개선되 Hypersensitivity reaction: Monitor airway.
+MABTHERA 면 지난 투여 속도의 50% 로 재개 고려 - MILD/MODERATE: antihistamines with or without inhaled beta agonists, Tumor lysis syndrome 관 피부노출시 비누와 물로 세 9 Rituximab TRUXIMA 3. Subsequent infusions corticosteroids or epinephrine. 련 acute renal failure 발생 척, 눈에 노출 시 물로 씻어냄 MABTHERA SC -standard infusion rate: 100 mg/hr로 시작, 이상 없으면 - SEVERE: Oxygen, aggressive airway management, antihistamines, epinephrine, 환자는 투석 고려 30분 간격으로 100 mg/hr 단위로 속도 증가하여 최대 corticosteroids, ECG monitoring, and IV fluids.
+400 mg/hr
+
+- rapid rate: 만약 첫 주입시 이상없으면 375 mg/m(2) 를 60분 이상에 걸져 주입
+
+3. SC
+- 주사기로 옮긴 후에는 실온 8hr, 냉장 48hr 안정
+
+1. IV infusion only(IV push or IV bolus 금기) 1. Anaphylaxis:
+HERCEPTIN
+
+2. 초기투여는 90분 이상 주입, 이후에는 이전 주입에서 - MILD: Antihistamines HERZUMA 피부노출시 비누와 물로 세 Trastuzumab 이상 없으면 30분 이상 주입 가능 - SEVERE: Airway management, epinephrine, cardiac monitoring and IV fluids. 혈액투석 비효과적 척, 눈에 노출 시 물로 씻어냄
+
+2. Airway management: Intubate if patient is unable to protect airway or if unstable due to cardiac toxicity, an infusion reaction, severe respiratory distress syndrome,
+
+1. Anaphylaxis:
+- MILD: Antihistamines 피부노출시 비누와 물로 세 Trastuzumab - SEVERE: Airway management, epinephrine, cardiac monitoring and IV fluids. 혈액투석 비효과적 척, 눈에 노출 시 물로 씻어냄 체중과 관계없이 600mg을 2-5분간 SC 2. Airway management: Intubate if patient is unable to protect airway or if unstable 10 HERCEPTIN SC 주사기로 옮긴 후에는 냉장 48hr 안정, 실온 6hr안정 due to cardiac toxicity, an infusion reaction, severe respiratory distress syndrome,
+
+1. 0.22 microns in-line nonprotein adsorptive Infusion related reactions(flushing, chills, pyrexia, dyspnea, hypotension, wheezing, Trastuzumab KADCYLA Non-vesicants polyethersulfone (PES) filter 사용하여 주입 bronchospasm, tachycardia)발생 monitoring 필요, 심각한 반응인 경우 즉시 투여 중 emtansine
+
+2. 첫 주입은 90분 이상, 이후에는 30분 이상 단

@@ -1,0 +1,29 @@
+3.2.2.2. 부록 2. Emergency Cart 관리지침(소아용) 담당부서 약무국 제정일 1999.06. 최종개정일 2024.02. 최종검토일 2025.03.
+
+EMERGENCY CART 관리지침 [소아용]
+
+1. Emergency Cart 사용 지침
+1) 본 지침은 5단 Emergency Cart를 기준으로 한다.
+
+2) Emergency Cart는 응급상황(심정지, 호흡정지, 아나필락시스 등)에 사용한다
+
+3) 사용한 Emergency Cart는 상황 종료 직후 관리담당자가 즉시 재충진한다.
+
+4) Emergency Cart 의 점검 및 관리는 관리담당자가 시행하며 수시 점검은 사용 후, 정기 점검은 담당 부서 월별, 약무국 분기별 시행한다.
+
+5) Emergency Cart 는 점검 후 점검사항을 Emergency Cart 점검표에 기록하고, Security Seal 을 적용한다.
+
+6) Emergency Cart 의 Security Seal 은 매일 일련번호를 확인하고, Security Seal 점검표를 작성한다.
+
+7) Security Seal은 별도의 장소(Emergency Cart제외)에 보관한다.
+
+2. 부서 응급 약품 번호 약품 수량 1 Amiodarone HCL 150mg/3ml/A 3 2 Atropine sulfate 0.5mg/1ml/A 5 3 CaCl 3%20ml/A 3 4 Ca gluconate 2g/20ml/A 2 5 Dobutamine HCl 250mg/5ml/A 2 6 Dopamine HCl 200mg/5ml/A 2 7 Epinephrine 1mg/1ml/A 10 8 Hydrocortisone Na succinate 100mg/V 2 9 Lidocaine HCl 1% 20ml/V 1 10 MgSO 10% 20ml/A 2 11 N/S 20ml/A 10 12 Norepinephrine 4mg/4ml/A 8 13 Sodium bicarbonate 20mEq/20ml/A 10 14 Vecuronium bromide 4mg/V 2 15 20% D/W 20ml/A 2 16 주사용 증류수 20ml/A 5
+
+3. Emergency Cart내 응급 물품 응 급 물 품 BROSELOW pediatric emergency tape Laryngoscope Set(Handle & Blade), Laryngoscope Lamp, 건전지, 3단 (또는1회용Laryngoscope) 기도 Laryngeal Forcep (or Kelly), Tongue Bite (대,중,소), Stylet(대, 소), 생리식염수, 삽관 30cc 주사기, Specimen Cup, Exam Glove, Yankauer Suction, I-gel 1번, 1.5번, 2번, 2.5번 검체용기류, 라벨, 메모지, 볼펜, Tourniquet, Plaster. EKG Electrode, EKG Jelly, Needle (21,23,24,26G), Scalp Needle, 공 4단 ABG syringe, Alcohol Sponge, Syringe(1,2,5,10,30,50cc, Enema Syringe), 3-Way 통 채혈 Stopcock, 사 주사 I.V Set, I.V Extension, 2% CHG Tegaderm, CVC Catheter(Arrow), 1:4 SD 500cc, N/S 용 500cc, 50%D/W 100cc 5단 Ambu bag (대, 중, 소), Ambu Mask(대, 중, 소), O₂Flow meter, O₂Mask, 산소 Prefilled Humidifier, Poly Glove, Surgical Glove, Pad, 억제대, 비닐봉지, Bacteria 요법 Filter, , Lubricant jelly, PEEP Valve 뒷면: Hard Board 뒷면 옆면:마스크와 안면가리개(아이가드 또는 쉴드마스크, 각 3개 이상), 옆면 전기 Extension Cord 22,24G Angio cath 각 1개 5cm Airway PINK 3.5mm 8Fr Suction cath.
+(3-7kg) Endotracheal Tube 3.0mm 8Fr L-Tube RED PINK 칸과 동일품 사용 (8-9kg) 22,24G Angio cath 각 1개 6cm Airway PURPLE 10Fr Suction cath.
+(10-11kg) 4.0mm Endotracheal Tube 8Fr L-Tube 22,24G Angio cath 각 1개 6cm Airway, YELLOW 10Fr Suction cath.
+(12-14kg) 4.5mm Endotracheal Tube 10Fr L-Tube 22,24G Angio cath 각 1개 6cm Airway, WHITE 10Fr Suction cath.
+(15-18kg) 5.0mm Endotracheal Tube 10Fr L-Tube 20,22,24G Angio cath 각 1개 7cm Airway, BLUE 10Fr Suction cath.
+(19-22kg) 5.5mm Endotracheal Tube 14Fr L-Tube 20,22,24G Angio cath 각 1개 8cm Airway, ORANGE 10Fr Suction cath.
+(24-28kg) 6.0mm Endotracheal Tube 14Fr L-Tube 20,22,24G Angio cath 각 1개 8cm Airway GREEN 6.5mm 12Fr Suction cath.
+(30-36kg) Endotracheal Tube 7.0mm 16~18Fr L-Tube ※ 기타 : 제세동기에 추가할 물품 수동제세동기 → 자동제세동기 사용 가능한 Pads 와 Pads Adapter Cable

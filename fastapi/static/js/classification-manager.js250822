@@ -1,0 +1,562 @@
+// classification-manager.js - 분류 체계 관리
+
+const ClassificationManager = {
+    // 분류 데이터 - 장 단위로 수정
+    chapters: [
+        {
+            id: '1',
+            name: '총칙',
+            count: 8,
+            expanded: false,
+            articles: [
+                { 
+                    id: '1.1', 
+                    number: 1,
+                    title: '목적', 
+                    content: '이 규정은 회사의 경영 및 운영에 관한 기본적인 사항을 정하여 회사의 발전과 구성원의 복리증진을 도모함을 목적으로 한다.'
+                },
+                { 
+                    id: '1.2', 
+                    number: 2,
+                    title: '적용범위', 
+                    content: '이 규정은 회사의 모든 임직원과 관계자에게 적용되며, 별도의 규정이 있는 경우를 제외하고는 이 규정이 우선한다.'
+                },
+                { 
+                    id: '1.3', 
+                    number: 3,
+                    title: '용어의 정의', 
+                    content: '이 규정에서 사용하는 용어의 정의는 다음과 같다. 1. "회사"란 본 기관을 말한다. 2. "임직원"이란 회사에 소속된 모든 임원과 직원을 말한다.'
+                },
+                {
+                    id: '1.4',
+                    number: 4,
+                    title: '규정의 관리',
+                    content: '이 규정의 제정, 개정 및 폐지는 이사회의 승인을 받아야 하며, 규정의 해석에 관한 사항은 담당부서의 장이 결정한다.'
+                }
+            ]
+        },
+        {
+            id: '2',
+            name: '인사관리',
+            count: 15,
+            expanded: false,
+            articles: [
+                { 
+                    id: '2.1', 
+                    number: 1,
+                    title: '목적', 
+                    content: '이 규정은 회사의 인사관리에 관한 사항을 정함을 목적으로 한다.'
+                },
+                { 
+                    id: '2.2', 
+                    number: 2,
+                    title: '적용범위', 
+                    content: '이 규정은 전 직원에게 적용된다.'
+                },
+                { 
+                    id: '2.3', 
+                    number: 3,
+                    title: '채용기준', 
+                    content: '직원의 채용은 공개채용을 원칙으로 하며, 필요시 특별채용을 할 수 있다.'
+                },
+                {
+                    id: '2.4',
+                    number: 4,
+                    title: '인사평가',
+                    content: '인사평가는 연 2회 실시하며, 평가결과는 승진, 보상 등에 반영한다.'
+                }
+            ]
+        },
+        {
+            id: '3',
+            name: '재무관리',
+            count: 12,
+            expanded: false,
+            articles: [
+                { 
+                    id: '3.1', 
+                    number: 1,
+                    title: '예산편성', 
+                    content: '예산은 회계연도 개시 1개월 전까지 편성하여야 한다.'
+                },
+                { 
+                    id: '3.2', 
+                    number: 2,
+                    title: '결산', 
+                    content: '결산은 회계연도 종료 후 2개월 이내에 완료하여야 한다.'
+                },
+                {
+                    id: '3.3',
+                    number: 3,
+                    title: '회계처리',
+                    content: '모든 회계처리는 일반적으로 인정된 회계원칙에 따라 처리하여야 한다.'
+                }
+            ]
+        },
+        {
+            id: '4',
+            name: '의료관리',
+            count: 23,
+            expanded: false,
+            articles: [
+                { 
+                    id: '4.1', 
+                    number: 1,
+                    title: '진료지침', 
+                    content: '의료진은 표준진료지침에 따라 환자를 진료하여야 한다.'
+                },
+                { 
+                    id: '4.2', 
+                    number: 2,
+                    title: '환자안전', 
+                    content: '모든 의료행위는 환자안전을 최우선으로 하여야 한다.'
+                },
+                {
+                    id: '4.3',
+                    number: 3,
+                    title: '의료기록',
+                    content: '의료기록은 정확하고 상세하게 작성되어야 하며, 법정 보존기간 동안 안전하게 보관되어야 한다.'
+                }
+            ]
+        },
+        {
+            id: '5',
+            name: '정보관리',
+            count: 8,
+            expanded: false,
+            articles: [
+                { 
+                    id: '5.1', 
+                    number: 1,
+                    title: '정보보안', 
+                    content: '모든 정보자산은 보안정책에 따라 관리되어야 한다.'
+                },
+                {
+                    id: '5.2',
+                    number: 2,
+                    title: '개인정보보호',
+                    content: '개인정보는 관련 법령에 따라 수집, 이용, 보관, 파기되어야 한다.'
+                }
+            ]
+        }
+    ],
+
+    // 부서 데이터
+    departments: [
+        { code: 'HR001', name: '인사팀', parent: '경영지원본부', category: '인사', count: 23 },
+        { code: 'FIN001', name: '재무팀', parent: '경영지원본부', category: '재무', count: 15 },
+        { code: 'MED001', name: '완화의료센터', parent: '의료본부', category: '의료', count: 12 },
+        { code: 'IT001', name: 'IT팀', parent: '경영지원본부', category: 'IT', count: 8 },
+        { code: 'NURS001', name: '간호부', parent: '의료본부', category: '의료', count: 20 },
+        { code: 'QM001', name: '품질관리팀', parent: '경영지원본부', category: '품질', count: 12 }
+    ],
+
+    // 현재 선택된 조문
+    selectedArticle: null,
+
+    // 데이터 로드
+    loadData() {
+        this.renderClassificationTable();
+    },
+
+    // 분류 테이블 렌더링
+    renderClassificationTable() {
+        const tbody = document.getElementById('classificationList');
+        if (!tbody) return;
+        
+        tbody.innerHTML = '';
+        
+        this.chapters.forEach(chapter => {
+            // 장 행
+            const chapterRow = document.createElement('tr');
+            chapterRow.style.cursor = 'pointer';
+            chapterRow.style.background = chapter.expanded ? '#f8f9fa' : '';
+            chapterRow.innerHTML = `
+                <td>제${chapter.id}장</td>
+                <td onclick="ClassificationManager.toggleChapter('${chapter.id}')">
+                    <span style="display: inline-block; width: 20px;">${chapter.expanded ? '▼' : '▶'}</span>
+                    ${chapter.name}
+                </td>
+                <td><span class="status-badge status-active">${chapter.count}</span></td>
+                <td>
+                    <button class="action-btn btn-secondary btn-small" onclick="ClassificationManager.editChapter(event, '${chapter.id}')" style="margin-right: 5px;">
+                        편집
+                    </button>
+                    <button class="action-btn btn-primary btn-small" onclick="ClassificationManager.toggleChapter('${chapter.id}')">
+                        ${chapter.expanded ? '접기' : '조문보기'}
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(chapterRow);
+            
+            // 조문 행들 (펼쳐진 경우만)
+            if (chapter.expanded && chapter.articles) {
+                chapter.articles.forEach(article => {
+                    const articleRow = document.createElement('tr');
+                    articleRow.style.cursor = 'pointer';
+                    articleRow.style.background = this.selectedArticle === article.id ? '#e7f1ff' : '#fafafa';
+                    articleRow.innerHTML = `
+                        <td style="padding-left: 30px; color: #6c757d;">${article.id}</td>
+                        <td onclick="ClassificationManager.selectArticle('${chapter.id}', '${article.id}')" style="color: #6c757d;">
+                            <span style="display: inline-block; width: 20px;">└</span>
+                            제${article.number}조 (${article.title})
+                            ${this.selectedArticle === article.id ? ' ✓' : ''}
+                        </td>
+                        <td>-</td>
+                        <td>
+                            <button class="action-btn btn-info btn-small" 
+                                    onclick="ClassificationManager.selectArticle('${chapter.id}', '${article.id}')">
+                                미리보기
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(articleRow);
+                });
+            }
+        });
+    },
+
+    // 장 토글
+    toggleChapter(chapterId) {
+        const chapter = this.chapters.find(c => c.id === chapterId);
+        if (chapter) {
+            chapter.expanded = !chapter.expanded;
+            this.renderClassificationTable();
+            
+            // 미리보기 영역 업데이트
+            if (chapter.expanded) {
+                const previewArea = document.getElementById('articlePreviewArea');
+                if (previewArea) {
+                    previewArea.innerHTML = `
+                        <h4>제${chapterId}장 - ${chapter.name}</h4>
+                        <p style="color: #6c757d;">조문을 선택하면 내용이 표시됩니다.</p>
+                    `;
+                }
+            }
+        }
+    },
+
+    // 장 편집
+    editChapter(event, chapterId) {
+        if (event) {
+            event.stopPropagation(); // 행 클릭 이벤트 전파 방지
+        }
+        
+        const chapter = this.chapters.find(c => c.id === chapterId);
+        if (!chapter) return;
+        
+        const newName = prompt('분류명을 수정하세요:', chapter.name);
+        if (newName && newName !== chapter.name) {
+            chapter.name = newName;
+            this.renderClassificationTable();
+            
+            // 미리보기 영역 업데이트 (현재 선택된 장인 경우)
+            if (chapter.expanded) {
+                const previewArea = document.getElementById('articlePreviewArea');
+                if (previewArea && !this.selectedArticle) {
+                    previewArea.innerHTML = `
+                        <h4>제${chapterId}장 - ${chapter.name}</h4>
+                        <p style="color: #6c757d;">조문을 선택하면 내용이 표시됩니다.</p>
+                    `;
+                }
+            }
+            
+            // 백엔드 API 호출
+            this.saveChapter(chapter);
+            
+            this.showNotification(`"제${chapterId}장 - ${newName}" 분류명이 수정되었습니다.`);
+        }
+    },
+
+    // 조문 선택
+    selectArticle(chapterId, articleId) {
+        this.selectedArticle = articleId;
+        
+        const chapter = this.chapters.find(c => c.id === chapterId);
+        if (chapter) {
+            const article = chapter.articles.find(a => a.id === articleId);
+            if (article) {
+                this.showArticlePreview(article);
+                this.renderClassificationTable(); // 선택 표시 업데이트
+            }
+        }
+    },
+
+    // 조문 미리보기 표시
+    showArticlePreview(article) {
+        const previewArea = document.getElementById('articlePreviewArea');
+        if (previewArea) {
+            previewArea.innerHTML = `
+                <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <h3 style="color: #667eea; margin-bottom: 20px;">제${article.number}조 (${article.title})</h3>
+                    <div style="line-height: 1.8; font-size: 16px; margin-bottom: 30px;">
+                        ${article.content}
+                    </div>
+                    <div style="padding-top: 20px; border-top: 1px solid #e9ecef;">
+                        <p style="font-size: 14px; color: #6c757d; margin: 5px 0;">
+                            <strong>분류번호:</strong> ${article.id}
+                        </p>
+                        <p style="font-size: 14px; color: #6c757d; margin: 5px 0;">
+                            <strong>최종수정일:</strong> ${new Date().toLocaleDateString('ko-KR')}
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+    },
+
+    // 장 추가 - 모달 열기
+    addChapter() {
+        // 모달 초기화
+        document.getElementById('classificationModalTitle').textContent = '분류 추가';
+        document.getElementById('classificationMode').value = 'add';
+        document.getElementById('classificationId').value = '';
+        document.getElementById('classificationName').value = '';
+        document.getElementById('classificationNumberGroup').style.display = 'none';
+        document.getElementById('deleteBtn').style.display = 'none';
+        document.getElementById('deleteWarning').style.display = 'none';
+        
+        // 모달 열기
+        document.getElementById('classificationModal').classList.add('active');
+    },
+
+    // 장 편집 - 모달 열기
+    editChapter(event, chapterId) {
+        if (event) {
+            event.stopPropagation();
+        }
+        
+        const chapter = this.chapters.find(c => c.id === chapterId);
+        if (!chapter) return;
+        
+        // 모달 초기화
+        document.getElementById('classificationModalTitle').textContent = '분류 편집';
+        document.getElementById('classificationMode').value = 'edit';
+        document.getElementById('classificationId').value = chapterId;
+        document.getElementById('classificationName').value = chapter.name;
+        document.getElementById('classificationNumber').value = `제${chapterId}장`;
+        document.getElementById('classificationNumberGroup').style.display = 'block';
+        document.getElementById('deleteBtn').style.display = 'inline-block';
+        document.getElementById('deleteWarning').style.display = 'none';
+        
+        // 모달 열기
+        document.getElementById('classificationModal').classList.add('active');
+    },
+
+    // 모달 닫기
+    closeModal() {
+        document.getElementById('classificationModal').classList.remove('active');
+        document.getElementById('deleteWarning').style.display = 'none';
+    },
+
+    // 분류 저장
+    saveClassification() {
+        const mode = document.getElementById('classificationMode').value;
+        const name = document.getElementById('classificationName').value;
+        
+        if (!name.trim()) {
+            alert('분류명을 입력해주세요.');
+            return;
+        }
+        
+        if (mode === 'add') {
+            // 새 분류 추가
+            const lastChapterId = Math.max(...this.chapters.map(c => parseInt(c.id)));
+            const newId = (lastChapterId + 1).toString();
+            
+            this.chapters.push({
+                id: newId,
+                name: name,
+                count: 0,
+                expanded: false,
+                articles: []
+            });
+            
+            this.showNotification(`"제${newId}장 - ${name}" 분류가 추가되었습니다.`);
+        } else {
+            // 기존 분류 수정
+            const chapterId = document.getElementById('classificationId').value;
+            const chapter = this.chapters.find(c => c.id === chapterId);
+            
+            if (chapter) {
+                chapter.name = name;
+                this.showNotification(`"제${chapterId}장 - ${name}" 분류명이 수정되었습니다.`);
+                
+                // 미리보기 영역 업데이트
+                if (chapter.expanded) {
+                    const previewArea = document.getElementById('articlePreviewArea');
+                    if (previewArea && !this.selectedArticle) {
+                        previewArea.innerHTML = `
+                            <h4>제${chapterId}장 - ${chapter.name}</h4>
+                            <p style="color: #6c757d;">조문을 선택하면 내용이 표시됩니다.</p>
+                        `;
+                    }
+                }
+            }
+        }
+        
+        this.renderClassificationTable();
+        this.closeModal();
+        
+        // 백엔드 API 호출
+        this.saveChapters();
+    },
+
+    // 장 삭제
+    deleteChapter() {
+        const deleteWarning = document.getElementById('deleteWarning');
+        
+        // 첫 번째 클릭: 경고 메시지 표시
+        if (deleteWarning.style.display === 'none') {
+            deleteWarning.style.display = 'block';
+            return;
+        }
+        
+        // 두 번째 클릭: 실제 삭제 실행
+        const chapterId = document.getElementById('classificationId').value;
+        const chapterIndex = this.chapters.findIndex(c => c.id === chapterId);
+        
+        if (chapterIndex > -1) {
+            const chapterName = this.chapters[chapterIndex].name;
+            this.chapters.splice(chapterIndex, 1);
+            
+            this.renderClassificationTable();
+            this.closeModal();
+            
+            // 미리보기 영역 초기화
+            const previewArea = document.getElementById('articlePreviewArea');
+            if (previewArea) {
+                previewArea.innerHTML = '<p style="color: #6c757d; text-align: center;">분류를 선택하면 해당 조문이 표시됩니다.</p>';
+            }
+            
+            this.showNotification(`"제${chapterId}장 - ${chapterName}" 분류가 삭제되었습니다.`, 'warning');
+            
+            // 백엔드 API 호출
+            this.saveChapters();
+        }
+    },
+
+    // 부서 테이블 렌더링
+    renderDepartmentTable() {
+        const tbody = document.getElementById('departmentList');
+        if (!tbody) return;
+        
+        tbody.innerHTML = '';
+        
+        this.departments.forEach(dept => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${dept.code}</td>
+                <td>${dept.name}</td>
+                <td>${dept.parent}</td>
+                <td><span class="status-badge status-active">${dept.category}</span></td>
+                <td>${dept.count}</td>
+                <td>
+                    <button class="action-btn btn-primary" onclick="ClassificationManager.editDepartment('${dept.code}')">편집</button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    },
+
+    // 부서 추가
+    addDepartment() {
+        const name = prompt('새 부서명을 입력하세요:');
+        if (!name) return;
+        
+        const code = prompt('부서 코드를 입력하세요:');
+        if (!code) return;
+        
+        const parent = prompt('상위 부서를 입력하세요:');
+        const category = prompt('관련 카테고리를 입력하세요:');
+        
+        this.departments.push({
+            code: code,
+            name: name,
+            parent: parent || '-',
+            category: category || '기타',
+            count: 0
+        });
+        
+        this.renderDepartmentTable();
+        
+        // 백엔드 API 호출
+        this.saveDepartment({code, name, parent, category});
+    },
+
+    // 부서 편집
+    editDepartment(deptCode) {
+        const dept = this.departments.find(d => d.code === deptCode);
+        if (!dept) return;
+        
+        const newName = prompt('부서명을 입력하세요:', dept.name);
+        if (newName && newName !== dept.name) {
+            dept.name = newName;
+            
+            const newParent = prompt('상위 부서를 입력하세요:', dept.parent);
+            if (newParent) dept.parent = newParent;
+            
+            const newCategory = prompt('관련 카테고리를 입력하세요:', dept.category);
+            if (newCategory) dept.category = newCategory;
+            
+            this.renderDepartmentTable();
+            
+            // 백엔드 API 호출
+            this.saveDepartment(dept);
+        }
+    },
+
+    // 전체 분류 목록 가져오기 (select box용)
+    getAllClassifications() {
+        const classifications = [];
+        
+        this.chapters.forEach(chapter => {
+            // 장 추가
+            classifications.push({
+                value: chapter.id,
+                text: `제${chapter.id}장 - ${chapter.name}`
+            });
+            
+            // 조문 추가
+            if (chapter.articles) {
+                chapter.articles.forEach(article => {
+                    classifications.push({
+                        value: article.id,
+                        text: `　${article.id} 제${article.number}조 (${article.title})`
+                    });
+                });
+            }
+        });
+        
+        return classifications;
+    },
+
+    // 알림 표시
+    showNotification(message, type = 'success') {
+        if (typeof RegulationEditor !== 'undefined' && RegulationEditor.showNotification) {
+            RegulationEditor.showNotification(message, type);
+        } else {
+            alert(message);
+        }
+    },
+
+    // API 호출 메서드 (실제 구현시 백엔드 연동)
+    async saveChapter(chapter) {
+        console.log('장 저장:', chapter);
+        // const response = await fetch('/api/chapters', {
+        //     method: 'POST',
+        //     headers: {'Content-Type': 'application/json'},
+        //     body: JSON.stringify(chapter)
+        // });
+    },
+
+    async saveChapters() {
+        console.log('전체 장 저장');
+        // await fetch('/api/chapters/bulk', {...});
+    },
+
+    async saveDepartment(dept) {
+        console.log('부서 저장:', dept);
+        // await fetch('/api/departments', {...});
+    }
+};

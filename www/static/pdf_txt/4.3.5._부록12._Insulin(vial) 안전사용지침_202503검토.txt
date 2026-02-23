@@ -1,0 +1,41 @@
+4.3.5.부록12.
+제정일: 2015.4.
+개정일: 2016.3/2018.3/2019.3.
+검토일: 2017.3/2022.11./2025.03 기안부서: 약무국 Insulin(Vial) 안전사용지침 (The Guidelines for the Safe Use of Insulin(Vial))
+
+1. 목적: 고위험의약품인 Insulin(Vial)의 안전하고 적절한 사용을 관리하여 고혈당 또는 저혈당 유발에 따른 위해를 감소시키기 위함이다.
+
+2. 의약품정보 [원내 사용 중인 Insulin(Vial)] 상품명 일반명 함량 규격 용법 HUMALOG inj Insulin lispro Human SC,IV,IVF HUMULIN N inj Isophane HI (NPH) SC HUMULIN R inj Insulin Human RI SC,IV,IVF 1,000unit/10ml/V Isophane HI HUMULIN 70/30 inj SC (NPH):RI=70:30 LANTUS inj Insulin glargine SC
+
+3. 보관 개봉후 종류 상품명 제형 개봉 전 보관온도 사용기간 HUMALOG inj 30℃이하 4주(28일) HUMULIN N inj 차광 30℃이하 4주(28일) Insulin HUMULIN R inj 1,000unit/10ml/V 냉장 30℃이하 4주(28일) (Vial) HUMULIN 70/30 inj (2℃~8℃) 30℃이하 4주(28일) LANTUS inj 30℃미만 4주(28일)
+* 개봉한 바이알은 개봉일과 유효기간을 기록하여 냉장보관
+
+4. 사용시 주의사항
+1) 투여용량 환산 시 주의 한다. (100unit/ml 함유)
+
+2) 차가운 상태로 주사하는 것을 피한다.
+
+3) 환자 교육: 환자가 당뇨병의 치료를 위하여 인슐린을 사용할 경우, 그 주사법 및 저혈당에 대하여 환자 스스로 대처할 수 있도록 충분히 교육한다.
+
+4.3.5.부록12.
+
+5. 부작용 발생시 대처방안
+1) 경증 저혈당: 경구용 탄수화물 복용
+
+2) 중등도 저혈당: dextrose IV bolus 이후 반드시 경구 carbohydrates 투여하거나 dextrose infusion 실시. (정맥 주사 불가능 시, 치료 초기에 Glucagon 투여 가능)
+
+3) 심각한 저혈당: 매 시간마다와 증상 발현시 Blood glucose 모니터링 실시.
+hypoglycemic episodes 동안 blood glucose 120 ~ 200 mg/dL 유지할 때까지 dextrose infusion 과 IV boluses 로 처치
+
+4) Dextrose 투여로 개선되지 않으며 의식변화 시에는 반드시 기도를 확인해야 한다.
+
+6. 안전 사용을 위한 원내 지침
+1) Insulin 처방은 당뇨환자관리프로그램을 활용한다.
+
+2) 개봉한 바이알은 개봉일과 유효기간을 기록하여 냉장 보관한다.
+
+3) 보관시 타 의약품과 분리 보관한다.
+
+4) 고위험의약품은 처방전달시스템에 적색으로 약품명을 표기한다.
+
+5) ‘고위험의약품’ 스티커를 포장 박스와 바이알에 부착한다.

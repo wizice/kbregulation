@@ -1,0 +1,37 @@
+부록 1. 외래환자 초기평가 항목 담당부서 의무기록팀 제정일 2012.05. 최종개정일 2024.08. 최종검토일 2025.03.
+
+외래환자 초기평가 항목
+
+1. 초기평가 공통항목
+1) 성인 과거력 신체검진 HTN General Appearance Pul. Tbc Skin DM HEENT Hepatitis Neck 알레르기 Chest/Lung Drug Allergy Heart Abdomen Back and Extremity
+
+2) 소아 과거력 신체검진 입원 및 수술력 General Appearance 가족력 Skin HEENT Drug Allergy Neck 알레르기 Chest/Lung Heart Abdomen Back and Extremity
+
+2. 임상과(전문분야) 별 외래 초기평가 추가 항목
+1) 성인 진료과 과거력 신체검진 Smoking 내과(감염) Alcohol 감염성질환 초기평가 내과(류마티스) Menopause 여부 Joint Examination Smoking 내과(소화기) Alcohol 수술력 Smoking 내과(종양) ECOG PS Alcohol Smoking 내과(혈액) Alcohol Smoking 내과(호흡기) Alcohol 수술력
+
+감염성질환 초기평가 Smoking Alcohol Neck 외과(갑상선) 기타 과거력 *Cervical LNs 이외에 Palpable Mass Previous Thyroid Disease 촉진 여부 Previous Thyroid Current Medication Smoking Alcohol 외과(간,담,췌) 수술력 Cardiac Disease Old CVA 유방암 가족력 외과(유방분과) 유방암을 제외한 다른 암 가족력 Smoking 외과(상부위장관) Alcohol 수술력 Smoking 대장암 수술 후 병기 근치도 외과(하부위장관) Alcohol 대장암 수술명 및 수술후 경과일 과거수술력 외과(이식(간)) Alcohol Body weight 투석종류/기간 외과(이식(신장)) Body weight 이식과거력 Asthma 마취통증의학과 CVA Pain Profile (통증클리닉) Nerologic disease 수술력 Smoking Alcohol 비뇨기과 Cardiac disease Old CVA Hypercholesterolemia Mental State Smoking Glasgow Coma Scale Alcohol Awakening/Awareness Cardiovascular or 신경외과 Cranial Nerve Function Coronary Vascular Disease Motor/Sensory Function Current Medication Deep Tendon Reflex Admission History Pain Scale 정신과 과거력 입원횟수 정신건강의학과 정신과 가족력 자살사고 가정의학과 Smoking Vital Sign
+
+Alcohol Height/Weight/BMI Psychiatric History (Depression/Anxiety) Dyslipidemia Old CVA Cardiac Disease Osteoporosis 입원력/수술력 약물복용력 Family Genogram 건강검진 History BP 국제진료소 Current Medication PR Smoking 방사선종양학과 Alcohol 암 가족력 산부인과(부인과) Coitus History 성형외과 약물복용 시력 안압 Smoking Alcohol 이비인후과 Laryngoscope Exam 과거 수술력 이비인후과 질환 병력
+
+2) 소아 진료과 과거력 신체검진 DM HTN 소아청소년과 Pul. Tbc Hepatitis 분만양식 신생아과 제태주령 출생체중 소아신경과 신경학적 검사 HTN Pul. Tbc DM Hepatitis 소아심장과 Smoking OP 및 Procedure Wound Site Alcohol Cardiac Disease & Past OP History Old CVA Hypercholesterolemia
+
+출생력 예방접종 HTN DM Cardiac Disease 임상유전과 Old CVA Hypercholesterolemia 출생력 비뇨기과(소아) External Genitalia 예방접종 Cardiac Disease 외과(소아) 출생력 출산력 발달력 정신상태 검진 정신과(소아) 가족관계 (비정상일 경우 기술) 치료력 가족력 출산력 발달과정 정형외과(소아) 타과질환 입원력 국제진료소 Current Medication BT Neonatal Asphysia Neonatal Jaundice 성형외과 출생 시 부모 나이 약물 부작용
+
+3. 특수환자 대상 개별화된 평가항목 환자 항목
+
+1. 분만양식 신생아과 2. 재태주령
+
+3. 출생체중
+
+1. 예방접종력 소아청소년과
+
+2. 과거력(당뇨, 고혈압, 결핵, 간염)
+
+1. 정신과 과거력
+
+2. 입원횟수 정신건강의학과
+
+3. 정신과 가족력
+
+4. 자살사고 산부인과(산과) 산과력

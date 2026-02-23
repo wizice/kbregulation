@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API 키 관리 - 규정관리시스템</title>
+    <link rel="stylesheet" href="/static/css/font-awesome.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #E5A800 0%, #FFCC00 100%);
+            color: #333;
+            padding: 20px 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .header .subtitle {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .info-card {
+            background: linear-gradient(135deg, #e8f4fd 0%, #d4edfb 100%);
+            border-left: 4px solid #2196F3;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .info-card h3 {
+            color: #1976D2;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-card ul {
+            margin-left: 20px;
+            color: #555;
+            line-height: 1.8;
+        }
+
+        .toolbar {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: #E5A800;
+            color: #333;
+        }
+
+        .btn-primary:hover {
+            background: #FFCC00;
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e9ecef;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #555;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .key-prefix {
+            font-family: 'Consolas', 'Monaco', monospace;
+            background: #e9ecef;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .status-active {
+            color: #28a745;
+            font-weight: 500;
+        }
+
+        .status-inactive {
+            color: #dc3545;
+            font-weight: 500;
+        }
+
+        .use-count {
+            background: #e9ecef;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #ddd;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            font-size: 18px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e1e8ed;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #E5A800;
+        }
+
+        .api-key-display {
+            background: #f8f9fa;
+            border: 2px dashed #E5A800;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            position: relative;
+        }
+
+        .api-key-display code {
+            font-family: 'Consolas', 'Monaco', monospace;
+            word-break: break-all;
+            display: block;
+            padding-right: 40px;
+        }
+
+        .copy-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #E5A800;
+            color: #333;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .copy-btn:hover {
+            background: #FFCC00;
+        }
+
+        .warning-text {
+            color: #dc3545;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+
+        .back-link {
+            margin-bottom: 20px;
+        }
+
+        .back-link a {
+            color: #666;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .back-link a:hover {
+            color: #E5A800;
+        }
+
+        .usage-guide {
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .usage-guide h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        .code-block .comment {
+            color: #75715e;
+        }
+
+        .code-block .string {
+            color: #a6e22e;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><i class="fa fa-key"></i> API 키 관리</h1>
+        <div class="subtitle">외부 시스템 연동을 위한 API 키를 생성하고 관리합니다</div>
+    </div>
+
+    <div class="container">
+        <div class="back-link">
+            <a href="/regulations/current"><i class="fa fa-arrow-left"></i> 현행규정으로 돌아가기</a>
+        </div>
+
+        <div class="info-card">
+            <h3><i class="fa fa-info-circle"></i> API 키 사용 안내</h3>
+            <ul>
+                <li>API 키를 사용하면 로그인 없이도 API에 접근할 수 있습니다.</li>
+                <li>생성된 키는 <strong>생성 시에만 확인 가능</strong>하며, 이후에는 다시 볼 수 없습니다.</li>
+                <li>키가 유출된 경우 즉시 삭제하고 새로운 키를 생성하세요.</li>
+                <li>사용자당 최대 10개의 API 키를 생성할 수 있습니다.</li>
+            </ul>
+        </div>
+
+        <div class="toolbar">
+            <div>
+                <strong>내 API 키</strong>
+                <span id="keyCount" style="color: #666; margin-left: 10px;"></span>
+            </div>
+            <button class="btn btn-primary" onclick="showCreateModal()">
+                <i class="fa fa-plus"></i> 새 API 키 생성
+            </button>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div id="keysList">
+                    <div class="empty-state">
+                        <i class="fa fa-spinner fa-spin"></i>
+                        <p>로딩 중...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="usage-guide">
+            <h3><i class="fa fa-code"></i> API 사용 예시</h3>
+
+            <h4 style="margin-top: 15px; color: #555;">cURL</h4>
+            <div class="code-block">
+                <span class="comment"># API 키로 요청하기</span><br>
+                curl -H <span class="string">"Authorization: Bearer kbr_live_abc123..."</span> \<br>
+                &nbsp;&nbsp;https://kbregulationeditor.wizice.com/api/v1/regulations/current
+            </div>
+
+            <h4 style="margin-top: 15px; color: #555;">Python</h4>
+            <div class="code-block">
+                <span class="comment"># Python requests 라이브러리 사용</span><br>
+                import requests<br><br>
+                API_KEY = <span class="string">"kbr_live_abc123..."</span><br>
+                headers = {<span class="string">"Authorization"</span>: f<span class="string">"Bearer {API_KEY}"</span>}<br><br>
+                response = requests.get(<br>
+                &nbsp;&nbsp;<span class="string">"https://kbregulationeditor.wizice.com/api/v1/regulations/current"</span>,<br>
+                &nbsp;&nbsp;headers=headers<br>
+                )<br>
+                print(response.json())
+            </div>
+
+            <h4 style="margin-top: 15px; color: #555;">JavaScript</h4>
+            <div class="code-block">
+                <span class="comment">// fetch API 사용</span><br>
+                const API_KEY = <span class="string">"kbr_live_abc123..."</span>;<br><br>
+                fetch(<span class="string">"https://kbregulationeditor.wizice.com/api/v1/regulations/current"</span>, {<br>
+                &nbsp;&nbsp;headers: { <span class="string">"Authorization"</span>: `Bearer ${API_KEY}` }<br>
+                })<br>
+                .then(res => res.json())<br>
+                .then(data => console.log(data));
+            </div>
+        </div>
+    </div>
+
+    <!-- 생성 모달 -->
+    <div id="createModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fa fa-key"></i> 새 API 키 생성</h3>
+                <button class="modal-close" onclick="closeModal('createModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="keyName">키 이름 (선택)</label>
+                    <input type="text" id="keyName" placeholder="예: 테스트용, CI/CD, 외부연동" maxlength="100">
+                </div>
+                <p style="color: #666; font-size: 13px;">
+                    키 이름은 나중에 키를 구분하기 위해 사용됩니다. 비워두면 자동으로 생성됩니다.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('createModal')">취소</button>
+                <button class="btn btn-primary" onclick="createApiKey()">
+                    <i class="fa fa-plus"></i> 생성
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 생성 완료 모달 -->
+    <div id="keyCreatedModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="color: #28a745;"><i class="fa fa-check-circle"></i> API 키 생성 완료</h3>
+                <button class="modal-close" onclick="closeModal('keyCreatedModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>새 API 키가 생성되었습니다.</p>
+
+                <div class="api-key-display">
+                    <code id="newApiKey"></code>
+                    <button class="copy-btn" onclick="copyApiKey()">
+                        <i class="fa fa-copy"></i> 복사
+                    </button>
+                </div>
+
+                <p class="warning-text">
+                    <i class="fa fa-exclamation-triangle"></i>
+                    <strong>중요:</strong> 이 키는 다시 표시되지 않습니다. 지금 안전한 곳에 복사해 두세요!
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="closeModal('keyCreatedModal'); loadApiKeys();">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 삭제 확인 모달 -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="color: #dc3545;"><i class="fa fa-trash"></i> API 키 삭제</h3>
+                <button class="modal-close" onclick="closeModal('deleteModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>정말로 이 API 키를 삭제하시겠습니까?</p>
+                <p style="margin-top: 10px; color: #666;">
+                    <strong>키 이름:</strong> <span id="deleteKeyName"></span><br>
+                    <strong>키 Prefix:</strong> <code id="deleteKeyPrefix" class="key-prefix"></code>
+                </p>
+                <p class="warning-text">
+                    <i class="fa fa-exclamation-triangle"></i>
+                    삭제된 키는 즉시 사용할 수 없게 되며, 복구할 수 없습니다.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('deleteModal')">취소</button>
+                <button class="btn btn-danger" onclick="confirmDelete()">
+                    <i class="fa fa-trash"></i> 삭제
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let deleteKeyId = null;
+
+        // 페이지 로드 시 API 키 목록 조회
+        document.addEventListener('DOMContentLoaded', loadApiKeys);
+
+        async function loadApiKeys() {
+            try {
+                const response = await fetch('/api/v1/api-keys/list', {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load API keys');
+                }
+
+                const data = await response.json();
+                renderKeysList(data.data);
+                document.getElementById('keyCount').textContent = `(${data.count}개)`;
+
+            } catch (error) {
+                console.error('Error loading API keys:', error);
+                document.getElementById('keysList').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fa fa-exclamation-triangle"></i>
+                        <p>API 키 목록을 불러오는데 실패했습니다.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderKeysList(keys) {
+            const container = document.getElementById('keysList');
+
+            if (!keys || keys.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fa fa-key"></i>
+                        <p>생성된 API 키가 없습니다.</p>
+                        <p style="margin-top: 10px;">위의 "새 API 키 생성" 버튼을 클릭하여 키를 생성하세요.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>키 이름</th>
+                            <th>키 Prefix</th>
+                            <th>상태</th>
+                            <th>사용 횟수</th>
+                            <th>마지막 사용</th>
+                            <th>생성일</th>
+                            <th>작업</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            keys.forEach(key => {
+                const lastUsed = key.last_used_at
+                    ? new Date(key.last_used_at).toLocaleString('ko-KR')
+                    : '사용 기록 없음';
+                const createdAt = new Date(key.created_at).toLocaleString('ko-KR');
+                const statusClass = key.is_active ? 'status-active' : 'status-inactive';
+                const statusText = key.is_active ? '활성' : '비활성';
+
+                html += `
+                    <tr>
+                        <td>${key.key_name || '-'}</td>
+                        <td><code class="key-prefix">${key.key_prefix}</code></td>
+                        <td><span class="${statusClass}">${statusText}</span></td>
+                        <td><span class="use-count">${key.use_count}회</span></td>
+                        <td>${lastUsed}</td>
+                        <td>${createdAt}</td>
+                        <td>
+                            ${key.is_active ? `
+                                <button class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;"
+                                        onclick="showDeleteModal(${key.api_key_id}, '${key.key_name || '이름 없음'}', '${key.key_prefix}')">
+                                    <i class="fa fa-trash"></i> 삭제
+                                </button>
+                            ` : '<span style="color: #999;">삭제됨</span>'}
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function showCreateModal() {
+            document.getElementById('keyName').value = '';
+            document.getElementById('createModal').classList.add('show');
+        }
+
+        function showDeleteModal(keyId, keyName, keyPrefix) {
+            deleteKeyId = keyId;
+            document.getElementById('deleteKeyName').textContent = keyName;
+            document.getElementById('deleteKeyPrefix').textContent = keyPrefix;
+            document.getElementById('deleteModal').classList.add('show');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        async function createApiKey() {
+            const keyName = document.getElementById('keyName').value.trim();
+
+            try {
+                const response = await fetch('/api/v1/api-keys/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ key_name: keyName })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to create API key');
+                }
+
+                const data = await response.json();
+
+                closeModal('createModal');
+
+                // 새 키 표시
+                document.getElementById('newApiKey').textContent = data.api_key;
+                document.getElementById('keyCreatedModal').classList.add('show');
+
+            } catch (error) {
+                alert('API 키 생성 실패: ' + error.message);
+            }
+        }
+
+        async function confirmDelete() {
+            if (!deleteKeyId) return;
+
+            try {
+                const response = await fetch(`/api/v1/api-keys/${deleteKeyId}/delete`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to delete API key');
+                }
+
+                closeModal('deleteModal');
+                loadApiKeys();
+
+            } catch (error) {
+                alert('API 키 삭제 실패: ' + error.message);
+            }
+        }
+
+        function copyApiKey() {
+            const key = document.getElementById('newApiKey').textContent;
+            navigator.clipboard.writeText(key).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fa fa-check"></i> 복사됨!';
+                btn.style.background = '#28a745';
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.style.background = '#E5A800';
+                }, 2000);
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = key;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('API 키가 클립보드에 복사되었습니다.');
+            });
+        }
+
+        // ESC 키로 모달 닫기
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal.show').forEach(modal => {
+                    modal.classList.remove('show');
+                });
+            }
+        });
+
+        // 모달 배경 클릭으로 닫기
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('show');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

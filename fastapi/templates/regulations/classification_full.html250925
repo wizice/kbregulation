@@ -1,0 +1,436 @@
+{% extends "common/base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="/static/styles.css">
+<style>
+    .page-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .page-title {
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: #1f2937;
+    }
+
+    .classification-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .classification-section {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: #4b5563;
+    }
+
+    .tree-view {
+        border: 1px solid #e5e7eb;
+        border-radius: 4px;
+        padding: 1rem;
+        min-height: 400px;
+        max-height: 600px;
+        overflow-y: auto;
+        background: #fafafa;
+    }
+
+    .tree-item {
+        padding: 8px 12px;
+        cursor: pointer;
+        border-radius: 4px;
+        margin-bottom: 4px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .tree-item:hover {
+        background: #e5e7eb;
+    }
+
+    .tree-item.selected {
+        background: #667eea;
+        color: white;
+    }
+
+    .tree-item-level-1 {
+        padding-left: 24px;
+    }
+
+    .tree-item-level-2 {
+        padding-left: 48px;
+    }
+
+    .form-section {
+        margin-top: 2rem;
+        padding: 1rem;
+        background: #f9fafb;
+        border-radius: 4px;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: #374151;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+
+    .btn-primary {
+        background: #667eea;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #5a67d8;
+    }
+
+    .btn-success {
+        background: #48bb78;
+        color: white;
+    }
+
+    .btn-success:hover {
+        background: #38a169;
+    }
+
+    .btn-danger {
+        background: #f56565;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background: #e53e3e;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .stats-box {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 1rem;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 600;
+        color: #667eea;
+    }
+
+    .stat-label {
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-container">
+    <div class="page-header">
+        <h2 class="page-title">분류 관리</h2>
+        <div>
+            <button class="btn btn-success" onclick="addNewCategory()">
+                새 분류 추가
+            </button>
+        </div>
+    </div>
+
+    <!-- 통계 정보 -->
+    <div class="stats-box">
+        <div class="stat-card">
+            <div class="stat-value" id="totalCategories">0</div>
+            <div class="stat-label">전체 분류</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="mainCategories">0</div>
+            <div class="stat-label">대분류</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="subCategories">0</div>
+            <div class="stat-label">중분류</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="detailCategories">0</div>
+            <div class="stat-label">소분류</div>
+        </div>
+    </div>
+
+    <div class="classification-grid">
+        <!-- 분류 트리 -->
+        <div class="classification-section">
+            <h3 class="section-title">분류 체계</h3>
+            <div class="tree-view" id="classificationTree">
+                <!-- 트리 아이템이 동적으로 생성됨 -->
+            </div>
+        </div>
+
+        <!-- 분류 상세 정보 -->
+        <div class="classification-section">
+            <h3 class="section-title">분류 정보</h3>
+            <div class="form-section">
+                <div class="form-group">
+                    <label>분류 코드</label>
+                    <input type="text" class="form-control" id="categoryCode" readonly>
+                </div>
+                <div class="form-group">
+                    <label>분류명</label>
+                    <input type="text" class="form-control" id="categoryName">
+                </div>
+                <div class="form-group">
+                    <label>상위 분류</label>
+                    <select class="form-control" id="parentCategory">
+                        <option value="">최상위 분류</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>분류 레벨</label>
+                    <select class="form-control" id="categoryLevel">
+                        <option value="1">대분류</option>
+                        <option value="2">중분류</option>
+                        <option value="3">소분류</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>설명</label>
+                    <textarea class="form-control" id="categoryDescription" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>사용 여부</label>
+                    <select class="form-control" id="categoryActive">
+                        <option value="Y">사용</option>
+                        <option value="N">미사용</option>
+                    </select>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="saveCategory()">저장</button>
+                    <button class="btn btn-danger" onclick="deleteCategory()">삭제</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+let selectedCategory = null;
+let categories = [];
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadCategories();
+});
+
+async function loadCategories() {
+    try {
+        const response = await fetch('/api/v1/classification/list');
+        const data = await response.json();
+
+        if (data.success) {
+            categories = data.categories || [];
+            displayTree(categories);
+            updateStats(categories);
+        }
+    } catch (error) {
+        console.error('Error loading categories:', error);
+    }
+}
+
+function displayTree(data) {
+    const tree = document.getElementById('classificationTree');
+
+    if (!data || data.length === 0) {
+        tree.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">분류 데이터가 없습니다.</div>';
+        return;
+    }
+
+    // 트리 구조로 표시
+    let html = '';
+    const level1 = data.filter(c => c.level === 1);
+
+    level1.forEach(cat1 => {
+        html += `<div class="tree-item" onclick="selectCategory(${cat1.id})">
+                    <span>${cat1.name}</span>
+                    <span>${cat1.code}</span>
+                 </div>`;
+
+        const level2 = data.filter(c => c.parent_id === cat1.id);
+        level2.forEach(cat2 => {
+            html += `<div class="tree-item tree-item-level-1" onclick="selectCategory(${cat2.id})">
+                        <span>${cat2.name}</span>
+                        <span>${cat2.code}</span>
+                     </div>`;
+
+            const level3 = data.filter(c => c.parent_id === cat2.id);
+            level3.forEach(cat3 => {
+                html += `<div class="tree-item tree-item-level-2" onclick="selectCategory(${cat3.id})">
+                            <span>${cat3.name}</span>
+                            <span>${cat3.code}</span>
+                         </div>`;
+            });
+        });
+    });
+
+    tree.innerHTML = html;
+}
+
+function updateStats(data) {
+    document.getElementById('totalCategories').textContent = data.length;
+    document.getElementById('mainCategories').textContent = data.filter(c => c.level === 1).length;
+    document.getElementById('subCategories').textContent = data.filter(c => c.level === 2).length;
+    document.getElementById('detailCategories').textContent = data.filter(c => c.level === 3).length;
+}
+
+function selectCategory(id) {
+    selectedCategory = categories.find(c => c.id === id);
+
+    if (selectedCategory) {
+        document.getElementById('categoryCode').value = selectedCategory.code || '';
+        document.getElementById('categoryName').value = selectedCategory.name || '';
+        document.getElementById('parentCategory').value = selectedCategory.parent_id || '';
+        document.getElementById('categoryLevel').value = selectedCategory.level || 1;
+        document.getElementById('categoryDescription').value = selectedCategory.description || '';
+        document.getElementById('categoryActive').value = selectedCategory.active || 'Y';
+
+        // 선택된 아이템 하이라이트
+        document.querySelectorAll('.tree-item').forEach(item => {
+            item.classList.remove('selected');
+        });
+        event.currentTarget.classList.add('selected');
+    }
+}
+
+function addNewCategory() {
+    selectedCategory = null;
+    document.getElementById('categoryCode').value = '';
+    document.getElementById('categoryName').value = '';
+    document.getElementById('parentCategory').value = '';
+    document.getElementById('categoryLevel').value = '1';
+    document.getElementById('categoryDescription').value = '';
+    document.getElementById('categoryActive').value = 'Y';
+
+    document.getElementById('categoryCode').removeAttribute('readonly');
+}
+
+async function saveCategory() {
+    const categoryData = {
+        code: document.getElementById('categoryCode').value,
+        name: document.getElementById('categoryName').value,
+        parent_id: document.getElementById('parentCategory').value || null,
+        level: parseInt(document.getElementById('categoryLevel').value),
+        description: document.getElementById('categoryDescription').value,
+        active: document.getElementById('categoryActive').value
+    };
+
+    if (!categoryData.code || !categoryData.name) {
+        alert('분류 코드와 분류명은 필수입니다.');
+        return;
+    }
+
+    try {
+        const url = selectedCategory ?
+            `/api/v1/classification/update/${selectedCategory.id}` :
+            '/api/v1/classification/create';
+
+        const method = selectedCategory ? 'PUT' : 'POST';
+
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(categoryData)
+        });
+
+        if (response.ok) {
+            alert('저장되었습니다.');
+            loadCategories();
+        } else {
+            alert('저장 중 오류가 발생했습니다.');
+        }
+    } catch (error) {
+        console.error('Error saving category:', error);
+        alert('저장 중 오류가 발생했습니다.');
+    }
+}
+
+async function deleteCategory() {
+    if (!selectedCategory) {
+        alert('삭제할 분류를 선택하세요.');
+        return;
+    }
+
+    if (!confirm('정말 삭제하시겠습니까?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/v1/classification/delete/${selectedCategory.id}`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            alert('삭제되었습니다.');
+            loadCategories();
+        } else {
+            alert('삭제 중 오류가 발생했습니다.');
+        }
+    } catch (error) {
+        console.error('Error deleting category:', error);
+        alert('삭제 중 오류가 발생했습니다.');
+    }
+}
+</script>
+{% endblock %}

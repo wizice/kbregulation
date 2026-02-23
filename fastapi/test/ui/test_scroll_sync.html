@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>스크롤 동기화 테스트</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+            height: 600px;
+        }
+        .panel {
+            flex: 1;
+            border: 1px solid #ccc;
+            padding: 10px;
+            overflow: auto;
+            height: 100%;
+        }
+        .edit-area {
+            background-color: #f8f9fa;
+        }
+        .preview-area {
+            background-color: #fff;
+        }
+        h2 {
+            margin-top: 0;
+            padding: 10px;
+            background: #007bff;
+            color: white;
+            text-align: center;
+        }
+        .article {
+            margin: 20px 0;
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+        .article-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .article-content {
+            line-height: 1.6;
+            color: #555;
+        }
+        .status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 10px;
+            background: #28a745;
+            color: white;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>조문/부칙 탭 스크롤 동기화 테스트</h1>
+    <div class="status" id="status">스크롤 동기화 활성화됨</div>
+
+    <button onclick="testScrollSync()">동기화 테스트 시작</button>
+    <button onclick="resetScroll()">스크롤 초기화</button>
+
+    <div class="container">
+        <div class="panel edit-area" id="articleContent">
+            <h2>편집 영역</h2>
+            <!-- 긴 콘텐츠 생성 -->
+        </div>
+
+        <div class="panel preview-area" id="articlePreview">
+            <h2>미리보기 영역</h2>
+            <!-- 긴 콘텐츠 생성 -->
+        </div>
+    </div>
+
+    <script>
+        // RegulationEditor의 스크롤 동기화 로직 재현
+        const ScrollSyncTester = {
+            isSyncingScroll: false,
+
+            init() {
+                // 긴 콘텐츠 생성
+                this.generateLongContent();
+
+                // 스크롤 동기화 설정
+                this.setupArticleScrollSync();
+
+                console.log('스크롤 동기화 테스트 준비 완료');
+            },
+
+            generateLongContent() {
+                const editArea = document.getElementById('articleContent');
+                const previewArea = document.getElementById('articlePreview');
+
+                // 50개의 조문 생성
+                for (let i = 1; i <= 50; i++) {
+                    // 편집 영역
+                    const editArticle = document.createElement('div');
+                    editArticle.className = 'article';
+                    editArticle.innerHTML = `
+                        <div class="article-title">제${i}조 (테스트 조문 ${i})</div>
+                        <div class="article-content">
+                            이것은 제${i}조의 내용입니다. 스크롤 동기화를 테스트하기 위한 충분한 길이의 텍스트입니다.<br>
+                            여러 줄의 내용이 포함되어 있어 스크롤이 필요합니다.<br>
+                            편집 영역을 스크롤하면 미리보기 영역도 동일한 비율로 스크롤됩니다.<br>
+                            반대로 미리보기 영역을 스크롤해도 편집 영역이 동기화됩니다.
+                        </div>
+                    `;
+                    editArea.appendChild(editArticle);
+
+                    // 미리보기 영역
+                    const previewArticle = document.createElement('div');
+                    previewArticle.className = 'article';
+                    previewArticle.innerHTML = `
+                        <div class="article-title">제${i}조 (테스트 조문 ${i})</div>
+                        <div class="article-content">
+                            <strong>[미리보기]</strong> 이것은 제${i}조의 내용입니다.<br>
+                            스크롤 동기화가 정상적으로 작동하는지 확인할 수 있습니다.<br>
+                            양쪽 패널의 스크롤 위치가 비율적으로 동기화됩니다.<br>
+                            스크롤 성능과 부드러움도 함께 테스트됩니다.
+                        </div>
+                    `;
+                    previewArea.appendChild(previewArticle);
+                }
+            },
+
+            setupArticleScrollSync() {
+                const articleContent = document.getElementById('articleContent');
+                const articlePreview = document.getElementById('articlePreview');
+
+                if (!articleContent || !articlePreview) return;
+
+                // 기존 이벤트 리스너 제거 (중복 방지)
+                articleContent.removeEventListener('scroll', this.syncArticleScroll);
+                articlePreview.removeEventListener('scroll', this.syncPreviewScroll);
+
+                // 편집 영역 스크롤 시 미리보기 동기화
+                this.syncArticleScroll = () => {
+                    if (this.isSyncingScroll) return;
+                    this.isSyncingScroll = true;
+
+                    const scrollPercentage = articleContent.scrollTop /
+                        (articleContent.scrollHeight - articleContent.clientHeight);
+
+                    articlePreview.scrollTop = scrollPercentage *
+                        (articlePreview.scrollHeight - articlePreview.clientHeight);
+
+                    this.updateStatus(`편집 → 미리보기 동기화: ${Math.round(scrollPercentage * 100)}%`);
+
+                    setTimeout(() => {
+                        this.isSyncingScroll = false;
+                    }, 50);
+                };
+
+                // 미리보기 영역 스크롤 시 편집 영역 동기화
+                this.syncPreviewScroll = () => {
+                    if (this.isSyncingScroll) return;
+                    this.isSyncingScroll = true;
+
+                    const scrollPercentage = articlePreview.scrollTop /
+                        (articlePreview.scrollHeight - articlePreview.clientHeight);
+
+                    articleContent.scrollTop = scrollPercentage *
+                        (articleContent.scrollHeight - articleContent.clientHeight);
+
+                    this.updateStatus(`미리보기 → 편집 동기화: ${Math.round(scrollPercentage * 100)}%`);
+
+                    setTimeout(() => {
+                        this.isSyncingScroll = false;
+                    }, 50);
+                };
+
+                // 이벤트 리스너 추가
+                articleContent.addEventListener('scroll', this.syncArticleScroll.bind(this));
+                articlePreview.addEventListener('scroll', this.syncPreviewScroll.bind(this));
+            },
+
+            updateStatus(message) {
+                const status = document.getElementById('status');
+                status.textContent = message;
+                status.style.background = '#28a745';
+            }
+        };
+
+        // 동기화 테스트 함수
+        async function testScrollSync() {
+            const editArea = document.getElementById('articleContent');
+            const previewArea = document.getElementById('articlePreview');
+            const status = document.getElementById('status');
+
+            console.log('자동 스크롤 테스트 시작...');
+            status.textContent = '자동 테스트 진행 중...';
+            status.style.background = '#ffc107';
+
+            // 1. 편집 영역 스크롤 테스트
+            await smoothScroll(editArea, 0, editArea.scrollHeight / 2, 1000);
+            await new Promise(r => setTimeout(r, 500));
+
+            // 2. 미리보기 영역 스크롤 테스트
+            await smoothScroll(previewArea, previewArea.scrollHeight / 2, previewArea.scrollHeight, 1000);
+            await new Promise(r => setTimeout(r, 500));
+
+            // 3. 맨 위로
+            await smoothScroll(editArea, editArea.scrollTop, 0, 1000);
+
+            status.textContent = '테스트 완료!';
+            status.style.background = '#28a745';
+            console.log('스크롤 동기화 테스트 완료');
+        }
+
+        // 부드러운 스크롤 애니메이션
+        function smoothScroll(element, start, end, duration) {
+            return new Promise(resolve => {
+                const startTime = performance.now();
+
+                function animate(currentTime) {
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+
+                    // easeInOutCubic
+                    const easeProgress = progress < 0.5
+                        ? 4 * progress * progress * progress
+                        : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+
+                    element.scrollTop = start + (end - start) * easeProgress;
+
+                    if (progress < 1) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        resolve();
+                    }
+                }
+
+                requestAnimationFrame(animate);
+            });
+        }
+
+        // 스크롤 초기화
+        function resetScroll() {
+            document.getElementById('articleContent').scrollTop = 0;
+            document.getElementById('articlePreview').scrollTop = 0;
+            document.getElementById('status').textContent = '스크롤 초기화됨';
+        }
+
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            ScrollSyncTester.init();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+4.5.1. 부록1.
+제정일:
+개정일: 2014.4.
+검토일: 2017.3/2019.3/2022.11./2025.03 기안부서: 약물관리위원회 표준 투여시간
+
+1. 경구제 투여시간 처방종류 Daily BID TID QID 투여시간(식전) 7 am 7 am, 5 pm 7 am, 12 md, 5 pm, 9 pm 투여시간(식후) 8 am or 9 pm 8 am, 6 pm 8 am, 1 pm, 6 pm, 9 pm
+
+2. 주사제 투여시간 처방종류 Daily BID TID QID 투여시간 7 am 7 am,7 pm 7 am, 3 pm, 11 pm 1 am, 7 am, 1 pm, 7 pm

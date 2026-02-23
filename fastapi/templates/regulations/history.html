@@ -1,0 +1,251 @@
+{% extends "common/base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="/static/styles.css">
+<style>
+    .page-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .page-title {
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: #1f2937;
+    }
+
+    .search-section {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+    }
+
+    .table-section {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .table th {
+        background: #f9fafb;
+        padding: 12px;
+        text-align: left;
+        font-weight: 600;
+        color: #374151;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .table td {
+        padding: 12px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .table tbody tr:hover {
+        background: #f9fafb;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+
+    .btn-primary {
+        background: #667eea;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #5a67d8;
+    }
+
+    .btn-info {
+        background: #17a2b8;
+        color: white;
+    }
+
+    .btn-info:hover {
+        background: #138496;
+    }
+
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+    }
+
+    .search-bar {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .search-bar input {
+        flex: 1;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 4px 8px;
+        font-size: 12px;
+        font-weight: 500;
+        border-radius: 4px;
+    }
+
+    .badge-secondary {
+        background: #e5e7eb;
+        color: #4b5563;
+    }
+
+    .badge-danger {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% include "common/nav.html" %}
+
+<div class="page-container">
+    <div class="page-header">
+        <h2 class="page-title">연혁 목록</h2>
+    </div>
+
+    <!-- 검색 영역 -->
+    <div class="search-section">
+        <div class="search-bar">
+            <input type="text" class="form-control" id="historySearchInput"
+                   placeholder="규정명, 부서명으로 검색..."
+                   onkeyup="searchHistory(event)">
+            <button class="btn btn-primary" onclick="performSearch()">검색</button>
+        </div>
+    </div>
+
+    <!-- 연혁 목록 테이블 -->
+    <div class="table-section">
+        <div class="table-info mb-2">
+            <span>전체 <strong id="totalCount">0</strong>건</span>
+        </div>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th width="80">번호</th>
+                    <th>규정명</th>
+                    <th width="120">버전</th>
+                    <th width="150">소관부서</th>
+                    <th width="120">개정일</th>
+                    <th width="120">폐지일</th>
+                    <th width="100">상태</th>
+                    <th width="140">작업</th>
+                </tr>
+            </thead>
+            <tbody id="historyList">
+                <tr>
+                    <td colspan="8" class="text-center">데이터를 불러오는 중...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    loadHistory();
+});
+
+async function loadHistory() {
+    try {
+        const response = await fetch('/regulations/api/history');
+        const data = await response.json();
+
+        if (data.success) {
+            displayHistory(data.data);
+            document.getElementById('totalCount').textContent = data.total_count;
+        }
+    } catch (error) {
+        console.error('Error loading history:', error);
+        document.getElementById('historyList').innerHTML =
+            '<tr><td colspan="8" class="text-center">데이터 로드 실패</td></tr>';
+    }
+}
+
+function displayHistory(data) {
+    const tbody = document.getElementById('historyList');
+
+    if (!data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center">조회된 데이터가 없습니다.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = data.map((item, index) => `
+        <tr>
+            <td>${index + 1}</td>
+            <td>${item.wzname || '-'}</td>
+            <td><span class="badge badge-secondary">${item.wzlevel || 'v1.0'}</span></td>
+            <td>${item.wzmgrdptnm || '-'}</td>
+            <td>${item.wzlastrevdate || '-'}</td>
+            <td>${item.wzclosedate || '-'}</td>
+            <td>
+                ${item.wzclosedate ?
+                    '<span class="badge badge-danger">폐지</span>' :
+                    '<span class="badge badge-secondary">이전버전</span>'}
+            </td>
+            <td>
+                <button class="btn btn-info btn-sm" onclick="viewHistory(${item.wzruleseq})">
+                    상세보기
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function searchHistory(event) {
+    if (event && event.key === 'Enter') {
+        performSearch();
+    }
+}
+
+function performSearch() {
+    const keyword = document.getElementById('historySearchInput').value;
+    // 검색 구현
+    console.log('Searching for:', keyword);
+    // TODO: 검색 API 호출
+}
+
+function viewHistory(id) {
+    // 상세보기 구현
+    console.log('Viewing history:', id);
+    window.location.href = `/regulations/view/${id}`;
+}
+</script>
+{% endblock %}

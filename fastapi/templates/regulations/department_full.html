@@ -1,0 +1,252 @@
+{% extends "common/base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="/static/styles.css">
+<style>
+    /* 단색 깔끔한 디자인 */
+    body {
+        background: #f8f9fa;
+        margin: 0;
+        padding: 0;
+    }
+
+    .page-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+        background: white;
+    }
+
+    .sortable {
+        cursor: pointer;
+        user-select: none;
+        position: relative;
+        padding-right: 20px;
+    }
+
+    .sortable:hover {
+        background-color: #f0f0f0;
+    }
+
+    .sort-indicator {
+        position: absolute;
+        right: 5px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 12px;
+        color: #999;
+    }
+
+    .sort-indicator.asc::after {
+        content: '▲';
+        color: #667eea;
+    }
+
+    .sort-indicator.desc::after {
+        content: '▼';
+        color: #667eea;
+    }
+
+    .clickable-dept {
+        cursor: pointer;
+        color: #667eea;
+        text-decoration: none;
+    }
+
+    .clickable-dept:hover {
+        text-decoration: underline;
+    }
+
+    .department-row.selected {
+        background-color: #e8f0fe !important;
+    }
+
+    .regulation-item {
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+        cursor: pointer;
+    }
+
+    .regulation-item:hover {
+        background-color: #f5f5f5;
+    }
+
+    .regulation-pubno {
+        font-weight: 600;
+        color: #666;
+    }
+
+    .regulation-name {
+        color: #333;
+        margin: 5px 0;
+    }
+
+    .regulation-date {
+        font-size: 12px;
+        color: #999;
+    }
+
+    /* 미리보기 모달 스타일 */
+    .preview-modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        align-items: center;
+        justify-content: center;
+    }
+
+    .preview-content {
+        background: white;
+        width: 80%;
+        max-width: 900px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .preview-header {
+        padding: 20px;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .preview-header h2 {
+        margin: 0;
+        color: #333;
+    }
+
+    .preview-close {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #999;
+    }
+
+    .preview-close:hover {
+        color: #333;
+    }
+
+    .preview-body {
+        padding: 20px;
+        overflow-y: auto;
+    }
+
+    .panel {
+        background: white;
+        padding: 20px;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <h2 style="margin-bottom: 2rem;">부서 체계 관리</h2>
+
+    <div style="display: flex; gap: 20px;">
+        <!-- 왼쪽: 부서 목록 (70%) -->
+        <div class="panel" style="flex: 0 0 65%;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h4 style="margin: 0;">부서 목록</h4>
+                        <button class="btn btn-primary" onclick="DepartmentManager.addDepartment()">
+                            + 부서 추가
+                        </button>
+                    </div>
+                    <!-- 부서 검색 영역 추가 -->
+                    <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="text"
+                                   id="departmentSearchInput"
+                                   class="form-input"
+                                   placeholder="부서명, 상위부서로 검색..."
+                                   style="flex: 1;"
+                                   onkeyup="if(event.key === 'Enter') DepartmentManager.searchDepartments()">
+                            <button class="btn btn-primary btn-sm" onclick="DepartmentManager.searchDepartments()">
+                                🔍 검색
+                            </button>
+                            <button class="btn btn-secondary btn-sm" onclick="DepartmentManager.clearSearch()">
+                                초기화
+                            </button>
+                        </div>
+                    </div>
+                    <div id="departmentStats" style="margin-bottom: 20px; display: flex; gap: 20px; font-size: 14px;">
+                        <!-- 통계 정보가 여기에 표시됩니다 -->
+                    </div>
+                    <div class="department-table-container" style="max-height: 600px; overflow-y: auto;">
+                        <table class="regulation-table">
+                            <thead>
+                                <tr>
+                                    <th class="sortable" onclick="DepartmentManager.sortBy('code')" style="display: none;">
+                                        부서코드 <span class="sort-indicator" data-column="code"></span>
+                                    </th>
+                                    <th class="sortable" onclick="DepartmentManager.sortBy('name')">
+                                        부서명 <span class="sort-indicator" data-column="name"></span>
+                                    </th>
+                                    <th class="sortable" onclick="DepartmentManager.sortBy('parent')">
+                                        상위부서 <span class="sort-indicator" data-column="parent"></span>
+                                    </th>
+                                    <th class="sortable" onclick="DepartmentManager.sortBy('count')">
+                                        내규 수 <span class="sort-indicator" data-column="count"></span>
+                                    </th>
+                                    <th>작업</th>
+                                </tr>
+                            </thead>
+                            <tbody id="departmentList">
+                                <!-- 동적 생성 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 오른쪽: 내규 목록 (30%) -->
+                <div class="panel" style="flex: 0 0 33%;">
+                    <h4>부서별 내규 목록</h4>
+                    <div id="regulationPanel" style="min-height: 400px;">
+                        <div style="padding: 40px; text-align: center; color: #999;">
+                            <div style="font-size: 48px; margin-bottom: 20px;">📋</div>
+                            <p>부서를 선택하면 해당 부서의 내규 목록이 표시됩니다.</p>
+                        </div>
+                    </div>
+                </div>
+        </div>
+    </div>
+</div>
+
+<!-- 내규 미리보기 모달 -->
+<div id="regulationPreviewModal" class="preview-modal" style="display: none;" onclick="if(event.target === this) DepartmentManager.closePreview()">
+    <div class="preview-content">
+        <div class="preview-header">
+            <h2 id="previewTitle">내규 미리보기</h2>
+            <button class="preview-close" onclick="DepartmentManager.closePreview()">✕</button>
+        </div>
+        <div class="preview-body" id="previewContent" style="max-height: 70vh; overflow-y: auto;">
+            <!-- 미리보기 내용이 여기에 표시됩니다 -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/department-manager.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    DepartmentManager.init();
+
+    // ESC 키로 모달 닫기
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            DepartmentManager.closePreview();
+        }
+    });
+});
+
+</script>
+{% endblock %}

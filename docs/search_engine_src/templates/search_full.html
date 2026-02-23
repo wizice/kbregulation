@@ -1,0 +1,85 @@
+{% extends "common/base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="/static/styles.css">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- 헤더 -->
+    <div class="header">
+        <div class="title-section">
+            <h1>내규자료 현행화 편집기</h1>
+            <span class="subtitle">SEVERANCE HOSPITAL</span>
+        </div>
+    </div>
+
+    <!-- 컨텐츠 영역 -->
+    <div class="content-area">
+        <div class="tab-content active">
+            <h3>상세 검색</h3>
+            <div class="search-panel">
+                <div class="form-group">
+                    <label class="form-label">검색어</label>
+                    <input type="text" class="form-input" placeholder="제목, 내용, 분류번호 등">
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">담당부서</label>
+                        <div id="searchDepartmentCheckboxes" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; padding: 10px; background: white;">
+                            <!-- 부서 체크박스가 동적으로 로드됨 -->
+                        </div>
+                    </div>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">공포일자</label>
+                        <div class="date-range">
+                            <input type="text" class="form-input" placeholder="YYYY-MM-DD"
+                                   pattern="\d{4}-\d{2}-\d{2}"
+                                   maxlength="10"
+                                   onfocus="this.type='date'; this.max='9999-12-31'"
+                                   onblur="if(!this.value) this.type='text'"
+                                   title="날짜를 선택하거나 YYYY-MM-DD 형식으로 입력하세요">
+                            <span>~</span>
+                            <input type="text" class="form-input" placeholder="YYYY-MM-DD"
+                                   pattern="\d{4}-\d{2}-\d{2}"
+                                   maxlength="10"
+                                   onfocus="this.type='date'; this.max='9999-12-31'"
+                                   onblur="if(!this.value) this.type='text'"
+                                   title="날짜를 선택하거나 YYYY-MM-DD 형식으로 입력하세요">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">시행일자</label>
+                        <div class="date-range">
+                            <input type="text" class="form-input" placeholder="YYYY-MM-DD"
+                                   pattern="\d{4}-\d{2}-\d{2}"
+                                   maxlength="10"
+                                   onfocus="this.type='date'; this.max='9999-12-31'"
+                                   onblur="if(!this.value) this.type='text'"
+                                   title="날짜를 선택하거나 YYYY-MM-DD 형식으로 입력하세요">
+                            <span>~</span>
+                            <input type="text" class="form-input" placeholder="YYYY-MM-DD"
+                                   pattern="\d{4}-\d{2}-\d{2}"
+                                   maxlength="10"
+                                   onfocus="this.type='date'; this.max='9999-12-31'"
+                                   onblur="if(!this.value) this.type='text'"
+                                   title="날짜를 선택하거나 YYYY-MM-DD 형식으로 입력하세요">
+                        </div>
+                    </div>
+                </div>
+                <div class="action-buttons-center">
+                    <button class="btn btn-primary">🔍 검색</button>
+                    <button class="btn btn-secondary">초기화</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+</script>
+{% endblock %}

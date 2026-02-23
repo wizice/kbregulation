@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>부서 관리 정렬 테스트</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        .test-section h2 {
+            color: #007bff;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-left: 3px solid #28a745;
+        }
+        .test-result.fail {
+            border-left-color: #dc3545;
+        }
+        .test-result.pending {
+            border-left-color: #ffc107;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        th:hover {
+            background: #e9ecef;
+        }
+        .sort-indicator {
+            margin-left: 5px;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>부서 관리 정렬 기능 테스트</h1>
+
+        <div class="test-section">
+            <h2>테스트 데이터</h2>
+            <table id="testTable">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable('code')">부서코드 <span id="sort-code"></span></th>
+                        <th onclick="sortTable('name')">부서명 <span id="sort-name"></span></th>
+                        <th onclick="sortTable('parent')">상위부서 <span id="sort-parent"></span></th>
+                        <th onclick="sortTable('count')">규정 수 <span id="sort-count"></span></th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="test-section">
+            <h2>테스트 결과</h2>
+            <div id="testResults"></div>
+        </div>
+    </div>
+
+    <script>
+        // 테스트 데이터
+        const testData = [
+            { code: '1000', name: '의료질향상 및 환자안전위원회', parent: '위원회', count: 33 },
+            { code: '9800', name: '약무국', parent: '팀 및 부서', count: 15 },
+            { code: '1100', name: '약물관리위원회', parent: '위원회', count: 13 },
+            { code: '7700', name: '의무기록팀', parent: '집중치료실 및 팀', count: 11 },
+            { code: '4700', name: '감염관리실', parent: '센터 및 실', count: 10 },
+            { code: '2300', name: '시설안전관리위원회', parent: '위원회', count: 9 },
+            { code: '6700', name: '입원원무팀', parent: '집중치료실 및 팀', count: 6 },
+            { code: '4000', name: '진단검사의학과', parent: '위원회 및 진료과', count: 5 }
+        ];
+
+        let currentSort = { column: null, direction: 'asc' };
+        let displayData = [...testData];
+
+        // 테이블 렌더링
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            displayData.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${row.code}</td>
+                    <td>${row.name}</td>
+                    <td>${row.parent}</td>
+                    <td>${row.count}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // 정렬 함수
+        function sortTable(column) {
+            // 정렬 방향 토글
+            if (currentSort.column === column) {
+                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.column = column;
+                currentSort.direction = 'asc';
+            }
+
+            // 정렬 수행
+            const direction = currentSort.direction === 'asc' ? 1 : -1;
+
+            displayData.sort((a, b) => {
+                let aVal, bVal;
+
+                switch(column) {
+                    case 'code':
+                        aVal = parseInt(a.code);
+                        bVal = parseInt(b.code);
+                        return (aVal - bVal) * direction;
+                    case 'name':
+                        return a.name.localeCompare(b.name, 'ko') * direction;
+                    case 'parent':
+                        return a.parent.localeCompare(b.parent, 'ko') * direction;
+                    case 'count':
+                        return (a.count - b.count) * direction;
+                }
+            });
+
+            // 정렬 표시 업데이트
+            updateSortIndicators();
+
+            // 테이블 다시 그리기
+            renderTable();
+
+            // 테스트 결과 업데이트
+            logTest(`${column} 컬럼 ${currentSort.direction === 'asc' ? '오름차순' : '내림차순'} 정렬 완료`);
+        }
+
+        // 정렬 표시 업데이트
+        function updateSortIndicators() {
+            // 모든 표시 초기화
+            document.querySelectorAll('[id^="sort-"]').forEach(el => {
+                el.textContent = '';
+            });
+
+            // 현재 정렬 컬럼에 표시
+            if (currentSort.column) {
+                const indicator = document.getElementById(`sort-${currentSort.column}`);
+                if (indicator) {
+                    indicator.textContent = currentSort.direction === 'asc' ? '▲' : '▼';
+                }
+            }
+        }
+
+        // 테스트 로그
+        function logTest(message, success = true) {
+            const results = document.getElementById('testResults');
+            const result = document.createElement('div');
+            result.className = `test-result ${success ? '' : 'fail'}`;
+            result.innerHTML = `
+                <strong>${success ? '✓' : '✗'}</strong> ${message}
+                <small style="float: right">${new Date().toLocaleTimeString()}</small>
+            `;
+            results.appendChild(result);
+        }
+
+        // 자동 테스트 실행
+        function runTests() {
+            setTimeout(() => {
+                logTest('초기 데이터 로드 완료');
+
+                setTimeout(() => {
+                    sortTable('code');
+                    logTest('부서코드 오름차순 정렬 테스트');
+
+                    setTimeout(() => {
+                        sortTable('code');
+                        logTest('부서코드 내림차순 정렬 테스트');
+
+                        setTimeout(() => {
+                            sortTable('count');
+                            logTest('규정 수 오름차순 정렬 테스트');
+
+                            setTimeout(() => {
+                                sortTable('count');
+                                logTest('규정 수 내림차순 정렬 테스트');
+
+                                setTimeout(() => {
+                                    sortTable('name');
+                                    logTest('부서명 오름차순 정렬 테스트 (한글 정렬)');
+
+                                    logTest('모든 정렬 테스트 완료!');
+                                }, 500);
+                            }, 500);
+                        }, 500);
+                    }, 500);
+                }, 500);
+            }, 500);
+        }
+
+        // 초기화
+        window.onload = function() {
+            renderTable();
+            runTests();
+        };
+    </script>
+</body>
+</html>

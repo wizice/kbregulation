@@ -1,0 +1,700 @@
+{% extends "common/base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="/static/styles.css?v=20251106e">
+<style>
+    /* 단색 깔끔한 디자인 */
+    body {
+        background: #f8f9fa;
+        margin: 0;
+        padding: 0;
+    }
+
+    .page-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+        background: white;
+    }
+
+    /* 검색 바 */
+    .search-bar {
+        background: #f8f9fa;
+        padding: 15px 20px;
+        border-bottom: 1px solid #dee2e6;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    /* 컨텐츠 영역 */
+    .content-area {
+        padding: 20px;
+        background: white;
+        min-height: 500px;
+    }
+
+    .tab-content {
+        background: white;
+    }
+
+    /* 테이블 스타일 */
+    .regulation-table {
+        width: 100%;
+        background: white;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
+
+    .regulation-table thead {
+        background: #f8f9fa;
+    }
+
+    .regulation-table th {
+        padding: 12px;
+        text-align: left;
+        font-weight: 600;
+        color: #495057;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .regulation-table td {
+        padding: 12px;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .regulation-table tbody tr:hover {
+        background: #f8f9fa;
+    }
+    /* editor.html과 동일한 스타일 */
+    .classification-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        background: #e7f1ff;
+        color: #667eea;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+        border: 1px solid #667eea33;
+        max-width: 160px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: middle;
+    }
+
+    .classification-badge:hover {
+        max-width: none;
+        overflow: visible;
+        position: relative;
+        z-index: 10;
+        background: #d0e4ff;
+        cursor: help;
+    }
+
+    .sortable {
+        cursor: pointer;
+        user-select: none;
+        position: relative;
+        padding-right: 20px;
+    }
+
+    .sortable:hover {
+        background-color: #f0f0f0;
+    }
+
+    .sort-indicator {
+        position: absolute;
+        right: 5px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 12px;
+        color: #999;
+    }
+
+    .sort-indicator.asc::after {
+        content: '▲';
+        color: #667eea;
+    }
+
+    .sort-indicator.desc::after {
+        content: '▼';
+        color: #667eea;
+    }
+
+    .regulation-name {
+        cursor: pointer;
+        color: #2196F3;
+        text-decoration: none;
+    }
+
+    .regulation-name:hover {
+        text-decoration: underline;
+        color: #1976D2;
+    }
+
+    .preview-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 3000;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .preview-modal.active {
+        display: flex;
+    }
+
+    .preview-content {
+        background: white;
+        border-radius: 8px;
+        width: 80%;
+        max-width: 900px;
+        max-height: 80vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .preview-header {
+        padding: 20px;
+        border-bottom: 1px solid #e5e5e5;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .preview-body {
+        padding: 20px;
+        overflow-y: auto;
+        flex: 1;
+        line-height: 1.8;
+        white-space: pre-wrap;
+    }
+
+    .preview-close {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #999;
+    }
+
+    .preview-close:hover {
+        color: #333;
+    }
+
+    .action-buttons-center {
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    .action-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+
+    /* 검색 가능한 부서 선택 드롭다운 스타일 */
+    .searchable-select-wrapper {
+        position: relative;
+    }
+
+    .dept-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        max-height: 300px;
+        overflow-y: auto;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        z-index: 1000;
+        margin-top: 2px;
+    }
+
+    .dept-item {
+        padding: 10px 15px;
+        cursor: pointer;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .dept-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    .dept-item.selected {
+        background-color: #e7f1ff;
+        color: #667eea;
+    }
+
+    .dept-item .dept-name {
+        font-weight: 500;
+    }
+
+    .dept-item .dept-code {
+        color: #999;
+        font-size: 12px;
+    }
+
+    .no-results {
+        padding: 15px;
+        text-align: center;
+        color: #999;
+    }
+
+    /* 체크박스 열 숨기기 */
+    .regulation-table th:first-child,
+    .regulation-table td:first-child {
+        display: none;
+    }
+
+    /* 선택됨 카운터도 숨기기 */
+    .action-header {
+        display: none !important;
+    }
+
+    /* 모든 입력 필드 크기 통일 */
+    .form-input, .form-select {
+        height: 38px !important;
+        padding: 6px 12px !important;
+        font-size: 14px !important;
+        line-height: 1.42857143 !important;
+        border: 1px solid #ddd !important;
+        border-radius: 4px !important;
+        box-sizing: border-box !important;
+        width: 100% !important;
+    }
+
+    /* 제정 모달의 소관부서 input에 드롭다운 화살표 추가 */
+    #deptSearchInput {
+        background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"%3E%3Cpath fill="%23333" d="M6 9L1 4h10z"/%3E%3C/svg%3E') !important;
+        background-repeat: no-repeat !important;
+        background-position: right 10px center !important;
+        padding-right: 30px !important;
+        cursor: pointer !important;
+    }
+
+    /* select box에도 동일한 화살표 적용 */
+    select.form-select {
+        appearance: none !important;
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+        background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"%3E%3Cpath fill="%23333" d="M6 9L1 4h10z"/%3E%3C/svg%3E') !important;
+        background-repeat: no-repeat !important;
+        background-position: right 10px center !important;
+        padding-right: 30px !important;
+        cursor: pointer !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <h2 style="margin-bottom: 2rem;">현행 내규 목록</h2>
+
+    <!-- 검색 바 -->
+    <div class="search-bar">
+        <input type="text" class="search-input" placeholder="제목, 내용, 공포번호로 검색..." id="searchInput">
+        <select class="filter-select" id="classificationFilter">
+            <option value="">모든 분류</option>
+            <!-- 동적으로 생성됨 -->
+        </select>
+        <select class="filter-select department-select" id="departmentFilter">
+            <option value="">모든 부서</option>
+            <!-- 부서 목록이 동적으로 로드됨 -->
+        </select>
+        <!-- 상태 필터 (임시 주석처리)
+        <select class="filter-select" id="statusFilter">
+            <option value="">모든 상태</option>
+            <option value="active">시행중</option>
+            <option value="draft">작성중</option>
+            <option value="review">검토중</option>
+            <option value="revision">개정중</option>
+        </select>
+        -->
+        <!-- 기간 필터 (임시 주석처리)
+        <select class="filter-select" id="periodFilter">
+            <option value="">전체 기간</option>
+            <option value="1m">최근 1개월</option>
+            <option value="3m">최근 3개월</option>
+            <option value="6m">최근 6개월</option>
+            <option value="1y">최근 1년</option>
+        </select>
+        -->
+        <button class="btn btn-primary btn-sm" onclick="RuleEditor.searchRegulations()">
+            검색
+        </button>
+        <button class="btn btn-secondary btn-sm" onclick="RuleEditor.resetSearch()">
+            초기화
+        </button>
+        <button class="btn btn-success btn-sm" onclick="RuleEditor.openNewModal()">
+            제정
+        </button>
+        <button class="btn btn-warning btn-sm" onclick="RuleEditor.exportSelected()" style="display: none;">
+            내보내기
+        </button>
+    </div>
+
+    <!-- 컨텐츠 영역 -->
+    <div class="content-area">
+        <div class="action-header">
+            <div>
+                <span id="selectedCount">0</span>개 선택됨
+            </div>
+            <div>
+            </div>
+        </div>
+
+        <table class="regulation-table" id="regulationTable">
+                <thead>
+                    <tr>
+                        <th width="50" style="display: none;">
+                            <input type="checkbox" id="selectAll" onchange="RuleEditor.toggleSelectAll()">
+                        </th>
+                        <th width="80" class="sortable" onclick="RuleEditor.sortBy('classification')">
+                            내규번호 <span class="sort-indicator" data-column="classification"></span>
+                        </th>
+                        <th width="440" class="sortable" onclick="RuleEditor.sortBy('title')">
+                            내규명 <span class="sort-indicator" data-column="title"></span>
+                        </th>
+                        <th width="140" class="sortable" onclick="RuleEditor.sortBy('department')">
+                            소관부서 <span class="sort-indicator" data-column="department"></span>
+                        </th>
+                        <th width="80" class="sortable" onclick="RuleEditor.sortBy('announceDate')">
+                            제정일 <span class="sort-indicator" data-column="announceDate"></span>
+                        </th>
+                        <th width="80" class="sortable" onclick="RuleEditor.sortBy('revisionDate')">
+                            개정일 <span class="sort-indicator" data-column="revisionDate"></span>
+                        </th>
+                        <th width="80" class="sortable" onclick="RuleEditor.sortBy('effectiveDate')">
+                            시행일자 <span class="sort-indicator" data-column="effectiveDate"></span>
+                        </th>
+                        <th width="150">작업</th>
+                    </tr>
+                </thead>
+                <tbody id="regulationList">
+                    <!-- 동적으로 생성됨 -->
+                </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 제정 모달 -->
+<div class="modal" id="newModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>신규 내규 제정</h2>
+            <button class="modal-close" onclick="RuleEditor.closeNewModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="alert alert-info">
+                <span>ℹ️</span>
+                <span>기본정보만 입력하여 등록 후, 상세 편집 화면으로 이동합니다.</span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    분류번호 <span class="required" style="color: #dc3545; font-size: 0.75em; vertical-align: super;">*필수</span>
+                </label>
+                <input type="text" class="form-input" id="newPublicationNo" placeholder="예: 1.1.1" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    내규명 <span class="required" style="color: #dc3545; font-size: 0.75em; vertical-align: super;">*필수</span>
+                </label>
+                <input type="text" class="form-input" id="newRegulationName" placeholder="내규 제목을 입력하세요" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    소관부서 <span class="required" style="color: #dc3545; font-size: 0.75em; vertical-align: super;">*필수</span>
+                </label>
+                <div class="searchable-select-wrapper">
+                    <input type="text" class="form-input" id="deptSearchInput" placeholder="부서명 검색 또는 선택..." autocomplete="off">
+                    <select class="form-select" id="newDepartment" style="display: none;">
+                        <option value="">선택하세요</option>
+                    </select>
+                    <div id="deptDropdown" class="dept-dropdown" style="display: none;">
+                        <!-- 동적으로 부서 목록이 로드됨 -->
+                    </div>
+                </div>
+                <input type="hidden" id="selectedDeptCode" value="">
+                <input type="hidden" id="selectedDeptName" value="">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    제정일자
+                </label>
+                <input type="date" class="form-input" id="newEstablishedDate">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    시행일자
+                </label>
+                <input type="date" class="form-input" id="newExecutionDate">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    상태 구분 <span class="required" style="color: #dc3545; font-size: 0.75em; vertical-align: super;">*필수</span>
+                </label>
+                <select class="form-select" id="newStatus" required>
+                    <option value="현행" selected>현행 (현재 시행중)</option>
+                    <option value="연혁">연혁 (폐지됨)</option>
+                </select>
+                <small style="color: #666; display: block; margin-top: 5px;">
+                    * 현행: 현재 시행중인 규정 / 연혁: 폐지되거나 더 이상 사용하지 않는 규정
+                </small>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    수정 이력파일 PDF <span style="color: #6c757d; font-size: 0.85em;">(선택)</span>
+                </label>
+                <input type="file" class="form-input" id="newHistoryFile" accept=".pdf">
+                <small style="color: #666; display: block; margin-top: 5px;">
+                    수정 이력 문서 PDF 파일을 업로드하세요
+                </small>
+            </div>
+
+
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="RuleEditor.closeNewModal()">취소</button>
+            <button class="btn btn-primary" onclick="RuleEditor.createNew()">등록 후 편집</button>
+        </div>
+    </div>
+</div>
+
+<!-- 편집 모달 -->
+
+<!-- 개정 파일 업로드 모달 -->
+<div class="modal" id="revisionUploadModal" style="display: none;">
+    <!-- 개정 모달 내용 (editor.html과 동일) -->
+</div>
+
+<!-- 미리보기 모달 -->
+<div id="previewModal" class="preview-modal">
+    <div class="preview-content">
+        <div class="preview-header">
+            <h2 id="previewTitle">내규 미리보기</h2>
+            <button class="preview-close" onclick="closePreviewModal()">✕</button>
+        </div>
+        <div class="preview-body" id="previewBody">
+            <!-- 미리보기 내용이 여기에 표시됩니다 -->
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/regulation-editor.js?v=20251203c"></script>
+<script src="/static/js/rule-editor.js?v=20251203c"></script>
+<script src="/static/js/classification-manager.js"></script>
+<script src="/static/js/department-manager.js"></script>
+<script src="/static/js/search-engine.js"></script>
+<script src="/static/js/service-manager.js?v=20251203b"></script>
+<script src="/static/js/image-manager.js?v=20251203b"></script>
+<script src="/static/js/edit-window.js?v=20251203b"></script>
+
+<script>
+// 날짜 포맷 함수 (yyyy-mm-dd -> yyyy.mm.dd.)
+function formatDate(dateStr) {
+    if (!dateStr || dateStr === '-') return '-';
+    const match = dateStr.match(/(\d{4})-(\d{2})-(\d{2})/);
+    if (match) {
+        return `${match[1]}.${match[2]}.${match[3]}.`;
+    }
+    return dateStr;
+}
+
+// 미리보기 모달 닫기 함수
+function closePreviewModal() {
+    const modal = document.getElementById('previewModal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+// 미리보기 모달 표시 함수 (제목 클릭용)
+async function showPreview(ruleId, ruleName) {
+    try {
+        // JSON 뷰어 API 호출하여 내규 상세 정보 및 JSON 내용 가져오기
+        const response = await fetch(`/api/v1/json/view/${ruleId}`, {
+            method: 'GET',
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            throw new Error('내규 정보를 가져올 수 없습니다.');
+        }
+
+        const result = await response.json();
+
+        if (result.success && result.data) {
+            const modal = document.getElementById('previewModal');
+            const titleElement = document.getElementById('previewTitle');
+            const bodyElement = document.getElementById('previewBody');
+
+            // 제목 설정
+            titleElement.textContent = result.data.wzname || ruleName || '내규 미리보기';
+
+            // JSON 파일에서 내용을 우선 사용, 없으면 content_text 사용
+            const hasJsonContent = result.data.has_content && result.data.json_content;
+
+            // 내용 구성 - 더 컴팩트한 디자인
+            let content = `
+                <!-- 상단 정보 요약 바 -->
+                <div style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%); padding: 15px 20px; margin: -24px -24px 20px -24px; color: white;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; gap: 30px;">
+                            <div>
+                                <span style="font-size: 12px; opacity: 0.9;">분류번호</span>
+                                <div style="font-size: 16px; font-weight: 600;">${result.data.wzpubno || '-'}</div>
+                            </div>
+                            <div>
+                                <span style="font-size: 12px; opacity: 0.9;">소관부서</span>
+                                <div style="font-size: 16px; font-weight: 600;">${result.data.wzmgrdptnm || '-'}</div>
+                            </div>
+                            <div>
+                                <span style="font-size: 12px; opacity: 0.9;">상태</span>
+                                <div style="font-size: 16px; font-weight: 600;">
+                                    ${result.data.wznewflag === '연혁' ? '📚 연혁' : '✅ 현행'}
+                                </div>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="font-size: 12px; opacity: 0.9;">최종 개정일</span>
+                            <div style="font-size: 16px; font-weight: 600;">${formatDate(result.data.wzlastrevdate || result.data.wzestabdate)}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 세부 정보 - 컴팩트 그리드 -->
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
+                    <div style="background: #f8f9fa; padding: 12px; border-radius: 8px;">
+                        <div style="font-size: 12px; color: #64748b; margin-bottom: 4px;">제정일</div>
+                        <div style="font-size: 14px; font-weight: 500; color: #1e293b;">${formatDate(result.data.wzestabdate)}</div>
+                    </div>
+                    <div style="background: #f8f9fa; padding: 12px; border-radius: 8px;">
+                        <div style="font-size: 12px; color: #64748b; margin-bottom: 4px;">시행일</div>
+                        <div style="font-size: 14px; font-weight: 500; color: #10b981;">${formatDate(result.data.wzexecdate)}</div>
+                    </div>
+                    <div style="background: #f8f9fa; padding: 12px; border-radius: 8px;">
+                        <div style="font-size: 12px; color: #64748b; margin-bottom: 4px;">편집유형</div>
+                        <div style="font-size: 14px; font-weight: 500; color: #1e293b;">${result.data.wzedittype || '내규'}</div>
+                    </div>
+                </div>
+            `;
+
+            // JSON 또는 텍스트 내용 표시
+            if (hasJsonContent) {
+                // JSON에서 조문 내용 추출하여 표시
+                let articleContent = '';
+                if (result.data.json_content.조문내용) {
+                    result.data.json_content.조문내용.forEach(article => {
+                        if (article.번호) {
+                            articleContent += `<strong>${article.번호}</strong> `;
+                        }
+                        if (article.내용) {
+                            articleContent += `${article.내용}<br><br>`;
+                        }
+                    });
+                }
+                content += `
+                    <div style="margin-top: 30px;">
+                        <h3 style="margin-bottom: 20px; color: #333; font-size: 18px; border-bottom: 2px solid #FF6B6B; padding-bottom: 10px;">
+                            📝 내규 내용 (JSON 파일)
+                        </h3>
+                        <div style="background: #ffffff; padding: 25px; border-radius: 8px; border: 1px solid #e0e0e0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); max-height: 400px; overflow-y: auto;">
+                            <div style="line-height: 1.8; color: #333; font-size: 15px;">
+                                ${articleContent || '내용이 없습니다.'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (result.data.content_text) {
+                content += `
+                    <div style="margin-top: 30px;">
+                        <h3 style="margin-bottom: 20px; color: #333; font-size: 18px; border-bottom: 2px solid #FF6B6B; padding-bottom: 10px;">
+                            📝 내규 내용
+                        </h3>
+                        <div style="background: #ffffff; padding: 25px; border-radius: 8px; border: 1px solid #e0e0e0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); max-height: 400px; overflow-y: auto;">
+                            <div style="line-height: 1.8; color: #333; font-size: 15px;">
+                                ${result.data.content_text.replace(/\n/g, '<br>')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                content += `
+                    <div style="margin-top: 30px;">
+                        <div style="text-align: center; padding: 60px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 12px;">
+                            <div style="font-size: 48px; margin-bottom: 20px;">📄</div>
+                            <p style="color: #666; font-size: 18px; margin-bottom: 10px;">내규 내용이 아직 등록되지 않았습니다</p>
+                            <p style="color: #999; font-size: 14px;">파일 업로드를 통해 내용을 등록할 수 있습니다</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            bodyElement.innerHTML = content;
+            modal.classList.add('active');
+        } else {
+            alert(result.error || '내규를 찾을 수 없습니다.');
+        }
+    } catch (error) {
+        console.error('[Preview] Error:', error);
+        alert('미리보기 중 오류가 발생했습니다.');
+    }
+}
+
+// ESC 키로 미리보기 모달 닫기
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closePreviewModal();
+    }
+});
+
+// 미리보기 모달 외부 클릭시 닫기
+document.getElementById('previewModal').addEventListener('click', (e) => {
+    if (e.target.id === 'previewModal') {
+        closePreviewModal();
+    }
+});
+
+// 페이지 로드 시 초기화
+document.addEventListener('DOMContentLoaded', () => {
+    // RuleEditor가 정의될 때까지 대기
+    if (typeof RuleEditor !== 'undefined') {
+        RuleEditor.init();
+    } else {
+        console.error('RuleEditor is not defined. Retrying...');
+        setTimeout(() => {
+            if (typeof RuleEditor !== 'undefined') {
+                RuleEditor.init();
+            } else {
+                console.error('RuleEditor could not be loaded.');
+            }
+        }, 1000);
+    }
+});
+
+</script>
+{% endblock %}

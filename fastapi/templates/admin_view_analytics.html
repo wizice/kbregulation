@@ -1,0 +1,669 @@
+{% extends "common/base.html" %}
+
+{% block title %}KB신용정보 내규 편집기{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="/static/styles.css">
+<!-- Chart.js 로컬 라이브러리 -->
+<script src="/static/js/chart.umd.min.js"></script>
+<style>
+        /* 조회수 분석 전용 스타일 */
+        body {
+            padding: 0;
+            margin: 0;
+            background: white;
+        }
+
+        .analytics-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+
+        .analytics-header {
+            background: white;
+            color: #333;
+            padding: 15px 0;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .analytics-header h1 {
+            margin: 0 0 5px 0;
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .analytics-header p {
+            margin: 0;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+            border-left: 3px solid #333;
+        }
+
+        .stat-card .label {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .value {
+            font-size: 1.8em;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .stat-card .change {
+            font-size: 0.8em;
+            margin-top: 5px;
+        }
+
+        .stat-card .change.positive {
+            color: #10b981;
+        }
+
+        .stat-card .change.negative {
+            color: #ef4444;
+        }
+
+        .chart-section {
+            background: white;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .chart-section h2 {
+            margin: 0 0 15px 0;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 8px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 350px;
+            margin-bottom: 15px;
+        }
+
+        .table-container {
+            background: white;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .top-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .top-table thead {
+            background: #f8f9fa;
+        }
+
+        .top-table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .top-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .top-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .rank-badge {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            line-height: 28px;
+            text-align: center;
+            border-radius: 50%;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .rank-badge.gold {
+            background: #ffd700;
+            color: #333;
+        }
+
+        .rank-badge.silver {
+            background: #c0c0c0;
+            color: #333;
+        }
+
+        .rank-badge.bronze {
+            background: #cd7f32;
+            color: white;
+        }
+
+        .rank-badge.default {
+            background: #e9ecef;
+            color: #333;
+        }
+
+        .view-count {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .filter-section {
+            background: #f8f9fa;
+            padding: 12px 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-group label {
+            font-weight: 500;
+            color: #333;
+            font-size: 0.9em;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+        .filter-group button {
+            padding: 6px 16px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9em;
+        }
+
+        .filter-group button:hover {
+            background: #555;
+        }
+
+        .filter-group button.btn-primary {
+            background: #0d6efd;
+        }
+
+        .filter-group button.btn-primary:hover {
+            background: #0b5ed7;
+        }
+
+        .quick-buttons {
+            display: flex;
+            gap: 5px;
+            margin-left: 10px;
+        }
+
+        .quick-buttons button {
+            padding: 6px 12px;
+            background: #6c757d;
+            font-size: 0.85em;
+        }
+
+        .quick-buttons button:hover {
+            background: #5c636a;
+        }
+
+        .quick-buttons button.active {
+            background: #0d6efd;
+        }
+
+        .date-range {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .date-range input[type="date"] {
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+        .date-separator {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #333;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .nav-back {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #f8f9fa;
+            color: #333;
+            text-decoration: none;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+        }
+
+        .nav-back:hover {
+            background: #e9ecef;
+        }
+
+        .last-updated {
+            text-align: right;
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="analytics-container">
+        <!-- 헤더 -->
+        <div class="analytics-header">
+            <h1>조회수 분석 대시보드</h1>
+            <p>내규별 조회 통계 및 트렌드 분석 (개인정보 미수집)</p>
+        </div>
+
+        <!-- 로딩 -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>데이터를 불러오는 중...</p>
+        </div>
+
+        <!-- 전체 통계 카드 -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="label">전체 조회수</div>
+                <div class="value" id="totalViews">-</div>
+                <div class="change" id="totalViewsChange"></div>
+            </div>
+            <div class="stat-card">
+                <div class="label">조회된 내규 수</div>
+                <div class="value" id="uniqueRegulations">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">오늘 조회수</div>
+                <div class="value" id="todayViews">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">이번 주 조회수</div>
+                <div class="value" id="weekViews">-</div>
+            </div>
+        </div>
+
+        <!-- 필터 -->
+        <div class="filter-section">
+            <div class="filter-group">
+                <label>기간:</label>
+                <div class="date-range">
+                    <input type="date" id="startDate">
+                    <span class="date-separator">~</span>
+                    <input type="date" id="endDate">
+                </div>
+                <button class="btn-primary" onclick="loadAllData()">조회</button>
+                <div class="quick-buttons">
+                    <button onclick="setQuickPeriod(3)" data-days="3">3일</button>
+                    <button onclick="setQuickPeriod(7)" data-days="7">7일</button>
+                    <button onclick="setQuickPeriod(30)" data-days="30" class="active">한달</button>
+                </div>
+                <div class="last-updated">마지막 업데이트: <span id="lastUpdated">-</span></div>
+            </div>
+        </div>
+
+        <!-- 일별 조회 추이 차트 -->
+        <div class="chart-section">
+            <h2>일별 조회 추이</h2>
+            <div class="chart-container">
+                <canvas id="dailyChart"></canvas>
+            </div>
+        </div>
+
+        <!-- 시간대별 조회 분포 -->
+        <div class="chart-section">
+            <h2>시간대별 조회 분포</h2>
+            <div class="chart-container">
+                <canvas id="hourlyChart"></canvas>
+            </div>
+        </div>
+
+        <!-- TOP 10 조회수 -->
+        <div class="table-container">
+            <h2 style="margin: 0 0 20px 0; font-size: 1.3em; color: #333; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px;">
+                TOP 10 조회수
+            </h2>
+            <table class="top-table">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">순위</th>
+                        <th>내규/부록 명칭</th>
+                        <th style="width: 120px; text-align: right;">조회수</th>
+                        <th style="width: 180px;">마지막 조회</th>
+                    </tr>
+                </thead>
+                <tbody id="topTableBody">
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 40px; color: #999;">
+                            데이터를 불러오는 중...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        // 전역 변수
+        let dailyChart = null;
+        let hourlyChart = null;
+
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            // 기본값: 최근 30일
+            setQuickPeriod(30);
+        });
+
+        // 날짜 포맷 함수 (yyyy-mm-dd)
+        function formatDateForInput(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // 빠른 기간 선택
+        function setQuickPeriod(days) {
+            const endDate = new Date();
+            const startDate = new Date();
+            startDate.setDate(endDate.getDate() - days + 1);
+
+            document.getElementById('startDate').value = formatDateForInput(startDate);
+            document.getElementById('endDate').value = formatDateForInput(endDate);
+
+            // 버튼 활성화 상태 업데이트
+            document.querySelectorAll('.quick-buttons button').forEach(btn => {
+                btn.classList.remove('active');
+                if (parseInt(btn.dataset.days) === days) {
+                    btn.classList.add('active');
+                }
+            });
+
+            loadAllData();
+        }
+
+        // 모든 데이터 로드
+        async function loadAllData() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            if (!startDate || !endDate) {
+                alert('시작일과 종료일을 선택해주세요.');
+                return;
+            }
+
+            if (startDate > endDate) {
+                alert('시작일이 종료일보다 클 수 없습니다.');
+                return;
+            }
+
+            // 버튼 활성화 상태 초기화 (직접 날짜 입력 시)
+            const daysDiff = Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)) + 1;
+            const quickButtons = document.querySelectorAll('.quick-buttons button');
+            let isQuickPeriod = false;
+            quickButtons.forEach(btn => {
+                if (parseInt(btn.dataset.days) === daysDiff) {
+                    isQuickPeriod = true;
+                }
+            });
+            if (!isQuickPeriod) {
+                quickButtons.forEach(btn => btn.classList.remove('active'));
+            }
+
+            // 로딩 시작
+            document.getElementById('loading').classList.add('active');
+
+            try {
+                // 병렬로 모든 API 호출
+                await Promise.all([
+                    loadSummary(startDate, endDate),
+                    loadDailyStats(startDate, endDate),
+                    loadHourlyStats(startDate, endDate),
+                    loadTopRegulations(startDate, endDate)
+                ]);
+
+                // 마지막 업데이트 시간
+                document.getElementById('lastUpdated').textContent = new Date().toLocaleString('ko-KR');
+            } catch (error) {
+                console.error('데이터 로드 실패:', error);
+                alert('데이터를 불러오는 중 오류가 발생했습니다.');
+            } finally {
+                // 로딩 종료
+                document.getElementById('loading').classList.remove('active');
+            }
+        }
+
+        // 전체 통계 로드
+        async function loadSummary(startDate, endDate) {
+            const response = await fetch(`/api/v1/admin/view-stats/summary?start_date=${startDate}&end_date=${endDate}`);
+            const data = await response.json();
+
+            if (data.success) {
+                const summary = data.summary;
+                document.getElementById('totalViews').textContent = summary.total_views.toLocaleString();
+                document.getElementById('uniqueRegulations').textContent = summary.unique_regulations.toLocaleString();
+                document.getElementById('todayViews').textContent = summary.today_views.toLocaleString();
+                document.getElementById('weekViews').textContent = summary.week_views.toLocaleString();
+            }
+        }
+
+        // 일별 통계 로드 및 차트 생성
+        async function loadDailyStats(startDate, endDate) {
+            const response = await fetch(`/api/v1/admin/view-stats/daily?start_date=${startDate}&end_date=${endDate}`);
+            const data = await response.json();
+
+            if (data.success) {
+                const labels = data.data.reverse().map(item => item.date);
+                const values = data.data.map(item => item.total_views);
+
+                // 기존 차트 삭제
+                if (dailyChart) {
+                    dailyChart.destroy();
+                }
+
+                // 새 차트 생성
+                const ctx = document.getElementById('dailyChart').getContext('2d');
+                dailyChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: '일별 조회수',
+                            data: values,
+                            borderColor: '#333',
+                            backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // 시간대별 통계 로드 및 차트 생성
+        async function loadHourlyStats(startDate, endDate) {
+            const response = await fetch(`/api/v1/admin/view-stats/hourly?start_date=${startDate}&end_date=${endDate}`);
+            const data = await response.json();
+
+            if (data.success) {
+                // 0~23시 전체 배열 생성
+                const hourlyData = new Array(24).fill(0);
+                data.data.forEach(item => {
+                    hourlyData[item.hour] = item.views;
+                });
+
+                const labels = Array.from({length: 24}, (_, i) => `${i}시`);
+
+                // 기존 차트 삭제
+                if (hourlyChart) {
+                    hourlyChart.destroy();
+                }
+
+                // 새 차트 생성
+                const ctx = document.getElementById('hourlyChart').getContext('2d');
+                hourlyChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: '시간대별 조회수',
+                            data: hourlyData,
+                            backgroundColor: 'rgba(51, 51, 51, 0.6)',
+                            borderColor: '#333',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // TOP 10 로드
+        async function loadTopRegulations(startDate, endDate) {
+            const response = await fetch(`/api/v1/admin/view-stats/top?limit=10&start_date=${startDate}&end_date=${endDate}`);
+            const data = await response.json();
+
+            if (data.success) {
+                const tbody = document.getElementById('topTableBody');
+                tbody.innerHTML = '';
+
+                if (data.data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px; color: #999;">조회 데이터가 없습니다.</td></tr>';
+                    return;
+                }
+
+                data.data.forEach(item => {
+                    const tr = document.createElement('tr');
+
+                    // 순위 뱃지
+                    let rankClass = 'default';
+                    if (item.rank === 1) rankClass = 'gold';
+                    else if (item.rank === 2) rankClass = 'silver';
+                    else if (item.rank === 3) rankClass = 'bronze';
+
+                    // 마지막 조회 시간
+                    const lastViewed = item.last_viewed_at
+                        ? new Date(item.last_viewed_at).toLocaleString('ko-KR')
+                        : '-';
+
+                    // 내규번호 + 내규명 조합
+                    const displayName = item.rule_pubno
+                        ? `${item.rule_pubno}. ${item.rule_name}`
+                        : item.rule_name;
+
+                    tr.innerHTML = `
+                        <td><span class="rank-badge ${rankClass}">${item.rank}</span></td>
+                        <td>${displayName}</td>
+                        <td style="text-align: right;"><span class="view-count">${item.view_count.toLocaleString()}</span></td>
+                        <td style="font-size: 0.9em; color: #666;">${lastViewed}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+        }
+    </script>
+{% endblock %}

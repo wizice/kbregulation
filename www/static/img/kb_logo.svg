@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60">
+  <defs>
+    <linearGradient id="kbGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#FFBC00"/>
+      <stop offset="100%" style="stop-color:#E5A800"/>
+    </linearGradient>
+  </defs>
+  <!-- Background -->
+  <rect width="200" height="60" fill="transparent"/>
+  <!-- KB Text -->
+  <text x="10" y="42" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="#FFBC00">KB</text>
+  <!-- 신용정보 Text -->
+  <text x="70" y="38" font-family="'Malgun Gothic', sans-serif" font-size="18" font-weight="500" fill="#545045">신용정보</text>
+</svg>

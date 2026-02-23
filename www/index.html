@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KB신용정보내규 시스템</title>
+    <link href="/static/lib/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="static/css/kbregulation.css?ts=2025121808">
+</head>
+<body>
+    <!-- 헤더 -->
+    <header class="header">
+        <div class="header-container">
+            <a href="#" class="logo" onclick="showMainPage(); return false;">
+                <div class="logo-container" onclick="refreshToMainPage()" style="cursor: pointer; display: flex; align-items: center; gap: 12px;">
+                    <img src="/static/img/kb-logo.png" alt="KB신용정보" height="40">
+                    <span class="logo-text" style="font-size: 22px; font-weight: 600; color: #FFBC00;">사규관리시스템</span>
+                </div>
+
+                <div class="header-utils me-1">
+                    <!-- 사용자 정보 -->
+                    <span class="user-info" id="headerUserInfo" style="font-size: 14px; color: #555; margin-right: 15px;"></span>
+                    <!-- 환경설정 버튼 추가 -->
+                    <button type="button" class="settings-btn" onclick="toggleLayoutSettings()" title="레이아웃 설정">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </a>
+
+            <!-- 환경설정 패널-->
+            <div class="layout-settings-panel" id="layoutSettingsPanel">
+                <div class="settings-header">
+                    <h3><i class="fas fa-cog"></i> 레이아웃 설정</h3>
+                    <button class="settings-close" onclick="closeLayoutSettings()">×</button>
+                </div>
+                <div class="settings-body">
+                    <div class="setting-group hide-on-mobile">
+                        <h4>화면 구성</h4>
+                        <div class="layout-options">
+                            <div class="layout-option active" data-layout="1" onclick="setLayoutMode(1)">
+                                <div class="layout-preview layout-1">
+                                    <div class="preview-header"></div>
+                                    <div class="preview-content"></div>
+                                </div>
+                                <span>검색 중심 (사이드바 숨김)</span>
+                            </div>
+                            <div class="layout-option" data-layout="2" onclick="setLayoutMode(2)">
+                                <div class="layout-preview layout-2">
+                                    <div class="preview-header"></div>
+                                    <div class="preview-nav"></div>
+                                    <div class="preview-sidebar"></div>
+                                    <div class="preview-content"></div>
+                                </div>
+                                <span>표준 (기본 네비)</span>
+                            </div>
+                            <div class="layout-option" data-layout="3" onclick="setLayoutMode(3)">
+                                <div class="layout-preview layout-3">
+                                    <div class="preview-header"></div>
+                                    <div class="preview-nav"></div>
+                                    <div class="preview-sidebar"></div>
+                                    <div class="preview-content"></div>
+                                </div>
+                                <span>스타일 변경 (네비 스타일)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="setting-group">
+                        <h4>글꼴 설정</h4>
+                        <div class="font-options">
+                            <div class="font-option" style="display:none;" data-font="yonsei" onclick="setFontFamily('yonsei')">
+                                <span class="font-preview font-yonsei">가나다라 ABC 123</span>
+                                <div class="font-name">연세체 (기본)</div>
+                            </div>
+                            <div class="font-option active" data-font="kbfg" onclick="setFontFamily('kbfg')">
+                                <span class="font-preview font-kbfg">가나다라 ABC 123</span>
+                                <div class="font-name font-kbfg">KB금융체 (기본)</div>
+                            </div>
+                            <div class="font-option" data-font="nanumsquare" onclick="setFontFamily('nanumsquare')">
+                                <span class="font-preview font-nanumsquare">가나다라 ABC 123</span>
+                                <div class="font-name font-nanumsquare">나눔스퀘어OTF</div>
+                            </div>
+                            <div class="font-option" data-font="noto" onclick="setFontFamily('noto')">
+                                <span class="font-preview font-noto">가나다라 ABC 123</span>
+                                <div class="font-name font-noto">Noto Sans KR</div>
+                            </div>
+                            <div class="font-option" data-font="spoqa" onclick="setFontFamily('spoqa')">
+                                <span class="font-preview font-spoqa">가나다라 ABC 123</span>
+                                <div class="font-name font-spoqa">Spoqa Han Sans</div>
+                            </div>
+                            <div class="font-option" data-font="pretendard" onclick="setFontFamily('pretendard')">
+                                <span class="font-preview font-pretendard">가나다라 ABC 123</span>
+                                <div class="font-name font-pretendard">Pretendard</div>
+                            </div>
+                            <div class="font-option" data-font="malgun" onclick="setFontFamily('malgun')">
+                                <span class="font-preview font-malgun">가나다라 ABC 123</span>
+                                <div class="font-name font-malgun">맑은 고딕</div>
+                            </div>
+                            <div class="font-option" data-font="nanum" onclick="setFontFamily('nanum')">
+                                <span class="font-preview font-nanum">가나다라 ABC 123</span>
+                                <div class="font-name font-nanum">나눔고딕</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 설정 오버레이 -->
+            <div class="settings-overlay" id="settingsOverlay" onclick="closeLayoutSettings()"></div>
+        </div>
+        
+        <!-- 네비게이션 -->
+        <nav class="nav">
+            <div class="nav-container">
+                <div class="nav-item">
+                    <a href="#" class="nav-link active" onclick="showMainPage(); return false;">홈</a>
+                </div>
+                <div class="nav-item">
+                    <a class="nav-link" onclick="showCategoryListPage(); return false;">현행 사규</a>
+                </div>
+                <div class="nav-item">
+                    <a class="nav-link" onclick="showRevisionHistoryPage(); return false;">사규 제·개정</a>
+                </div>
+                <div class="nav-item">
+                    <a class="nav-link" onclick="showExternalRevisionPage(); return false;">외규 제·개정</a>
+                </div>
+            </div>
+        </nav>
+
+    </header>
+
+    <!-- 오버레이 -->
+    <div class="overlay" onclick="closeSidebar()"></div>
+
+    <!-- 메인 레이아웃 -->
+    <div class="main-layout">
+        <!-- 사이드바 -->
+        <aside class="sidebar" id="sidebar">
+
+            <!-- 사이드 Tab -->
+            <div class="side-tabs">
+                <div class="side-tab active" data-type="side_category">분류</div>
+            </div>
+
+            <!-- 분류별 내규메뉴 -->
+            <nav class="tree-menu" id="treeMenu" style="margin-bottom: 8px;">
+            </nav>
+
+            <!-- 즐겨찾기 -->
+            <div style="display:none;" class="panel favorites-panel">
+                <div class="panel-header">
+                    <span><i class="fas fa-star"></i> 즐겨찾기</span>
+                    <span style="background: rgba(255,255,255,0.3); color: white; padding: 1px 5px; border-radius: 8px; font-size: 12px;" id="favoritesCount">3</span>
+                </div>
+                <div class="panel-body" id="favoritesBody" style="max-height:300px; overflow-y:auto;">
+                </div>
+            </div>
+
+            <!-- 최근 본 내규 -->
+            <div class="panel recent-panel">
+                <div class="panel-header">
+                    <span><i class="fas fa-history"></i> 최근 본 내규</span>
+                    <span style="background: rgba(255,255,255,0.3); color: white; padding: 1px 5px; border-radius: 8px; font-size: 12px;" id="recentCount"></span>
+                </div>
+                <div class="panel-body" id="recentBody" style="max-height:300px; overflow-y:auto;">
+                </div>
+            </div>
+
+            <!-- 통계 대시보드 -->
+            <div class="panel stats-panel" style="display:none;">
+                <div class="panel-header">
+                    <span><i class="fas fa-chart-pie"></i> 이용 통계</span>
+                </div>
+                <div class="panel-body">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <span class="stat-number">47</span>
+                            <div class="stat-label">오늘 조회</div>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-number">238</span>
+                            <div class="stat-label">이번 주</div>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-number">1,842</span>
+                            <div class="stat-label">이번 달</div>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-number">98%</span>
+                            <div class="stat-label">만족도</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 메인 컨텐츠 -->
+        <main class="main-content">
+            <div id="main-content-header" class="content-header" style="display:none;">
+                <nav class="breadcrumb">
+                    <span class="breadcrumb-item active" id="breadcrumbActive"></span>
+                </nav>
+                <h1 class="page-title" id="pageTitle"></h1>
+            </div>
+            
+            <div class="content-body">
+                <!-- 메인 페이지 컨텐츠 -->
+                <div id="mainPageContent">
+                    <!-- 검색 영역 (설계서 기준 - 중앙 배치) -->
+                    <section class="search-section-center">
+                        <div class="search-box-wrapper">
+                            <form class="search-form-center">
+                                <div class="search-input-wrapper">
+                                    <img src="/static/img/kb-symbol.png" alt="KB" class="search-logo" height="28">
+                                    <input type="text" class="search-input-center" placeholder="검색어를 입력하세요" id="mainSearchInput">
+                                    <button type="submit" class="search-btn-center">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </section>
+
+                    <!-- 정보 탭 영역 (사규 제·개정 / 공지사항 / 별표·서식) -->
+                    <section class="info-tabs-section">
+                        <div class="info-tabs-container">
+                            <!-- 좌측: 사규 제·개정 -->
+                            <div class="info-panel">
+                                <div class="info-panel-tabs">
+                                    <button class="info-tab active" data-panel="revision">사규 제·개정</button>
+                                </div>
+                                <div class="info-panel-content" id="revisionPanel">
+                                    <div class="info-table">
+                                        <div class="info-table-header">
+                                            <span class="col-type">구분</span>
+                                            <span class="col-name">사규명</span>
+                                            <span class="col-date">제·개정일</span>
+                                        </div>
+                                        <div class="info-table-body" id="revisionTableBody">
+                                            <!-- 동적으로 로드됨 -->
+                                        </div>
+                                    </div>
+                                    <div class="info-panel-more">
+                                        <a href="#" onclick="showRevisionHistoryPage(); return false;">더 보기 <i class="fas fa-external-link-alt"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 중앙: 외규 제·개정 -->
+                            <div class="info-panel">
+                                <div class="info-panel-tabs">
+                                    <button class="info-tab active" data-panel="externalRevision">외규 제·개정</button>
+                                </div>
+                                <div class="info-panel-content" id="externalRevisionPanel">
+                                    <div class="info-table">
+                                        <div class="info-table-header">
+                                            <span class="col-type">구분</span>
+                                            <span class="col-name">외규명</span>
+                                            <span class="col-date">제·개정일</span>
+                                        </div>
+                                        <div class="info-table-body" id="externalRevisionTableBody">
+                                            <!-- 동적으로 로드됨 -->
+                                        </div>
+                                    </div>
+                                    <div class="info-panel-more">
+                                        <a href="#" onclick="showExternalRevisionPage(); return false;">더 보기 <i class="fas fa-external-link-alt"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 우측: 공지사항 / 별표·서식 -->
+                            <div class="info-panel">
+                                <div class="info-panel-tabs">
+                                    <button class="info-tab active" data-panel="notices" onclick="switchInfoTab('notices', this)">공지사항</button>
+                                    <button class="info-tab" data-panel="forms" onclick="switchInfoTab('forms', this)">별표·서식</button>
+                                </div>
+                                <div class="info-panel-content" id="noticesPanel">
+                                    <div class="info-table">
+                                        <div class="info-table-header">
+                                            <span class="col-title">제목</span>
+                                            <span class="col-date">등록일</span>
+                                        </div>
+                                        <div class="info-table-body" id="noticesTableBody">
+                                            <!-- 동적으로 로드됨 -->
+                                        </div>
+                                    </div>
+                                    <div class="info-panel-more">
+                                        <a href="#" onclick="showSupportPage(); return false;">더 보기 <i class="fas fa-external-link-alt"></i></a>
+                                    </div>
+                                </div>
+                                <div class="info-panel-content" id="formsPanel" style="display:none;">
+                                    <div class="info-table">
+                                        <div class="info-table-header">
+                                            <span class="col-title">제목</span>
+                                            <span class="col-date">등록일</span>
+                                        </div>
+                                        <div class="info-table-body" id="formsTableBody">
+                                            <!-- 동적으로 로드됨 -->
+                                        </div>
+                                    </div>
+                                    <div class="info-panel-more">
+                                        <a href="#" onclick="showFormsPage(); return false;">더 보기 <i class="fas fa-external-link-alt"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="search-results-section" id="searchResultsSection" style="display:none;">
+                        <div class="results-header">
+                            <h3 class="results-title">검색 결과</h3>
+                            <div class="results-meta">
+                                <span>총 <span id="resultCount">0</span>건</span>
+                                <span>검색어: "<span id="searchTerm"></span>"</span>
+                            </div>
+                        </div>
+                        <div class="results-body" id="resultsBody">
+                            <!-- 검색 결과가 여기에 표시됩니다 -->
+                        </div>
+                    </section>
+
+                    <!-- 내규 상세보기 모달 (데스크톱용) -->
+                    <div class="regulation-modal" id="regulationModal" style="display:none;">
+                        <div class="regulation-modal-overlay" onclick="closeRegulationModal()"></div>
+                        <div class="regulation-modal-content">
+                            <div class="regulation-modal-header">
+                                <h3 id="modalRegulationTitle">내규 상세보기</h3>
+                                <button class="regulation-modal-close" onclick="closeRegulationModal()">&times;</button>
+                            </div>
+                            <div class="regulation-modal-body" id="modalRegulationBody">
+                                <!-- 내규 상세 내용이 여기에 표시됩니다 -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 모바일 전체화면 뷰 -->
+                    <div class="mobile-regulation-view" id="mobileRegulationView" style="display:none;">
+                        <div class="mobile-regulation-header">
+                            <button class="mobile-back-btn" onclick="closeMobileRegulationView()">
+                                <i class="fas fa-arrow-left"></i>
+                            </button>
+                            <h3 id="mobileRegulationTitle">내규 상세보기</h3>
+                        </div>
+                        <div class="mobile-regulation-body" id="mobileRegulationBody">
+                            <!-- 내규 상세 내용이 여기에 표시됩니다 -->
+                        </div>
+                    </div>
+
+                    <!-- 고급 검색 필터 -->
+                    <section class="advanced-filters" style="display:none;">
+                        <div class="filters-header" onclick="toggleAdvancedFilters()">
+                            <span><i class="fas fa-filter"></i> 고급 검색 필터</span>
+                            <i class="fas fa-chevron-down" id="filterToggleIcon"></i>
+                        </div>
+                        <div class="filters-body" id="filtersBody">
+                            <div class="filter-row">
+                                <div class="filter-group">
+                                    <label class="filter-label">제정일 범위</label>
+                                    <input type="date" class="filter-input" id="startDate">
+                                </div>
+                                <div class="filter-group">
+                                    <label class="filter-label">~</label>
+                                    <input type="date" class="filter-input" id="endDate">
+                                </div>
+                                <div class="filter-group">
+                                    <label class="filter-label">소관부서</label>
+                                    <select class="filter-input" id="departmentFilter">
+                                        <option value="">전체</option>
+                                        <option value="교무처">교무처</option>
+                                        <option value="학생처">학생처</option>
+                                        <option value="연구처">연구처</option>
+                                        <option value="인사처">인사처</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="filter-row">
+                                <div class="filter-group">
+                                    <label class="filter-label">내규 상태</label>
+                                    <select class="filter-input" id="statusFilter">
+                                        <option value="">전체</option>
+                                        <option value="시행">시행</option>
+                                        <option value="개정예정">개정예정</option>
+                                        <option value="폐지">폐지</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label class="filter-label">중요도</label>
+                                    <select class="filter-input" id="importanceFilter">
+                                        <option value="">전체</option>
+                                        <option value="높음">높음</option>
+                                        <option value="보통">보통</option>
+                                        <option value="낮음">낮음</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label class="filter-label">&nbsp;</label>
+                                    <button type="button" class="search-btn" onclick="applyAdvancedFilters()" style="width: 100%;">
+                                        <i class="fas fa-filter"></i> 필터 적용
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                </div>
+
+                <div id="contentBody" style="display:none;">
+                    <!-- 초기 안내 메시지 -->
+                    <div id="welcomeMessage" class="regulation-detail">
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- 상세보기 모달 -->
+    <div class="modal" id="detailModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">내규 상세보기</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- 내규 내용이 여기에 표시됩니다 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- AI 어시스턴트 -->
+    <div class="ai-assistant" style="display:none;">
+        <div class="ai-chat-panel" id="aiChatPanel">
+            <div class="ai-chat-header">
+                <div style="font-size: 14px; font-weight: 600; margin-bottom: 3px;">
+                    <i class="fas fa-robot"></i> AI 내규 어시스턴트
+                </div>
+                <div style="font-size: 10px; opacity: 0.9;">자연어로 내규을 검색해보세요</div>
+            </div>
+            <div class="ai-chat-body" id="aiChatBody">
+                <div class="ai-message">
+                    <div class="message-avatar ai">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content ai">
+                        안녕하세요! KB신용정보내규 검색을 도와드리겠습니다. 
+                        어떤 내규에 대해 궁금하신가요?
+                        <div class="ai-suggestions">
+                            <button class="suggestion-btn" onclick="sendAIMessage('휴학은 어떻게 신청하나요?')">휴학 신청 방법</button>
+                            <button class="suggestion-btn" onclick="sendAIMessage('장학금 받으려면 어떤 조건이 필요한가요?')">장학금 조건</button>
+                            <button class="suggestion-btn" onclick="sendAIMessage('연구윤리 위반 시 어떤 절차를 거치나요?')">연구윤리 절차</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="ai-input-area">
+                <form class="ai-input-form" onsubmit="sendAIMessage(event)">
+                    <input type="text" class="ai-input" placeholder="내규에 대해 질문해보세요..." id="aiInput">
+                    <button type="submit" class="ai-send-btn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+        <button class="ai-toggle-btn" onclick="toggleAIChat()" title="AI 어시스턴트">
+            <i class="fas fa-robot"></i>
+        </button>
+    </div>
+
+    <!-- 안내사항 우측 사이드 패널 -->
+    <div class="regulation-notice-overlay" id="regulationNoticeOverlay" onclick="closeRegulationNoticePanel()"></div>
+    <div class="regulation-notice-panel" id="regulationNoticePanel">
+        <div class="regulation-notice-panel-header">
+            <span>안내사항</span>
+            <button onclick="closeRegulationNoticePanel()">&times;</button>
+        </div>
+        <div class="regulation-notice-panel-body" id="regulationNoticePanelBody">
+            <div class="regulation-notice-empty">등록된 안내사항이 없습니다.</div>
+        </div>
+        <div class="regulation-notice-panel-footer" id="regulationNoticePanelFooter" style="display:none;">
+            <button onclick="showRegulationNoticeForm()">안내사항 작성</button>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <!-- 좌측 로고 영역 -->
+                <div class="footer-logo-section">
+                    <img src="/static/img/kb-logo.png" height="45px" alt="KB신용정보">
+                </div>
+                
+            </div>
+            
+            <!-- 하단 주소 및 저작권 정보 -->
+            <div class="footer-bottom">
+                <div class="footer-address">04513 서울특별시 중구 남대문로 84 (을지로입구역) KB신용정보</div>
+                <div class="footer-copyright">© 2025 KB신용정보. ALL RIGHTS RESERVED.</div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 레거시 스크립트 -->
+    <script src="/static/js/history.js?ts=202511082358"></script>
+    <script src="/static/js/kbregulation_android.js?ts=202511100300"></script>
+
+    <!-- 내규 조회 로그 기록 스크립트 -->
+    <script src="/static/js/regulation-view-logger.js"></script>
+
+    <!-- ES6 모듈 기반 메인 스크립트 (비활성화) -->
+    <!-- <script type="module" src="/static/js/kbregulation.js?ts=202512170002"></script> -->
+
+    <!-- 기존 스크립트 (원복) -->
+    <script src="/static/js/kbregulation.js?ts=202601261450"></script>
+    <script src="/static/js/kbregulation_comm.js?ts=202512170003"></script>
+</body>
+</html>

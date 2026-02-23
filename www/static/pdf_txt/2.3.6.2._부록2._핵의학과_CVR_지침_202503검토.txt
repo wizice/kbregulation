@@ -1,0 +1,6 @@
+2.3.6.2. 부록 2. 핵의학과 CVR 지침 담당부서 핵의학과 제정일 2012.05. 최종개정일 2023.07. 최종검토일 2025.03.
+
+핵의학과 CVR(Critical Value Report, 이상검사결과) 지침
+
+1. CVR 보고 대상(기준)
+1) Critical value 기준: 핵의학 영상 검사 결과 상 즉각적인 치료가 필요한 것으로 판단되는 경우 항목 기준 GI bleeding scan GI bleeding이 확인되고, 출혈 부위가 예측 가능한 경우 Bile leakage 여부 및 부위를 확인하기 위하여 시행한 Hepatobiliary scan scan에서 leakage가 확인된 경우 PET-CT 응급으로 결과 고지가 필요한 경우 검체검사실 해당 항목 없음

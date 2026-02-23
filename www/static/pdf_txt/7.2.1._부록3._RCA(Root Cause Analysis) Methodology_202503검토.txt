@@ -1,0 +1,30 @@
+7.2.1. 부록 3.
+RCA(Root Cause Analysis) Methodology 담당부서 의료질향상 및 환자안전위원회 제정일 2014.04. 최종개정일 2023.01. 최종검토일 2025.03.
+
+RCA (Root Cause Analysis) Methodology Sentinel Event가 일어났거나 일어날 가능성이 있는 것을 포함하여 다양한 업무 하에서 근본적인 원인을 확인하는 과정이다.
+The process of verifying the root cause in the operation of various duties including those in which a sentinel event has occurred or might possibly occur.
+Step 1: 근본원인 분석 준비
+
+1) 팀구성: RCA 기법을 훈련 받은 Facilitator, 적어도 한 명 이상의 훈련 받은 사람, 서기, 문제를 분석하기 위한 전문가 (의사, 간호사, 전문직종 등)
+
+2) 문제정의: 분석대상이 되는 문제 정의
+
+3) 문제조사: 기록 확인, 관련 직원 면담 등
+
+4) 문제 발생과정 확인: 사건의 절차, 순서 나열 확인 Step 2: 근접원인찾기
+
+1) 무엇이 일어났고 왜 일어났는가 확인
+
+2) 절차적 기여 요인, 인적 요인, 장비 요인, 환경 요인 확인 Step 3: 근본원인찾기
+
+1) 왜? 라는 질문을 통해 근접원인이 발생하게 된 근본원인 도출
+
+2) 근접원인과 관련 시스템 확인
+
+3) 근본원인 확인 및 상호 관계 확인 Step 4: 개선활동 수립 및 시행
+
+1) 근본원인에 따른 위험 감소를 위한 개선 행위 개발 및 평가
+
+2) 개선 활동 수립 및 평가지표 개발
+
+3) 시행 및 평가

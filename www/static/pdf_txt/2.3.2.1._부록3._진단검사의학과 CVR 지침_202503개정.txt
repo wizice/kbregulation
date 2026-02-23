@@ -1,0 +1,8 @@
+2.3.2.1. 부록 3. 진단검사의학과 CVR 지침 담당부서 진단검사의학과 제정일 2012.05. 최종개정일 2025.03. 최종검토일 2025.03.
+
+진단검사의학과 CVR 지침 경고치 보고 기준은 매년 12월 정기적으로 점검하며, 항목 추가 및 삭제 유무와 기준 적합성에 대해 실무자회의 및 TAT 소위원회에서 의결하여 아래와 같이 결정한다.
+Critical value 결과 보고 기준 파트 검사항목 하한 값 상한 값 Glucose 40 mg/dL 이하 600 mg/dL 이상 Calcium, total 6 mg/dL 이하 14 mg/dL 이상 Bicarbonate (tCO₂) 10 mmol/L 이하 40 mmol/L 이상 Potassium (K) 2.5 mmol/L 이하 6.0 mmol/L 이상 Sodium (Na) 110 mmol/L 이하 160 mmol/L 이상 Chloride (Cl) 75 mmol/L 이하 125 mmol/L 이상 생화학파트 Theophylline - 20 ㎍/mL 이상 Digoxin - 2.5 ng/mL 이상 Phenobarbital - 60 ㎍/mL 이상 Phenytoin - 30 ㎍/mL 이상 Carbamazepine - 15 ㎍/mL 이상 Valproic acid - 150 ㎍/mL 이상 Potassium (K)* 2.5 mmol/L 이하 6.0 mmol/L 이상 Sodium (Na)* 110 mmol/L 이하 160 mmol/L 이상 Chloride (Cl)* 75 mmol/L 이하 125 mmol/L 이상 응급검사 Ionized calcium* 3 mg/dL 이하 6.4 mg/dL 이상 파트 Total bilirubin
+
+- 15 mg/dL 이상 (capillary blood) Osmolality (serum) 250 mOsm/Kg 이하 325 mOsm/Kg 이상 Ketone (urine) - 4+ Glucose* 40 mg/d 이하 600 mg/dL 이상 Potassium* 2.5 mmol/L 이하 6.0 mmol/L 이상 현장검사 pH (ABGA) 7.25 이하 7.65 이상 (POCT) pCO2 (ABGA) 20 mmHg 이하 60 mmHg 이상 Prothrombin Time* - 6.0 INR 이상 Activated clotting time - 900 sec 이상 Hemoglobin 5.0 g/dL이하 - 혈액학 Platelets 20 x 10³/µL이하 - 파트 Prothrombin Time - 6.0 INR 이상 aPTT - 110 sec 이상
+
+Critical value 결과 보고 기준 파트 검사항목 하한 값 상한 값 Fibrinogen 50 mg/dL 이하 - CSF Gram stain/culture Gram stain 양성/배양 양성 CSF India Ink Positive Salmonella Typhi Shigella dysenteriae Shigella flexneri Shigella boydii Shigella sonnei 미생물 Vibrio cholera 배양 양성 파트 Vibrio vulnificus Corynebacterium diphtheriae Yersinia pestis Bacillus anthracis Francisella tularensis SARS-associated coronavirus Middle East Respiratory Positive Syndrome Coronavirus *: 전혈(Whole blood)

@@ -1,0 +1,343 @@
+목 차 : 1 의료장비 매뉴얼 개정일 : 2025.6 제조사 : CU Medical 자동제세동기, AED 모델명 : CU-SP1 (Automated External Defibrillator) (Biphasic)
+
+1. 목적 전기 충격을 가하여 심장의 기능이 정지하였거나 호흡이 멈추었을 때 심장 박동을 정상화하기 위함이다.
+
+2. 작동법
+1) Defibrillation
+① 자동제세동기(AED) 가방을 열고 녹색 전원 버튼을 누른다(이후 음성 안내를 따름).
+
+② 기기 아래 패드 보관함에서 패드를 꺼낸다.
+* 성인 : 성인용 패드 이용
+
+* 소아 : 8세 이하, 소아용 패드 이용
+
+③ 패드를 환자의 가슴에 적용한다.(패드 그림 참고).
+* 성인 : 1번 패드- 우측 쇄골 직하부 (Sternum), 2번 패드- 좌측 유두 왼쪽, 액와 중앙선 (Apex)
+
+* 소아 : 성인용 패드를 소아에게 사용하는 경우, 가슴과 등에 적용
+
+④ 기계에서 심전도 분석을 위해 접촉금지에 대한 안내가 나오면 환자에게서 떨어지도록 경고한다.
+
+⑤ 제세동이 요구되면 안내 후 자동으로 충전된다.
+
+⑥ 기계에서 제세동 전 접촉금지에 대한 안내가 나오면 환자에게서 떨어지도록 경고한다.
+
+⑦ 제세동 버튼을 누르라는 안내가 나오면 환자에게서 모두 떨어졌는지 확인 후 제세동 버튼을 누른다.
+
+⑧ 제세동 실시 후 즉시 심폐소생술을 실시한다.
+
+⑨ 심전도 분석 후 기계에서 제세동이 필요하지 않고 필요시 심폐소생술을 시행하라는 안내가 나오면 즉시 심폐소생술을 실시한다.
+
+2) 기타 ‘성인/소아 선택 스위치’에서 ‘소아’를 선택한 후 전원을 켜 작동을 시작하면 소아용 패드를 적용하는 경우와 같이 에너지가 감량되어 제세동이 시행된다.
+
+3. 관리방법 및 주의사항
+1) 고위험 의료장비 관리지침에 따라 장비상태와 충전 여부, 부속품 등에 대해 월 1회 예방 점검한다.
+
+2) 패드 적용 위치에 경피약제가 부착된 경우, 약제를 제거하고 해당 부위를 닦은 후 패드를 적용 한다.(화상 예방)
+
+3) 사용 후 환경 소독제 wipe로 표면을 닦는다.
+
+목 차 : 2 의료장비 매뉴얼 개정일 : 2023.2 제조사 : Philips Defibrillator 모델명 : HeartStart XL+ (Biphasic)
+
+1. 목적 심실세동 및 비정상적인 심장박동을 정상리듬으로 전환시키기 위함이다.
+
+2. 구성 본체, Paddle, Cable(Pacing 기능 시)
+
+3. 작동법
+1) Defibrillation
+① Energy Selector를 ‘Manual On’으로 돌려 전원을 켠다.
+
+② Paddle 적용부분을 고려하여 EKG Electrode를 환자에게 부착하고 EKG Monitoring(Lead Ⅱ)을 시작한다.
+
+③ Paddle에 적당한 양의 Jelly를 바른다(화상 예방 및 전기 전도).
+* 소아용 Paddle 적용: 체중 10kg 미만 , Paddle 간격 3cm 미만 시
+
+④ Energy Selector로 권장 Energy를 선택한다.
+* 성인 : 150J (Biphasic)
+
+* 소아 : 최초 2J/kg, 이후 4J/kg
+
+⑤ Charge Button을 누른다(Energy가 Charge되면 알람이 ‘삐’하고 울리며 Deliver shock now가 Display됨).
+
+⑥ Paddle은 우측 쇄골 직하부(Sternum)와 좌측유두 왼쪽, 액와 중앙선(Apex)에 적용한다.
+
+⑦ 환자에게서 떨어지도록 경고하고 확인한다.
+
+⑧ Paddle에 10~12kg의 압력을 가하면서 Shock Button을 누른다.
+
+⑨ 제세동 시행 후 즉시 가슴압박을 시작한다.
+
+2) Cardioversion
+① 처방에 따라 대상자를 Sedation시킨다.
+
+② Synchronized Button을 누르고 적합한 에너지를 선택하여 Defibrillation과 같은 방법으로 시행한다.
+
+③ QRS파 발생 시 에너지가 전달되므로 Shock Button을 누른 후 적용한 Paddle을 잠시 유지한다.
+
+3) Pacing 적용
+① Pacing Cable로 교체하고 패드를 환자에게 부착한다.
+
+② Pacing On 하고 Mode, Rate, Output Setting 한다.
+
+4. 관리방법 및 주의사항
+1) 모든 절차가 끝나면 Paddle에 묻은 Jelly를 깨끗이 닦아 제자리에 놓는다.
+
+2) 사용 후 기계는 환경소독제 wipe로 깨끗이 닦는다.
+
+3) 부족한 물품이 없는지 확인하여 점검한다.
+
+4) 안전한 곳에 기구를 보관하고 Charge 상태를 유지한다.
+
+목 차 : 3 의료장비 매뉴얼 개정일 : 2023.2 제조사 : Philips Defibrillator 모델명 : M4735A (Biphasic)
+
+1. 목적 심실세동 및 비정상적인 심장박동을 정상리듬으로 전환시키기 위함이다.
+
+2. 구성 본체, Paddle, Cable(Pacing 기능 시)
+
+3. 작동법
+1) Defibrillation
+① Energy Selector를 ‘Manual On’으로 돌려 전원을 켠다.
+
+② Paddle 적용부분을 고려하여 EKG Electrode를 환자에게 부착하고 EKG Monitoring(Lead Ⅱ)을 시작한다.
+
+③ Paddle에 적당한 양의 Jelly를 바른다(화상 예방 및 전기 전도).
+* 소아용 Paddle 적용: 체중 10kg 미만 , Paddle 간격 3cm 미만 시
+
+④ Energy Selector로 권장 Energy를 선택한다.
+* 성인 : 150J (Biphasic)
+
+* 소아 : 최초 2J/kg, 이후 4J/kg
+
+⑤ Charge Button을 누른다(Energy가 Charge되면 알람이 ‘삐’하고 울리며 Deliver shock now가 Display됨).
+
+⑥ Paddle은 우측 쇄골 직하부(Sternum)와 좌측유두 왼쪽, 액와 중앙선(Apex)에 적용한다.
+
+⑦ 환자에게서 떨어지도록 경고하고 확인한다.
+
+⑧ Paddle에 10~12kg의 압력을 가하면서 Shock Button을 누른다.
+
+⑨ 제세동 시행 후 즉시 가슴압박을 시작한다.
+
+2) Cardioversion
+① 처방에 따라 대상자를 Sedation시킨다.
+
+② Synchronized Button을 누르고 적합한 에너지를 선택하여 Defibrillation과 같은 방법으로 시행한다.
+
+③ QRS파 발생 시 에너지가 전달되므로 Shock Button을 누른 후 적용한 Paddle을 잠시 유지한다.
+
+3) AED 적용
+① Energy Selector를 ‘AED On’으로 돌려 전원을 켜고 음성 안내와 화면 지시에 따른다.
+
+② Paddle을 Cable로 교체하고 패드를 연결하여 환자에게 부착한다.
+
+③ ‘Analyze’ Button을 누르고 환자에게서 떨어진다.
+
+④ 제세동이 요구되면 안내 후 자동으로 Charge된다.
+
+⑤ 지시에 따라 환자에게서 떨어지도록 경고하고 Shock Button을 눌러 제세동을 실시한다.
+
+4) Pacing 적용
+① Energy Selector를 ‘Manual On’으로 돌려 전원을 켠다.
+
+② Paddle을 Cable로 교체하고 Pad를 연결하여 환자에게 부착한다.
+
+③ Pacer Button을 누른다.
+
+④ Mode, Rate, Output을 Setting한다.
+
+⑤ Start 버튼을 누른다.
+
+4. 관리방법 및 주의사항
+1) 모든 절차가 끝나면 Paddle에 묻은 Jelly를 깨끗이 닦아 제자리에 놓는다.
+
+2) 사용 후 기계는 환경소독제 wipe로 깨끗이 닦는다.
+
+3) 부족한 물품이 없는지 확인하여 점검한다.
+
+4) 안전한 곳에 기구를 보관하고 Charge 상태를 유지한다.
+
+목 차 : 4 의료장비 매뉴얼 개정일 : 2023.2 제조사 : Philips Defibrillator 모델명 : HeartStart MRx (Biphasic)
+
+1. 목적 심실세동 및 비정상적인 심장박동을 정상리듬으로 전환시키기 위함이다.
+
+2. 구성 본체, Paddle, Cable(Pacing 기능 시)
+
+3. 작동법
+1) Defibrillation
+① Energy Selector를 ‘Manual On’으로 돌려 전원을 켠다.
+
+② Paddle 적용부분을 고려하여 EKG Electrode를 환자에게 부착하고 EKG Monitoring(Lead Ⅱ)을 시작한다.
+
+③ Paddle에 적당한 양의 Jelly를 바른다(화상 예방 및 전기 전도).
+* 소아용 Paddle 적용: 체중 10kg 미만 , Paddle 간격 3cm 미만 시
+
+④ Energy Selector로 권장 Energy를 선택한다.
+* 성인 : 150J (Biphasic)
+
+* 소아 : 최초 2J/kg, 이후 4J/kg
+
+⑤ Charge Button을 누른다(Energy가 Charge되면 알람이 ‘삐’하고 울리며 Deliver shock now가 Display됨).
+
+⑥ Paddle은 우측 쇄골 직하부(Sternum)와 좌측유두 왼쪽, 액와 중앙선(Apex)에 적용한다.
+
+⑦ 환자에게서 떨어지도록 경고하고 확인한다.
+
+⑧ Paddle에 10~12kg의 압력을 가하면서 Shock Button을 누른다.
+
+⑨ 제세동 시행 후 즉시 가슴압박을 시작한다.
+
+2) Cardioversion
+① 처방에 따라 대상자를 Sedation시킨다.
+
+② Synchronized Button을 누르고 적합한 에너지를 선택하여 Defibrillation과 같은 방법으로 시행한다.
+
+③ QRS파 발생 시 에너지가 전달되므로 Shock Button을 누른 후 적용한 Paddle을 잠시 유지한다.
+
+3) Pacing 적용
+① Pacing Cable로 교체하고 패드를 환자에게 부착한다.
+
+② Pacing On 하고 Mode, Rate, Output Setting 한다.
+
+4) AED 적용
+① Energy Selector를 ‘AED On’으로 돌려 전원을 켜고 음성 안내와 화면 지시에 따른다.
+
+② Paddle을 Cable로 교체하고 패드를 연결하여 환자에게 부착한다.
+
+③ ‘Analyze’ Button을 누르고 환자에게서 떨어진다.
+
+④ 제세동이 요구되면 안내 후 자동으로 Charge된다.
+
+⑤ 지시에 따라 환자에게서 떨어지도록 경고하고 Shock Button을 눌러 제세동을 실시한다.
+
+4. 관리방법 및 주의사항
+1) 모든 절차가 끝나면 Paddle에 묻은 Jelly를 깨끗이 닦아 제자리에 놓는다.
+
+2) 사용 후 기계는 환경소독제 wipe로 깨끗이 닦는다.
+
+3) 부족한 물품이 없는지 확인하여 점검한다.
+
+4) 안전한 곳에 기구를 보관하고 Charge 상태를 유지한다.
+
+목 차 : 5 의료장비 매뉴얼 개정일 : 2023.2 제조사 : Philips Defibrillator 모델명 : DFM100 (Biphasic)
+
+1. 목적 심실세동 및 비정상적인 심장박동을 정상리듬으로 전환시키기 위함이다.
+
+2. 구성 본체, Paddle, Cable(Pacing 기능 시)
+
+3. 작동법
+1) Defibrillation
+① Energy Selector를 ‘Manual On’으로 돌려 전원을 켠다.
+
+② Paddle 적용부분을 고려하여 EKG Electrode를 환자에게 부착하고 EKG Monitoring(Lead Ⅱ)을 시작한다.
+
+③ Paddle에 적당한 양의 Jelly를 바른다(화상 예방 및 전기 전도).
+* 소아용 Paddle 적용: 체중 10kg 미만 , Paddle 간격 3cm 미만 시
+
+④ Energy Selector로 권장 Energy를 선택한다.
+* 성인 : 150J (Biphasic)
+
+* 소아 : 최초 2J/kg, 이후 4J/kg
+
+⑤ Charge Button을 누른다(Energy가 Charge되면 알람이 ‘삐’하고 울리며 Deliver shock now가 Display됨).
+
+⑥ Paddle은 우측 쇄골 직하부(Sternum)와 좌측유두 왼쪽, 액와 중앙선(Apex)에 적용한다.
+
+⑦ 환자에게서 떨어지도록 경고하고 확인한다.
+
+⑧ Paddle에 10~12kg의 압력을 가하면서 Shock Button을 누른다.
+
+⑨ 제세동 시행 후 즉시 가슴압박을 시작한다.
+
+2) Cardioversion
+① 처방에 따라 대상자를 Sedation시킨다.
+
+② Synchronized Button을 누르고 적합한 에너지를 선택하여 Defibrillation과 같은 방법으로 시행한다.
+
+③ QRS파 발생 시 에너지가 전달되므로 Shock Button을 누른 후 적용한 Paddle을 잠시 유지한다.
+
+3) Pacing 적용
+① Pacing Cable로 교체하고 패드를 환자에게 부착한다.
+
+② Pacing On 하고 Mode, Rate, Output Setting 한다.
+
+4) AED 적용
+① Energy Selector를 ‘AED On’으로 돌려 전원을 켜고 음성 안내와 화면 지시에 따른다.
+
+② Paddle을 Cable로 교체하고 패드를 연결하여 환자에게 부착한다.
+
+③ ‘Analyze’ Button을 누르고 환자에게서 떨어진다.
+
+④ 제세동이 요구되면 안내 후 자동으로 Charge된다.
+
+⑤ 지시에 따라 환자에게서 떨어지도록 경고하고 Shock Button을 눌러 제세동을 실시한다.
+
+4. 관리방법 및 주의사항
+1) 모든 절차가 끝나면 Paddle에 묻은 Jelly를 깨끗이 닦아 제자리에 놓는다.
+
+2) 사용 후 기계는 환경소독제 wipe로 깨끗이 닦는다.
+
+3) 부족한 물품이 없는지 확인하여 점검한다.
+
+4) 안전한 곳에 기구를 보관하고 Charge 상태를 유지한다.
+
+목 차 : 6 의료장비 매뉴얼 개정일 : 2023.2 제조사 : Medtronics Defibrillator 모델명 : Lifepak 20 (Biphasic)
+
+1. 목적 심실세동 및 비정상적인 심장박동을 정상리듬으로 전환시키기 위함이다.
+
+2. 구성 본체, Paddle, Cable(Pacing 기능 시)
+
+3. 작동법
+1) Defibrillation
+① Energy Selector를 ‘Manual On’으로 돌려 전원을 켠다.
+
+② Paddle 적용부분을 고려하여 EKG Electrode를 환자에게 부착하고 EKG Monitoring(Lead Ⅱ)을 시작한다.
+
+③ Paddle에 적당한 양의 Jelly를 바른다(화상 예방 및 전기 전도).
+* 소아용 Paddle 적용: 체중 10kg 미만 , Paddle 간격 3cm 미만 시
+
+④ Energy Selector로 권장 Energy를 선택한다.
+* 성인 : 150J (Biphasic)
+
+* 소아 : 최초 2J/kg, 이후 4J/kg
+
+⑤ Charge Button을 누른다(Energy가 Charge되면 알람이 ‘삐’하고 울리며 Deliver shock now가 Display됨).
+
+⑥ Paddle은 우측 쇄골 직하부(Sternum)와 좌측유두 왼쪽, 액와 중앙선(Apex)에 적용한다.
+
+⑦ 환자에게서 떨어지도록 경고하고 확인한다.
+
+⑧ Paddle에 10~12kg의 압력을 가하면서 Shock Button을 누른다.
+
+⑨ 제세동 시행 후 즉시 가슴압박을 시작한다.
+
+2) Cardioversion
+① 처방에 따라 대상자를 Sedation시킨다.
+
+② Synchronized Button을 누르고 적합한 에너지를 선택하여 Defibrillation과 같은 방법으로 시행한다.
+
+③ QRS파 발생 시 에너지가 전달되므로 Shock Button을 누른 후 적용한 Paddle을 잠시 유지한다.
+
+3) Pacing 적용
+① Pacing Cable로 교체하고 패드를 환자에게 부착한다.
+
+② Pacing On 하고 Mode, Rate, Output Setting 한다.
+
+4) AED 적용
+① Energy Selector를 ‘AED On’으로 돌려 전원을 켜고 음성 안내와 화면 지시에 따른다.
+
+② Paddle을 Cable로 교체하고 패드를 연결하여 환자에게 부착한다.
+
+③ ‘Analyze’ Button을 누르고 환자에게서 떨어진다.
+
+④ 제세동이 요구되면 안내 후 자동으로 Charge된다.
+
+⑤ 지시에 따라 환자에게서 떨어지도록 경고하고 Shock Button을 눌러 제세동을 실시한다.
+
+4. 관리방법 및 주의사항
+1) 모든 절차가 끝나면 Paddle에 묻은 Jelly를 깨끗이 닦아 제자리에 놓는다.
+
+2) 사용 후 기계는 환경소독제 wipe로 깨끗이 닦는다.
+
+3) 부족한 물품이 없는지 확인하여 점검한다.
+
+4) 안전한 곳에 기구를 보관하고 Charge 상태를 유지한다.

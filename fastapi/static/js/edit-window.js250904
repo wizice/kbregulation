@@ -1,0 +1,1046 @@
+// edit-window.js - 편집 창 HTML 생성
+
+const EditWindow = {
+    // 날짜 형식 변환 함수들
+    formatDateForDisplay(dateString) {
+        if (!dateString) return '';
+        
+        // YYYY-MM-DD 형식을 YYYY.MM.DD. 형식으로 변환
+        if (dateString.includes('-')) {
+            const parts = dateString.split('-');
+            if (parts.length === 3) {
+                return `${parts[0]}.${parts[1]}.${parts[2]}.`;
+            }
+        }
+        
+        // 이미 YYYY.MM.DD. 형식이면 그대로 반환
+        if (dateString.includes('.')) {
+            return dateString.endsWith('.') ? dateString : dateString + '.';
+        }
+        
+        return dateString;
+    },
+    
+    formatDateForStorage(dateString) {
+        if (!dateString) return '';
+        
+        // YYYY.MM.DD. 형식을 YYYY-MM-DD 형식으로 변환
+        const cleaned = dateString.replace(/\./g, '-').replace(/-$/, '');
+        
+        // 유효한 날짜 형식인지 확인
+        if (/^\d{4}-\d{2}-\d{2}$/.test(cleaned)) {
+            return cleaned;
+        }
+        
+        return '';
+    },
+
+    // 편집 창 HTML 생성
+    generateHTML(regulation, isNew = false, isRevision = false) {
+        // 데이터를 문자열로 변환하여 전달
+        const regulationJson = JSON.stringify(regulation);
+        const articlesHtml = this.generateArticlesHTML(regulation.content.articles || []);
+        const historyHtml = this.generateHistoryHTML(regulation.content.history || []);
+        
+        // 날짜 형식 변환
+        const revisionDateDisplay = this.formatDateForDisplay(regulation.revisionDate);
+        const reviewDateDisplay = this.formatDateForDisplay(regulation.reviewDate);
+        const announceDateDisplay = this.formatDateForDisplay(regulation.announceDate);
+        const effectiveDateDisplay = this.formatDateForDisplay(regulation.effectiveDate);
+        
+        return `
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>편집 - ${regulation.title}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; }
+        
+        .edit-container {
+            display: flex;
+            height: 100vh;
+        }
+        
+        .sidebar {
+            width: 250px;
+            background: white;
+            border-right: 1px solid #ddd;
+            overflow-y: auto;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .sidebar-item {
+            padding: 15px 20px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+        
+        .sidebar-item:hover {
+            background: #f8f9fa;
+        }
+        
+        .sidebar-item.active {
+            background: #e7f1ff;
+            color: #667eea;
+            border-left: 3px solid #667eea;
+        }
+        
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+            padding-bottom: 100px;
+        }
+        
+        .content-header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .section {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group-inline {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group-inline > .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #495057;
+            font-size: 14px;
+        }
+        
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .form-input-small {
+            width: 150px;
+        }
+        
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        
+        .action-bar {
+            position: fixed;
+            bottom: 0;
+            left: 250px;
+            right: 0;
+            background: white;
+            padding: 15px 30px;
+            border-top: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .status-new { background: #d4edda; color: #155724; }
+        .status-revision { background: #fff3cd; color: #856404; }
+        .status-saved { background: #d1ecf1; color: #0c5460; }
+        
+        .article-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .article-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .article-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .upload-area {
+            border: 2px dashed #ddd;
+            padding: 40px;
+            text-align: center;
+            border-radius: 8px;
+            margin: 20px 0;
+            transition: all 0.3s;
+        }
+        
+        .upload-area:hover {
+            border-color: #667eea;
+            background: #f8f9fa;
+        }
+        
+        .extract-result {
+            display: none;
+            background: #e7f1ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .json-viewer {
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+        
+        .appendix-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+        
+        .appendix-preview {
+            background: white;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .supplement-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        
+        .info-table td {
+            padding: 8px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .info-table td:first-child {
+            width: 120px;
+            font-weight: 500;
+            color: #6c757d;
+        }
+        
+        .date-input {
+            font-family: monospace;
+            letter-spacing: 0.5px;
+        }
+        
+        .date-input::placeholder {
+            color: #adb5bd;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="edit-container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h3 style="font-size: 16px; margin-bottom: 5px;">${regulation.title}</h3>
+                <div style="font-size: 12px; opacity: 0.9;">
+                    ${isNew ? '신규 등록' : isRevision ? '개정 작업' : '편집 모드'}
+                </div>
+            </div>
+            <div class="sidebar-item active" data-section="basic">
+                <span>📋</span> 기본정보
+            </div>
+            <div class="sidebar-item" data-section="articles">
+                <span>📖</span> 조문 및 부칙
+            </div>
+            <div class="sidebar-item" data-section="supplements">
+                <span>📎</span> 부록
+            </div>
+            <div class="sidebar-item" data-section="history">
+                <span>🕒</span> 연혁
+            </div>
+            <div class="sidebar-item" data-section="preview">
+                <span>👁️</span> 미리보기
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="content-header">
+                <h2>${regulation.title}</h2>
+                <p style="color: #6c757d; margin-top: 10px;">
+                    부서: ${regulation.department} | 버전: ${regulation.version} | 
+                    상태: <span class="status-indicator ${isNew ? 'status-new' : isRevision ? 'status-revision' : 'status-saved'}">
+                        ${isNew ? '신규 등록' : isRevision ? '개정 작업중' : '저장됨'}
+                    </span>
+                </p>
+            </div>
+            
+            <!-- 기본정보 섹션 -->
+            <div class="section active" id="basicSection">
+                <h3 style="margin-bottom: 20px;">기본정보</h3>
+                
+                <!-- 분류번호와 제목 -->
+                <div class="form-group-inline">
+                    <div class="form-group" style="flex: 0 0 250px;">
+                        <label class="form-label">분류번호</label>
+                        <input type="text" class="form-input" id="classificationDisplay" 
+                               value="${regulation.classification || '미분류'}" readonly 
+                               style="background: #f8f9fa; font-weight: 500;">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">제목</label>
+                        <input type="text" class="form-input" id="titleInput" value="${regulation.title}">
+                    </div>
+                </div>
+                
+                <!-- 날짜 정보 테이블 -->
+                <table class="info-table">
+                    <tr>
+                        <td>제정일</td>
+                        <td>${regulation.enactmentDate || '2006.07.'}</td>
+                        <td>최종개정일</td>
+                        <td>
+                            <input type="text" class="form-input form-input-small date-input" id="revisionDateInput" 
+                                   value="${revisionDateDisplay}" 
+                                   placeholder="YYYY.MM.DD." style="width: 150px;">
+                        </td>
+                        <td>최종검토일</td>
+                        <td>
+                            <input type="text" class="form-input form-input-small date-input" id="reviewDateInput" 
+                                   value="${reviewDateDisplay}" 
+                                   placeholder="YYYY.MM.DD." style="width: 150px;">
+                        </td>
+                    </tr>
+                </table>
+                
+                <!-- 부서 정보 -->
+                <div class="form-group-inline" style="margin-top: 20px;">
+                    <div class="form-group">
+                        <label class="form-label">담당부서</label>
+                        <input type="text" class="form-input" id="departmentInput" 
+                               value="${regulation.department}" placeholder="예: 정신건강의학과, 소아정신과">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">유관부서</label>
+                        <input type="text" class="form-input" id="relatedDepartmentInput" 
+                               value="${regulation.relatedDepartment || ''}" placeholder="관련 부서 입력">
+                    </div>
+                </div>
+                
+                <!-- 관련기준 -->
+                <div class="form-group">
+                    <label class="form-label">관련기준</label>
+                    <textarea class="form-textarea" id="relatedStandardsInput" rows="4">${regulation.relatedStandards || ''}</textarea>
+                    <small style="color: #6c757d;">예: 4주기 정신의료기관평가기준, JCI Standard 등</small>
+                </div>
+                
+                <!-- 부록 정보 -->
+                <div class="form-group">
+                    <label class="form-label">부록</label>
+                    <input type="text" class="form-input" id="appendixCountInput" 
+                           value="${regulation.appendixCount || '4건'}" readonly style="background: #f8f9fa;">
+                </div>
+                
+                <!-- 공포/시행일 -->
+                <div class="form-group-inline">
+                    <div class="form-group">
+                        <label class="form-label">공포일자</label>
+                        <input type="text" class="form-input date-input" id="announceDateInput" 
+                               value="${announceDateDisplay}"
+                               placeholder="YYYY.MM.DD.">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">시행일자</label>
+                        <input type="text" class="form-input date-input" id="effectiveDateInput" 
+                               value="${effectiveDateDisplay}"
+                               placeholder="YYYY.MM.DD.">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 조문 및 부칙 섹션 -->
+            <div class="section" id="articlesSection">
+                <h3 style="margin-bottom: 20px;">조문 관리</h3>
+                
+                <!-- 조문 파일 업로드 -->
+                <div class="upload-area" style="border-color: #dc3545;">
+                    <h4 style="color: #dc3545;">필수 업로드 파일</h4>
+                    <div style="display: flex; gap: 20px; justify-content: center; margin-top: 20px;">
+                        <div>
+                            <input type="file" id="articlesDocx" accept=".docx" style="display: none;">
+                            <button class="btn btn-primary" onclick="document.getElementById('articlesDocx').click()">
+                                📄 DOCX 파일 선택
+                            </button>
+                            <p id="docxStatus" style="margin-top: 10px; color: #6c757d; font-size: 12px;">미업로드</p>
+                        </div>
+                        <div>
+                            <input type="file" id="articlesPdf" accept=".pdf" style="display: none;">
+                            <button class="btn btn-primary" onclick="document.getElementById('articlesPdf').click()">
+                                📄 PDF 파일 선택
+                            </button>
+                            <p id="pdfStatus" style="margin-top: 10px; color: #6c757d; font-size: 12px;">미업로드</p>
+                        </div>
+                    </div>
+                    <p style="margin-top: 15px; color: #dc3545; font-weight: bold;">
+                        ⚠️ DOCX와 PDF 파일 모두 필수로 업로드해야 합니다.
+                    </p>
+                </div>
+                
+                <!-- Python 처리 결과 -->
+                <div class="extract-result" id="articlesExtractResult">
+                    <h4>추출된 조문 (Python 처리 결과)</h4>
+                    <div class="json-viewer" id="extractedArticlesJson"></div>
+                    <button class="btn btn-success" style="margin-top: 10px;" onclick="window.applyExtractedArticles()">추출 결과 적용</button>
+                </div>
+                
+                <!-- 조문 목록 -->
+                <div id="articlesList" style="margin-top: 20px;">
+                    ${articlesHtml}
+                </div>
+                
+                <!-- 부칙 섹션 -->
+                <div class="appendix-section">
+                    <h3>부칙</h3>
+                    <div class="form-group">
+                        <label class="form-label">부칙 내용</label>
+                        <textarea class="form-textarea" id="appendixContent" rows="6">${regulation.content.appendix || ''}</textarea>
+                    </div>
+                    <div class="appendix-preview">
+                        <strong>부칙 미리보기</strong>
+                        <p id="appendixPreview">${regulation.content.appendix || '부칙 내용이 없습니다.'}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 부록 섹션 -->
+            <div class="section" id="supplementsSection">
+                <h3 style="margin-bottom: 20px;">부록 관리</h3>
+                
+                <div class="upload-area">
+                    <input type="file" id="supplementFiles" accept=".docx,.pdf,.xlsx,.jpg,.png" multiple style="display: none;">
+                    <button class="btn btn-primary" onclick="document.getElementById('supplementFiles').click()">
+                        📎 부록 파일 업로드
+                    </button>
+                    <p style="margin-top: 10px; color: #6c757d;">부록 파일을 업로드하세요 (다중 선택 가능)</p>
+                </div>
+                
+                <div id="supplementsList" style="margin-top: 20px;">
+                    <!-- 부록 목록 -->
+                    ${this.generateSupplementsHTML(regulation.content.supplements || [])}
+                </div>
+                
+                <button class="btn btn-primary" onclick="window.previewSupplements()" style="margin-top: 20px;">
+                    👁️ 부록 미리보기
+                </button>
+            </div>
+            
+            <!-- 연혁 섹션 -->
+            <div class="section" id="historySection">
+                <h3 style="margin-bottom: 20px;">연혁</h3>
+                <div id="historyList">
+                    ${historyHtml}
+                </div>
+            </div>
+            
+            <!-- 미리보기 섹션 -->
+            <div class="section" id="previewSection">
+                <h3 style="margin-bottom: 20px;">미리보기</h3>
+                <div style="padding: 20px; background: #f8f9fa; border-radius: 4px;">
+                    <h4>${regulation.title}</h4>
+                    <p>담당부서: ${regulation.department}</p>
+                    <p>시행일자: ${regulation.effectiveDate || '미정'}</p>
+                    <button class="btn btn-primary" onclick="window.openFullPreview()">전체 미리보기</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="action-bar">
+            <div>
+                <button class="btn btn-secondary" onclick="window.saveDraft()">임시저장</button>
+                <button class="btn btn-success" onclick="window.saveAndContinue()">저장</button>
+            </div>
+            <div>
+                <button class="btn btn-primary" onclick="if(confirm('저장하고 닫으시겠습니까?')) { window.saveAndClose(); }">저장 후 닫기</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 전역 변수
+        window.currentSection = 'basic';
+        window.regulationData = ${regulationJson};
+        window.isDirty = false;
+        window.extractedData = null; // Flask 서버에서 받은 데이터 저장
+        
+        // EditWindow의 날짜 형식 변환 함수를 window에 복사
+        window.formatDateForDisplay = function(dateString) {
+            if (!dateString) return '';
+            
+            // YYYY-MM-DD 형식을 YYYY.MM.DD. 형식으로 변환
+            if (dateString.includes('-')) {
+                const parts = dateString.split('-');
+                if (parts.length === 3) {
+                    return parts[0] + '.' + parts[1] + '.' + parts[2] + '.';
+                }
+            }
+            
+            // 이미 YYYY.MM.DD. 형식이면 그대로 반환
+            if (dateString.includes('.')) {
+                return dateString.endsWith('.') ? dateString : dateString + '.';
+            }
+            
+            return dateString;
+        };
+        
+        // 섹션 전환
+        window.switchSection = function(section) {
+            document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+            document.getElementById(section + 'Section').classList.add('active');
+            
+            document.querySelectorAll('.sidebar-item').forEach(el => {
+                el.classList.remove('active');
+                if(el.dataset.section === section) {
+                    el.classList.add('active');
+                }
+            });
+            
+            window.currentSection = section;
+        };
+        
+        // 사이드바 클릭 이벤트
+        document.querySelectorAll('.sidebar-item').forEach(item => {
+            item.addEventListener('click', function() {
+                window.switchSection(this.dataset.section);
+            });
+        });
+        
+        // 파일 업로드 이벤트
+        const articlesDocx = document.getElementById('articlesDocx');
+        const articlesPdf = document.getElementById('articlesPdf');
+        const supplementFiles = document.getElementById('supplementFiles');
+        
+        if (articlesDocx) articlesDocx.addEventListener('change', handleArticlesDocxUpload);
+        if (articlesPdf) articlesPdf.addEventListener('change', handleArticlesPdfUpload);
+        if (supplementFiles) supplementFiles.addEventListener('change', handleSupplementUpload);
+        
+        // 조문 DOCX 파일 업로드 처리
+        async function handleArticlesDocxUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            document.getElementById('docxStatus').textContent = file.name;
+            document.getElementById('docxStatus').style.color = '#28a745';
+            
+            checkArticlesFilesReady();
+        }
+        
+        // 조문 PDF 파일 업로드 처리
+        async function handleArticlesPdfUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            document.getElementById('pdfStatus').textContent = file.name;
+            document.getElementById('pdfStatus').style.color = '#28a745';
+            
+            checkArticlesFilesReady();
+        }
+        
+        // 조문 파일 준비 상태 확인
+        function checkArticlesFilesReady() {
+            const docxFile = document.getElementById('articlesDocx').files[0];
+            //const pdfFile = document.getElementById('articlesPdf').files[0];
+            
+            //if (docxFile && pdfFile) {
+            if (docxFile) {
+                //processArticlesFiles(docxFile, pdfFile);
+                processArticlesFiles(docxFile, null);
+            }
+        }
+        
+        // Flask 서버와 연동하여 조문 파일 처리
+        async function processArticlesFiles(docxFile, pdfFile) {
+            const formData = new FormData();
+            formData.append('file', docxFile); // Flask는 'file'이라는 이름으로 받음
+            
+            try {
+                // 로딩 표시
+                const resultDiv = document.getElementById('articlesExtractResult');
+                const jsonDiv = document.getElementById('extractedArticlesJson');
+                resultDiv.style.display = 'block';
+                jsonDiv.textContent = '파일을 처리중입니다...';
+                
+                // Flask 서버로 요청
+                const response = await fetch('http://www.wizice.com:5002/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error(\`HTTP error! status: \${response.status}\`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // 조문 데이터 표시
+                    jsonDiv.textContent = JSON.stringify({
+                        document_info: result.document_info,
+                        sections: result.sections
+                    }, null, 2);
+                    
+                    // 조문 목록 업데이트
+                    window.extractedData = result; // 전역 변수에 저장
+                    
+                    // 상태 메시지 업데이트
+                    const statusMsg = document.createElement('p');
+                    statusMsg.style.color = '#28a745';
+                    statusMsg.style.marginTop = '10px';
+                    statusMsg.innerHTML = \`✅ 추출 완료: \${result.sections.length}개 조문, \${result.document_info.이미지개수}개 이미지\`;
+                    resultDiv.appendChild(statusMsg);
+                    
+                } else {
+                    throw new Error(result.error || '파일 처리 실패');
+                }
+                
+            } catch (error) {
+                console.error('파일 처리 중 오류:', error);
+                
+                const resultDiv = document.getElementById('articlesExtractResult');
+                const jsonDiv = document.getElementById('extractedArticlesJson');
+                
+                resultDiv.style.display = 'block';
+                jsonDiv.style.color = '#dc3545';
+                jsonDiv.textContent = \`오류 발생: \${error.message}\\n\\nFlask 서버가 실행 중인지 확인하세요.\\n(http://localhost:5002)\`;
+                
+                // 서버 연결 안내 메시지
+                if (error.message.includes('Failed to fetch')) {
+                    jsonDiv.textContent += '\\n\\n💡 Flask 서버 실행 방법:\\n' +
+                                         'cd /home/wizice/severance/editor\\n' +
+                                         'python app.py';
+                }
+            }
+        }
+        
+        // 부록 파일 업로드 처리
+        async function handleSupplementUpload(event) {
+            const files = event.target.files;
+            if (!files.length) return;
+            
+            const supplementsList = document.getElementById('supplementsList');
+            
+            Array.from(files).forEach((file, index) => {
+                const existingCount = supplementsList.children.length;
+                const supplementDiv = document.createElement('div');
+                supplementDiv.className = 'supplement-item';
+                supplementDiv.innerHTML = \`
+                    <div>
+                        <strong>부록 \${existingCount + index + 1}</strong>: \${file.name}
+                    </div>
+                    <div>
+                        <button class="btn btn-secondary btn-small" onclick="this.parentElement.parentElement.remove()">삭제</button>
+                        <button class="btn btn-primary btn-small" onclick="window.editSupplement(this)">변경</button>
+                    </div>
+                \`;
+                supplementsList.appendChild(supplementDiv);
+            });
+            
+            window.isDirty = true;
+        }
+        
+        // 추출된 조문 적용 - Flask 서버 응답 형식에 맞게 수정
+        window.applyExtractedArticles = function() {
+            if (!window.extractedData || !window.extractedData.sections) {
+                alert('추출된 데이터가 없습니다.');
+                return;
+            }
+            
+            const sections = window.extractedData.sections;
+            const articlesList = document.getElementById('articlesList');
+            articlesList.innerHTML = '';
+            
+            sections.forEach(section => {
+                // Flask에서 반환하는 형식에 맞게 수정
+                const number = section.번호 ? section.번호.replace(/[^0-9]/g, '') : '';
+                const title = section.제목 || '';
+                const content = section.내용 || '';
+                
+                const html = window.createArticleHTML(number, title, content);
+                articlesList.insertAdjacentHTML('beforeend', html);
+            });
+            
+            // 문서 정보도 업데이트
+            if (window.extractedData.document_info) {
+                const info = window.extractedData.document_info;
+                
+                // 제목 업데이트
+                if (info.규정명) {
+                    document.getElementById('titleInput').value = info.규정명;
+                }
+                
+                // 날짜 정보 업데이트
+                if (info.최종개정일) {
+                    document.getElementById('revisionDateInput').value = window.formatDateForDisplay(info.최종개정일);
+                }
+                if (info.최종검토일) {
+                    document.getElementById('reviewDateInput').value = window.formatDateForDisplay(info.최종검토일);
+                }
+                
+                // 담당부서 업데이트
+                if (info.담당부서) {
+                    document.getElementById('departmentInput').value = info.담당부서;
+                }
+                
+                // 관련기준 업데이트
+                if (info.관련기준 && Array.isArray(info.관련기준)) {
+                    document.getElementById('relatedStandardsInput').value = info.관련기준.join('\\n');
+                }
+            }
+            
+            alert(\`\${sections.length}개의 조문이 적용되었습니다.\`);
+            window.isDirty = true;
+        };
+        
+        // 이미지 표시를 위한 추가 함수
+        window.displayExtractedImages = function() {
+            if (!window.extractedData || !window.extractedData.images) {
+                return;
+            }
+            
+            const images = window.extractedData.images;
+            if (images.length > 0) {
+                console.log(\`추출된 이미지 \${images.length}개:\`, images);
+                // 필요시 이미지 미리보기 기능 추가
+            }
+        };
+        
+        // 조문 HTML 생성
+        window.createArticleHTML = function(number, title, content) {
+            return '<div class="article-item" onclick="window.previewArticle(' + number + ')">' +
+                '<div class="article-header">' +
+                '<strong>제' + number + '조' + (title ? ' (' + title + ')' : '') + '</strong>' +
+                '</div>' +
+                '<p style="color: #6c757d; margin-top: 5px;">클릭하여 미리보기</p>' +
+                '</div>';
+        };
+        
+        // 조문 미리보기
+        window.previewArticle = function(articleNumber) {
+            alert('제' + articleNumber + '조 미리보기 화면으로 이동합니다.');
+            // 실제 구현시 미리보기 창 열기
+        };
+        
+        // 부록 편집
+        window.editSupplement = function(button) {
+            const supplementDiv = button.closest('.supplement-item');
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.docx,.pdf,.xlsx,.jpg,.png';
+            input.onchange = function(e) {
+                if (e.target.files[0]) {
+                    supplementDiv.querySelector('strong').nextSibling.textContent = ': ' + e.target.files[0].name;
+                    window.isDirty = true;
+                }
+            };
+            input.click();
+        };
+        
+        // 부록 미리보기
+        window.previewSupplements = function() {
+            alert('부록 미리보기 페이지로 이동합니다.');
+            // 실제 구현시 미리보기 창 열기
+        };
+        
+        // 전체 미리보기
+        window.openFullPreview = function() {
+            const previewWindow = window.open('', 'preview', 'width=800,height=600');
+            previewWindow.document.write(\`
+                <html>
+                <head>
+                    <title>\${window.regulationData.title} - 미리보기</title>
+                    <style>
+                        body { font-family: sans-serif; padding: 20px; }
+                        h1 { color: #667eea; }
+                    </style>
+                </head>
+                <body>
+                    <h1>\${window.regulationData.title}</h1>
+                    <p>분류: \${window.regulationData.classification || '미분류'}</p>
+                    <p>담당부서: \${window.regulationData.department}</p>
+                    <p>시행일자: \${window.regulationData.effectiveDate || '미정'}</p>
+                    <hr>
+                    <h2>조문</h2>
+                    <p>조문 내용이 여기에 표시됩니다.</p>
+                </body>
+                </html>
+            \`);
+        };
+        
+        // 부칙 내용 변경 감지
+        const appendixContent = document.getElementById('appendixContent');
+        if (appendixContent) {
+            appendixContent.addEventListener('input', function() {
+                document.getElementById('appendixPreview').textContent = this.value || '부칙 내용이 없습니다.';
+                window.isDirty = true;
+            });
+        }
+        
+        // 임시저장
+        window.saveDraft = function() {
+            window.collectData();
+            localStorage.setItem('draft_' + window.regulationData.id, JSON.stringify(window.regulationData));
+            alert('임시저장되었습니다.');
+            window.isDirty = false;
+        };
+        
+        // 저장
+        window.saveAndContinue = function() {
+            window.collectData();
+            console.log('저장 데이터:', window.regulationData);
+            alert('저장되었습니다.');
+            window.isDirty = false;
+        };
+        
+        // 저장 후 닫기
+        window.saveAndClose = function() {
+            window.saveAndContinue();
+            window.close();
+        };
+        
+        // 데이터 수집
+        window.collectData = function() {
+            // 기본정보
+            window.regulationData.title = document.getElementById('titleInput').value;
+            window.regulationData.department = document.getElementById('departmentInput').value;
+            window.regulationData.classification = document.getElementById('classificationDisplay').value;
+            window.regulationData.relatedDepartment = document.getElementById('relatedDepartmentInput').value;
+            window.regulationData.relatedStandards = document.getElementById('relatedStandardsInput').value;
+            
+            // 날짜 필드들 - YYYY-MM-DD 형식으로 저장
+            const revisionDateInput = document.getElementById('revisionDateInput').value;
+            const reviewDateInput = document.getElementById('reviewDateInput').value;
+            const announceDateInput = document.getElementById('announceDateInput').value;
+            const effectiveDateInput = document.getElementById('effectiveDateInput').value;
+            
+            window.regulationData.revisionDate = window.formatDateForStorage(revisionDateInput);
+            window.regulationData.reviewDate = window.formatDateForStorage(reviewDateInput);
+            window.regulationData.announceDate = window.formatDateForStorage(announceDateInput);
+            window.regulationData.effectiveDate = window.formatDateForStorage(effectiveDateInput);
+            
+            // 부칙
+            const appendixContent = document.getElementById('appendixContent');
+            if (appendixContent) {
+                window.regulationData.content.appendix = appendixContent.value;
+            }
+        };
+        
+        // 페이지 나가기 경고
+        window.onbeforeunload = function() {
+            if (window.isDirty) {
+                return '변경사항이 저장되지 않았습니다. 페이지를 나가시겠습니까?';
+            }
+        };
+        
+        // 입력 변경 감지
+        document.addEventListener('input', function() {
+            window.isDirty = true;
+        });
+        
+        // 날짜 형식 변환 함수를 window 객체에 추가
+        window.formatDateForStorage = function(dateString) {
+            if (!dateString) return '';
+            
+            // YYYY.MM.DD. 형식을 YYYY-MM-DD 형식으로 변환
+            const cleaned = dateString.replace(/\./g, '-').replace(/-$/, '');
+            
+            // 유효한 날짜 형식인지 확인
+            if (/^\d{4}-\d{2}-\d{2}$/.test(cleaned)) {
+                return cleaned;
+            }
+            
+            return '';
+        };
+        
+        // 자동 저장 (5분마다)
+        setInterval(() => {
+            if (window.isDirty) {
+                window.saveDraft();
+                console.log('자동 저장 완료');
+            }
+        }, 300000);
+        
+        // 날짜 입력 필드 포맷팅
+        document.querySelectorAll('.date-input').forEach(input => {
+            input.addEventListener('blur', function() {
+                const value = this.value.replace(/[^0-9]/g, '');
+                if (value.length === 8) {
+                    const formatted = value.substring(0, 4) + '.' + 
+                                    value.substring(4, 6) + '.' + 
+                                    value.substring(6, 8) + '.';
+                    this.value = formatted;
+                }
+            });
+            
+            input.addEventListener('input', function() {
+                // 숫자와 점만 허용
+                let value = this.value.replace(/[^0-9.]/g, '');
+                
+                // 자동으로 점 추가
+                if (value.length === 4 && !value.includes('.')) {
+                    value = value + '.';
+                } else if (value.length === 7 && value.split('.').length === 2) {
+                    value = value + '.';
+                }
+                
+                this.value = value;
+            });
+        });
+        
+        // 분류번호 표시 (읽기 전용으로 변경)
+    </script>
+</body>
+</html>
+        `;
+    },
+
+    // 조문 HTML 생성
+    generateArticlesHTML(articles) {
+        if (!articles || articles.length === 0) {
+            return '<p style="color: #6c757d;">업로드된 조문이 없습니다. 파일을 업로드해주세요.</p>';
+        }
+        
+        return articles.map(article => `
+            <div class="article-item" onclick="window.previewArticle(${article.number})">
+                <div class="article-header">
+                    <strong>제${article.number}조 (${article.title})</strong>
+                </div>
+                <p style="color: #6c757d; margin-top: 5px;">클릭하여 미리보기</p>
+            </div>
+        `).join('');
+    },
+
+    // 부록 HTML 생성
+    generateSupplementsHTML(supplements) {
+        if (!supplements || supplements.length === 0) {
+            return '<p style="color: #6c757d;">업로드된 부록이 없습니다.</p>';
+        }
+        
+        return supplements.map((supp, index) => `
+            <div class="supplement-item">
+                <div>
+                    <strong>부록 ${index + 1}</strong>: ${supp.title || supp.filename || '제목 없음'}
+                </div>
+                <div>
+                    <button class="btn btn-secondary btn-small" onclick="this.parentElement.parentElement.remove()">삭제</button>
+                    <button class="btn btn-primary btn-small" onclick="window.editSupplement(this)">변경</button>
+                </div>
+            </div>
+        `).join('');
+    },
+
+    // 연혁 HTML 생성
+    generateHistoryHTML(history) {
+        if (!history || history.length === 0) {
+            return '<p style="color: #6c757d;">연혁이 없습니다.</p>';
+        }
+        
+        return history.map(h => `
+            <div style="padding: 10px; background: #f8f9fa; margin-bottom: 10px; border-radius: 4px;">
+                <strong>${h.date}</strong> - ${h.type}<br>
+                ${h.description}
+            </div>
+        `).join('');
+    }
+};

@@ -1,0 +1,838 @@
+{% extends "common/base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="/static/styles.css">
+<style>
+    /* 단색 깔끔한 디자인 */
+    body {
+        background: #f8f9fa;
+        margin: 0;
+        padding: 0;
+    }
+
+    .page-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+        background: white;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+    }
+
+    .modal.active {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .modal-content {
+        background: white;
+        border-radius: 8px;
+        width: 80%;
+        max-width: 900px;
+        max-height: 90vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal-header {
+        padding: 20px;
+        border-bottom: 1px solid #e5e5e5;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-body {
+        padding: 20px;
+        overflow-y: auto;
+        flex: 1;
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #999;
+    }
+
+    .detail-row {
+        margin-bottom: 15px;
+    }
+
+    .detail-label {
+        font-weight: bold;
+        color: #333;
+        display: inline-block;
+        width: 120px;
+    }
+
+    .detail-value {
+        color: #666;
+    }
+
+    .content-box {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        padding: 15px;
+        margin-top: 20px;
+        white-space: pre-wrap;
+        line-height: 1.8;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    /* 3열 그리드 레이아웃 */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .page-title {
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: #1f2937;
+    }
+
+    .classification-grid {
+        display: grid;
+        grid-template-columns: 350px 1fr 500px;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .classification-section {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+        border: 1px solid #dee2e6;
+    }
+
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: #4b5563;
+        border-bottom: 2px solid #e5e7eb;
+        padding-bottom: 0.5rem;
+    }
+
+    .tree-view {
+        border: 1px solid #e5e7eb;
+        border-radius: 4px;
+        padding: 1rem;
+        min-height: 400px;
+        max-height: 600px;
+        overflow-y: auto;
+        background: white;
+    }
+
+    .tree-item {
+        padding: 10px 12px;
+        cursor: pointer;
+        border-radius: 4px;
+        margin-bottom: 4px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.2s;
+    }
+
+    .tree-item:hover {
+        background: #e5e7eb;
+        transform: translateX(2px);
+    }
+
+    .tree-item.selected {
+        background: #667eea;
+        color: white;
+        font-weight: 500;
+    }
+
+    .tree-item-badge {
+        background: rgba(0, 0, 0, 0.08);
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-left: 8px;
+        color: #6b7280;
+    }
+
+    .tree-item.selected .tree-item-badge {
+        background: rgba(255, 255, 255, 0.3);
+        color: white;
+    }
+
+    .regulation-list {
+        border: 1px solid #e5e7eb;
+        border-radius: 4px;
+        padding: 0.5rem;
+        max-height: 600px;
+        overflow-y: auto;
+        background: white;
+    }
+
+    .regulation-item {
+        padding: 10px;
+        border-bottom: 1px solid #e5e7eb;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .regulation-item:hover {
+        background: #f3f4f6;
+    }
+
+    .regulation-item.selected {
+        background: #e7f1ff;
+        border-left: 3px solid #667eea;
+    }
+
+    .regulation-item:last-child {
+        border-bottom: none;
+    }
+
+    .regulation-title {
+        color: #2563eb;
+        font-weight: 500;
+        margin-bottom: 4px;
+    }
+
+    .regulation-info {
+        font-size: 0.875rem;
+        color: #6b7280;
+    }
+
+    .form-section {
+        padding: 1rem;
+        background: white;
+        border-radius: 4px;
+        min-height: 400px;
+        max-height: 600px;
+        overflow-y: auto;
+    }
+
+    .empty-state {
+        padding: 40px 20px;
+        text-align: center;
+        color: #9ca3af;
+    }
+
+    .empty-state-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+
+    /* 연혁 테이블 스타일 */
+    .history-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+    }
+
+    .history-table th {
+        background: #f8f9fa;
+        padding: 8px;
+        text-align: left;
+        font-weight: 600;
+        border-bottom: 2px solid #dee2e6;
+        font-size: 0.85rem;
+    }
+
+    .history-table td {
+        padding: 8px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .history-table tbody tr:hover {
+        background: #f8f9fa;
+    }
+
+    /* 파일 버튼 스타일 */
+    .btn-file {
+        background: #e5e7eb;
+        border: 1px solid #d1d5db;
+        padding: 2px 6px;
+        font-size: 0.7rem;
+        border-radius: 3px;
+        cursor: pointer;
+        margin-right: 2px;
+        transition: all 0.2s;
+    }
+
+    .btn-file:hover {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+
+    /* 삭제 버튼 스타일 */
+    .btn-danger {
+        background: #fee2e2 !important;
+        color: #dc2626 !important;
+        border: 1px solid #fca5a5 !important;
+    }
+
+    .btn-danger:hover {
+        background: #dc2626 !important;
+        color: white !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h2 class="page-title">📜 내규 연혁 관리</h2>
+    </div>
+
+    <div class="classification-grid">
+        <!-- 분류 목록 -->
+        <div class="classification-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 class="section-title" style="margin-bottom: 0; border-bottom: none; padding-bottom: 0;">📂 분류 목록</h3>
+            </div>
+            <div class="tree-view" id="classificationTree">
+                <!-- 분류 목록이 동적으로 생성됨 -->
+            </div>
+        </div>
+
+        <!-- 분류별 내규 목록 -->
+        <div class="classification-section">
+            <h3 class="section-title">📋 내규 목록</h3>
+            <div id="regulationListSection">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📁</div>
+                    <p>분류를 선택하면 해당 내규 목록이 표시됩니다</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 선택한 내규의 연혁 목록 -->
+        <div class="classification-section">
+            <h3 class="section-title">📖 내규 연혁</h3>
+            <div id="historySection" class="form-section">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📄</div>
+                    <p>내규를 선택하면 연혁이 표시됩니다</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 상세보기 모달 -->
+<div id="detailModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalTitle">규정 상세보기</h2>
+            <button class="modal-close" onclick="closeDetailModal()">✕</button>
+        </div>
+        <div class="modal-body" id="modalBody">
+            <!-- 동적으로 내용이 채워짐 -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let selectedClassification = null;
+let selectedRegulation = null;
+let classificationsData = [];
+let regulationsData = [];
+let historyData = [];
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadClassifications();
+    loadAllRegulations();
+    loadAllHistory();
+});
+
+// 날짜 형식 변환 함수 (yyyy-mm-dd -> yyyy.mm.dd.)
+function formatDate(dateStr) {
+    if (!dateStr || dateStr === '-') return '-';
+    const match = dateStr.match(/(\d{4})-(\d{2})-(\d{2})/);
+    if (match) {
+        return `${match[1]}.${match[2]}.${match[3]}.`;
+    }
+    return dateStr;
+}
+
+// 분류 목록 로드
+async function loadClassifications() {
+    try {
+        const response = await fetch('/api/v1/classification/list');
+        const data = await response.json();
+
+        if (data.success) {
+            classificationsData = data.classifications || [];
+            displayClassifications();
+        } else {
+            console.error('Failed to load classifications:', data);
+        }
+    } catch (error) {
+        console.error('Error loading classifications:', error);
+    }
+}
+
+// 전체 내규 목록 로드
+async function loadAllRegulations() {
+    try {
+        const response = await fetch('/api/v1/regulations/current');
+        const data = await response.json();
+
+        if (data.success) {
+            regulationsData = data.data || [];
+        }
+    } catch (error) {
+        console.error('Error loading regulations:', error);
+    }
+}
+
+// 전체 연혁 데이터 로드
+async function loadAllHistory() {
+    try {
+        const response = await fetch('/regulations/api/history');
+        const data = await response.json();
+
+        if (data.success) {
+            historyData = data.data || [];
+        }
+    } catch (error) {
+        console.error('Error loading history:', error);
+    }
+}
+
+// 분류 목록 표시
+function displayClassifications() {
+    const tree = document.getElementById('classificationTree');
+
+    if (!classificationsData || classificationsData.length === 0) {
+        tree.innerHTML = '<div class="empty-state"><p>분류가 없습니다</p></div>';
+        return;
+    }
+
+    tree.innerHTML = classificationsData.map(cat => `
+        <div class="tree-item" onclick="selectClassification('${cat.id}', '${cat.name}')" id="cat-${cat.id}">
+            <span>제${cat.id}장. ${cat.name || '미분류'}<span class="tree-item-badge">${cat.count || 0}개</span></span>
+        </div>
+    `).join('');
+}
+
+// 분류 선택
+function selectClassification(cateId, cateName) {
+    selectedClassification = cateId;
+    selectedRegulation = null;
+
+    // 분류 선택 표시
+    document.querySelectorAll('.tree-item').forEach(item => item.classList.remove('selected'));
+    document.getElementById(`cat-${cateId}`)?.classList.add('selected');
+
+    // 해당 분류의 내규 목록 표시
+    displayRegulations(cateId);
+
+    // 연혁 영역 초기화
+    document.getElementById('historySection').innerHTML = `
+        <div class="empty-state">
+            <div class="empty-state-icon">📄</div>
+            <p>내규를 선택하면 연혁이 표시됩니다</p>
+        </div>
+    `;
+}
+
+// 분류별 내규 목록 표시
+function displayRegulations(cateId) {
+    const section = document.getElementById('regulationListSection');
+
+    // publication_no가 cateId로 시작하는 내규 필터링
+    const filtered = regulationsData.filter(reg => {
+        const pubNo = reg.publication_no || '';
+        return pubNo.startsWith(cateId + '.');
+    });
+
+    if (!filtered || filtered.length === 0) {
+        section.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">📁</div>
+                <p>해당 분류에 내규가 없습니다</p>
+            </div>
+        `;
+        return;
+    }
+
+    section.innerHTML = `
+        <div class="regulation-list">
+            ${filtered.map(reg => {
+                // 해당 내규의 연혁 개수 계산
+                const historyCount = historyData.filter(h =>
+                    h.wzruleid === reg.publication_no || h.wzname === reg.name
+                ).length;
+
+                return `
+                    <div class="regulation-item" onclick="selectRegulation(${reg.rule_id})" id="reg-${reg.rule_id}">
+                        <div class="regulation-title">
+                            ${reg.publication_no || '-'} ${reg.name || '제목 없음'}
+                            ${historyCount > 0 ? `<span class="tree-item-badge" style="margin-left: 8px;">${historyCount}개</span>` : ''}
+                        </div>
+                        <div class="regulation-info"><span style="color: #9ca3af;">제정일:</span> ${formatDate(reg.established_date)}</div>
+                    </div>
+                `;
+            }).join('')}
+        </div>
+    `;
+}
+
+// 내규 선택 - 연혁 로드
+async function selectRegulation(ruleId) {
+    selectedRegulation = ruleId;
+
+    // 내규 선택 표시
+    document.querySelectorAll('.regulation-item').forEach(item => item.classList.remove('selected'));
+    document.getElementById(`reg-${ruleId}`)?.classList.add('selected');
+
+    // 연혁 로드
+    await loadHistoryForRegulation(ruleId);
+}
+
+// 특정 내규의 연혁 로드
+async function loadHistoryForRegulation(ruleId) {
+    const historySection = document.getElementById('historySection');
+
+    try {
+        // 해당 내규의 연혁 조회 - wzRuleId가 동일한 모든 항목
+        const response = await fetch('/regulations/api/history');
+        const data = await response.json();
+
+        if (data.success) {
+            // 선택한 내규와 같은 wzRuleId를 가진 연혁만 필터링
+            const selectedReg = regulationsData.find(r => r.rule_id === ruleId);
+            if (!selectedReg) {
+                historySection.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <p>내규 정보를 찾을 수 없습니다</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // wzruleid로 연혁 필터링
+            const histories = data.data.filter(h => h.wzruleid === selectedReg.publication_no || h.wzname === selectedReg.name);
+
+            if (!histories || histories.length === 0) {
+                historySection.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📄</div>
+                        <p>해당 내규의 연혁이 없습니다</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // 연혁 테이블 표시
+            displayHistoryTable(histories, selectedReg.name);
+        }
+    } catch (error) {
+        console.error('Error loading history:', error);
+        historySection.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">⚠️</div>
+                <p>연혁 로드 중 오류가 발생했습니다</p>
+            </div>
+        `;
+    }
+}
+
+// 연혁 테이블 표시
+function displayHistoryTable(histories, regulationName) {
+    const historySection = document.getElementById('historySection');
+
+    // 날짜 역순 정렬 (최신 순)
+    const sorted = [...histories].sort((a, b) => {
+        const dateA = new Date(a.wzlastrevdate || a.wzestabdate);
+        const dateB = new Date(b.wzlastrevdate || b.wzestabdate);
+        return dateB - dateA;
+    });
+
+    historySection.innerHTML = `
+        <div style="margin-bottom: 1rem;">
+            <strong style="color: #667eea;">${regulationName}</strong>의 연혁
+        </div>
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th width="60">차수</th>
+                    <th width="90">개정일자</th>
+                    <th width="70">유형</th>
+                    <th width="180">파일</th>
+                    <th width="100">작업</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${sorted.map((h, index) => `
+                    <tr>
+                        <td>${sorted.length - index}차</td>
+                        <td>${formatDate(h.wzlastrevdate || h.wzestabdate)}</td>
+                        <td>${h.wzfilehistory ? '수정' : (h.wzedittype || '개정')}</td>
+                        <td>
+                            <button class="btn-file" onclick="downloadHistoryFile(${h.wzruleseq}, 'docx')" title="DOCX 다운로드">DOCX</button>
+                            <button class="btn-file" onclick="downloadHistoryFile(${h.wzruleseq}, 'pdf')" title="PDF 다운로드">PDF</button>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm" style="padding: 4px 8px; font-size: 0.8rem;" onclick="viewHistoryDetail(${h.wzruleseq})">상세</button>
+                            <button class="btn btn-sm btn-danger" style="padding: 4px 8px; font-size: 0.8rem;" onclick="deleteHistoryRegulation(${h.wzruleseq}, '${(h.wzname || '').replace(/'/g, "\\'")}')">삭제</button>
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+// 연혁 파일 다운로드
+async function downloadHistoryFile(ruleId, fileType) {
+    try {
+        const response = await fetch(`/api/v1/regulations/history/${ruleId}/download/${fileType}`, {
+            method: 'GET',
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            alert(errorData.detail || `${fileType.toUpperCase()} 파일을 찾을 수 없습니다.`);
+            return;
+        }
+
+        // 파일 다운로드
+        const blob = await response.blob();
+        const contentDisposition = response.headers.get('Content-Disposition');
+        let filename = `history_${ruleId}.${fileType}`;
+
+        if (contentDisposition) {
+            const filenameMatch = contentDisposition.match(/filename\*=UTF-8''(.+)/);
+            if (filenameMatch) {
+                filename = decodeURIComponent(filenameMatch[1]);
+            }
+        }
+
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+    } catch (error) {
+        console.error('Download error:', error);
+        alert('파일 다운로드 중 오류가 발생했습니다.');
+    }
+}
+
+// 연혁 JSON 미리보기
+async function previewHistoryJson(ruleId) {
+    try {
+        const response = await fetch(`/api/v1/regulations/history/${ruleId}/preview`, {
+            method: 'GET',
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            alert(errorData.detail || 'JSON 파일을 찾을 수 없습니다.');
+            return;
+        }
+
+        const result = await response.json();
+
+        if (result.success && result.data) {
+            showJsonPreviewModal(result);
+        } else {
+            alert('JSON 데이터를 불러올 수 없습니다.');
+        }
+
+    } catch (error) {
+        console.error('Preview error:', error);
+        alert('미리보기 중 오류가 발생했습니다.');
+    }
+}
+
+// JSON 미리보기 모달 표시
+function showJsonPreviewModal(result) {
+    const modal = document.getElementById('detailModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+
+    modalTitle.textContent = `${result.rule_name || '규정'} - JSON 미리보기`;
+
+    const data = result.data;
+    let contentHtml = '';
+
+    // 조문내용 표시
+    if (data['조문내용'] && Array.isArray(data['조문내용'])) {
+        contentHtml = data['조문내용'].map(item => {
+            const indent = (item['레벨'] || 1) * 20;
+            return `<div style="margin-left: ${indent}px; margin-bottom: 5px;">
+                <span style="color: #666;">${item['번호'] || ''}</span> ${item['내용'] || ''}
+            </div>`;
+        }).join('');
+    } else {
+        contentHtml = `<pre style="white-space: pre-wrap; font-size: 0.85rem;">${JSON.stringify(data, null, 2)}</pre>`;
+    }
+
+    modalBody.innerHTML = `
+        <div class="detail-row">
+            <span class="detail-label">규정명:</span>
+            <span class="detail-value">${result.rule_name || '-'}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">분류번호:</span>
+            <span class="detail-value">${result.wzpubno || '-'}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">상태:</span>
+            <span class="detail-value">${result.wznewflag || '-'} ${result.readonly ? '(읽기전용)' : ''}</span>
+        </div>
+        <h3 style="margin-top: 20px; margin-bottom: 10px;">내용</h3>
+        <div class="content-box" style="max-height: 400px; overflow-y: auto;">
+            ${contentHtml}
+        </div>
+    `;
+
+    modal.classList.add('active');
+}
+
+// 연혁 규정 삭제
+async function deleteHistoryRegulation(ruleId, ruleName) {
+    if (!confirm(`정말로 이 연혁 규정을 삭제하시겠습니까?\n\n규정명: ${ruleName}\n\n삭제 시 관련 파일(DOCX, PDF, JSON)도 함께 삭제됩니다.`)) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/v1/regulations/history/${ruleId}?delete_files=true`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            alert(`연혁 규정이 삭제되었습니다.\n\n${result.message}`);
+            // 연혁 목록 새로고침
+            await loadAllHistory();
+            if (selectedRegulation) {
+                await loadHistoryForRegulation(selectedRegulation);
+            }
+        } else {
+            alert(result.detail || '삭제 중 오류가 발생했습니다.');
+        }
+
+    } catch (error) {
+        console.error('Delete error:', error);
+        alert('삭제 중 오류가 발생했습니다.');
+    }
+}
+
+// 연혁 상세보기 - 별도 페이지로 이동
+function viewHistoryDetail(id) {
+    window.location.href = `/regulations/history/${id}`;
+}
+
+function showDetailModal(regulation) {
+    const modal = document.getElementById('detailModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+
+    // 제목 설정
+    modalTitle.textContent = regulation.wzname || '규정 상세보기';
+
+    // 내용 구성
+    let html = `
+        <div class="detail-row">
+            <span class="detail-label">내규명:</span>
+            <span class="detail-value">${regulation.wzname || '-'}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">분류번호:</span>
+            <span class="detail-value">${regulation.wzpubno || '-'}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">소관부서:</span>
+            <span class="detail-value">${regulation.wzmgrdptnm || '-'}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">제정일:</span>
+            <span class="detail-value">${formatDate(regulation.wzestabdate)}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">개정일:</span>
+            <span class="detail-value">${formatDate(regulation.wzlastrevdate)}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">시행일:</span>
+            <span class="detail-value">${formatDate(regulation.wzexecdate)}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">상태:</span>
+            <span class="detail-value">${regulation.wznewflag || '-'}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">편집유형:</span>
+            <span class="detail-value">${regulation.wzedittype || '-'}</span>
+        </div>
+    `;
+
+    // content_text가 있으면 표시
+    if (regulation.content_text) {
+        html += `
+            <h3 style="margin-top: 30px; margin-bottom: 10px;">내규 내용</h3>
+            <div class="content-box">
+                ${regulation.content_text}
+            </div>
+        `;
+    }
+
+    modalBody.innerHTML = html;
+    modal.classList.add('active');
+}
+
+function closeDetailModal() {
+    const modal = document.getElementById('detailModal');
+    modal.classList.remove('active');
+}
+
+// ESC 키로 모달 닫기
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeDetailModal();
+    }
+});
+
+// 모달 외부 클릭시 닫기
+document.getElementById('detailModal').addEventListener('click', (e) => {
+    if (e.target.id === 'detailModal') {
+        closeDetailModal();
+    }
+});
+
+</script>
+{% endblock %}

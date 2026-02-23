@@ -1,0 +1,442 @@
+{% extends "common/base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="/static/styles.css">
+<style>
+    .page-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .page-title {
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: #1f2937;
+    }
+
+    .dept-container {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 2rem;
+    }
+
+    .dept-list-section {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .dept-form-section {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        height: fit-content;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .table th {
+        background: #f9fafb;
+        padding: 12px;
+        text-align: left;
+        font-weight: 600;
+        color: #374151;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .table td {
+        padding: 12px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .table tbody tr:hover {
+        background: #f9fafb;
+        cursor: pointer;
+    }
+
+    .table tbody tr.selected {
+        background: #e7f1ff;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: #374151;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+
+    .btn-primary {
+        background: #667eea;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #5a67d8;
+    }
+
+    .btn-success {
+        background: #48bb78;
+        color: white;
+    }
+
+    .btn-success:hover {
+        background: #38a169;
+    }
+
+    .btn-danger {
+        background: #f56565;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background: #e53e3e;
+    }
+
+    .btn-secondary {
+        background: #e5e7eb;
+        color: #374151;
+    }
+
+    .btn-secondary:hover {
+        background: #d1d5db;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .search-bar {
+        margin-bottom: 1rem;
+        display: flex;
+        gap: 1rem;
+    }
+
+    .search-bar input {
+        flex: 1;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 4px 8px;
+        font-size: 12px;
+        font-weight: 500;
+        border-radius: 4px;
+    }
+
+    .badge-success {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .badge-secondary {
+        background: #e5e7eb;
+        color: #4b5563;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% include "common/nav.html" %}
+
+<div class="page-container">
+    <div class="page-header">
+        <h2 class="page-title">부서 관리</h2>
+        <div>
+            <button class="btn btn-success" onclick="newDepartment()">
+                새 부서 추가
+            </button>
+        </div>
+    </div>
+
+    <div class="dept-container">
+        <!-- 부서 목록 -->
+        <div class="dept-list-section">
+            <div class="search-bar">
+                <input type="text" class="form-control" id="deptSearchInput"
+                       placeholder="부서명, 부서코드로 검색..."
+                       onkeyup="searchDepartments()">
+                <button class="btn btn-primary" onclick="searchDepartments()">검색</button>
+            </div>
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th width="100">부서코드</th>
+                        <th>부서명</th>
+                        <th width="150">상위부서</th>
+                        <th width="80">정렬순서</th>
+                        <th width="80">상태</th>
+                    </tr>
+                </thead>
+                <tbody id="departmentList">
+                    <tr>
+                        <td colspan="5" class="text-center">데이터를 불러오는 중...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 부서 정보 폼 -->
+        <div class="dept-form-section">
+            <h3 style="margin-top: 0; margin-bottom: 1.5rem;">부서 정보</h3>
+            <form id="departmentForm">
+                <div class="form-group">
+                    <label>부서코드 <span style="color: red;">*</span></label>
+                    <input type="text" class="form-control" id="deptCode" maxlength="20">
+                </div>
+                <div class="form-group">
+                    <label>부서명 <span style="color: red;">*</span></label>
+                    <input type="text" class="form-control" id="deptName" maxlength="50">
+                </div>
+                <div class="form-group">
+                    <label>상위부서</label>
+                    <select class="form-control" id="parentDept">
+                        <option value="">최상위 부서</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>정렬순서</label>
+                    <input type="number" class="form-control" id="sortOrder" value="1" min="1">
+                </div>
+                <div class="form-group">
+                    <label>사용여부</label>
+                    <select class="form-control" id="deptActive">
+                        <option value="Y">사용</option>
+                        <option value="N">미사용</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>설명</label>
+                    <textarea class="form-control" id="deptDescription" rows="3"></textarea>
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-primary" onclick="saveDepartment()">저장</button>
+                    <button type="button" class="btn btn-secondary" onclick="resetForm()">초기화</button>
+                    <button type="button" class="btn btn-danger" onclick="deleteDepartment()">삭제</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+let selectedDept = null;
+let departments = [];
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadDepartments();
+});
+
+async function loadDepartments() {
+    try {
+        const response = await fetch('/api/v1/wz_dept/list');
+        const data = await response.json();
+
+        if (data.success) {
+            departments = data.departments || [];
+            displayDepartments(departments);
+            updateParentOptions(departments);
+        }
+    } catch (error) {
+        console.error('Error loading departments:', error);
+        document.getElementById('departmentList').innerHTML =
+            '<tr><td colspan="5" class="text-center">데이터 로드 실패</td></tr>';
+    }
+}
+
+function displayDepartments(data) {
+    const tbody = document.getElementById('departmentList');
+
+    if (!data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center">조회된 데이터가 없습니다.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = data.map(dept => `
+        <tr onclick="selectDepartment('${dept.dept_code}')" ${selectedDept && selectedDept.dept_code === dept.dept_code ? 'class="selected"' : ''}>
+            <td>${dept.dept_code}</td>
+            <td>${dept.dept_name}</td>
+            <td>${dept.parent_dept_name || '-'}</td>
+            <td>${dept.sort_order || '1'}</td>
+            <td>
+                ${dept.active === 'Y' ?
+                    '<span class="badge badge-success">사용</span>' :
+                    '<span class="badge badge-secondary">미사용</span>'}
+            </td>
+        </tr>
+    `).join('');
+}
+
+function updateParentOptions(data) {
+    const select = document.getElementById('parentDept');
+    select.innerHTML = '<option value="">최상위 부서</option>';
+
+    data.forEach(dept => {
+        const option = document.createElement('option');
+        option.value = dept.dept_code;
+        option.textContent = dept.dept_name;
+        select.appendChild(option);
+    });
+}
+
+function selectDepartment(code) {
+    selectedDept = departments.find(d => d.dept_code === code);
+
+    if (selectedDept) {
+        document.getElementById('deptCode').value = selectedDept.dept_code;
+        document.getElementById('deptName').value = selectedDept.dept_name;
+        document.getElementById('parentDept').value = selectedDept.parent_dept_code || '';
+        document.getElementById('sortOrder').value = selectedDept.sort_order || 1;
+        document.getElementById('deptActive').value = selectedDept.active || 'Y';
+        document.getElementById('deptDescription').value = selectedDept.description || '';
+
+        // 선택된 행 하이라이트
+        document.querySelectorAll('#departmentList tr').forEach(tr => {
+            tr.classList.remove('selected');
+        });
+        event.currentTarget.classList.add('selected');
+    }
+}
+
+function newDepartment() {
+    selectedDept = null;
+    resetForm();
+}
+
+function resetForm() {
+    document.getElementById('departmentForm').reset();
+    document.getElementById('sortOrder').value = 1;
+    document.getElementById('deptActive').value = 'Y';
+
+    document.querySelectorAll('#departmentList tr').forEach(tr => {
+        tr.classList.remove('selected');
+    });
+}
+
+async function saveDepartment() {
+    const deptData = {
+        dept_code: document.getElementById('deptCode').value,
+        dept_name: document.getElementById('deptName').value,
+        parent_dept_code: document.getElementById('parentDept').value || null,
+        sort_order: parseInt(document.getElementById('sortOrder').value),
+        active: document.getElementById('deptActive').value,
+        description: document.getElementById('deptDescription').value
+    };
+
+    if (!deptData.dept_code || !deptData.dept_name) {
+        alert('부서코드와 부서명은 필수입니다.');
+        return;
+    }
+
+    try {
+        const url = selectedDept ?
+            `/api/v1/wz_dept/update/${selectedDept.dept_code}` :
+            '/api/v1/wz_dept/create';
+
+        const method = selectedDept ? 'PUT' : 'POST';
+
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(deptData)
+        });
+
+        if (response.ok) {
+            alert('저장되었습니다.');
+            loadDepartments();
+            resetForm();
+        } else {
+            alert('저장 중 오류가 발생했습니다.');
+        }
+    } catch (error) {
+        console.error('Error saving department:', error);
+        alert('저장 중 오류가 발생했습니다.');
+    }
+}
+
+async function deleteDepartment() {
+    if (!selectedDept) {
+        alert('삭제할 부서를 선택하세요.');
+        return;
+    }
+
+    if (!confirm(`'${selectedDept.dept_name}' 부서를 삭제하시겠습니까?`)) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/v1/wz_dept/delete/${selectedDept.dept_code}`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            alert('삭제되었습니다.');
+            loadDepartments();
+            resetForm();
+        } else {
+            alert('삭제 중 오류가 발생했습니다.');
+        }
+    } catch (error) {
+        console.error('Error deleting department:', error);
+        alert('삭제 중 오류가 발생했습니다.');
+    }
+}
+
+function searchDepartments() {
+    const keyword = document.getElementById('deptSearchInput').value.toLowerCase();
+
+    if (!keyword) {
+        displayDepartments(departments);
+        return;
+    }
+
+    const filtered = departments.filter(dept =>
+        dept.dept_code.toLowerCase().includes(keyword) ||
+        dept.dept_name.toLowerCase().includes(keyword)
+    );
+
+    displayDepartments(filtered);
+}
+</script>
+{% endblock %}

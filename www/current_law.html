@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>국가법령정보센터</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+        }
+        
+        /* 헤더 스타일 */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #fff;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo img {
+            height: 40px;
+            margin-right: 10px;
+        }
+        
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .logo-text span:first-child {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .logo-text span:last-child {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .user-menu {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            font-size: 12px;
+        }
+        
+        .user-menu a {
+            text-decoration: none;
+            color: #666;
+        }
+        
+        /* 검색 바 스타일 */
+        .search-bar {
+            display: flex;
+            justify-content: center;
+            padding: 15px 0;
+            background-color: #fff;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .search-container {
+            display: flex;
+            width: 600px;
+            border: 2px solid #4169e1;
+            border-radius: 2px;
+        }
+        
+        .search-input {
+            flex-grow: 1;
+            padding: 8px 15px;
+            border: none;
+            outline: none;
+            font-size: 14px;
+        }
+        
+        .search-type {
+            background-color: #f5f5f5;
+            padding: 0 10px;
+            display: flex;
+            align-items: center;
+            border-left: 1px solid #ddd;
+            font-size: 12px;
+        }
+        
+        .search-button {
+            background-color: #4169e1;
+            color: white;
+            border: none;
+            padding: 0 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+        }
+        
+        /* 메인 네비게이션 */
+        .main-nav {
+            background-color: #4169e1;
+            display: flex;
+        }
+        
+        .main-menu {
+            display: flex;
+            list-style: none;
+            width: 100%;
+        }
+        
+        .main-menu li {
+            flex: 1;
+            text-align: center;
+            padding: 15px 0;
+            color: #fff;
+            cursor: pointer;
+            font-size: 14px;
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .main-menu li:last-child {
+            border-right: none;
+        }
+        
+        .main-menu .active {
+            background-color: #3457b2;
+        }
+        
+        /* 브레드크럼 네비게이션 */
+        .breadcrumb {
+            background-color: #fff;
+            padding: 10px 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .breadcrumb a {
+            text-decoration: none;
+            color: #666;
+        }
+        
+        .breadcrumb span {
+            margin: 0 5px;
+            color: #999;
+        }
+        
+        /* 서브 네비게이션 */
+        .sub-nav {
+            display: flex;
+            background-color: #fff;
+            border-bottom: 1px solid #ddd;
+            padding: 10px 20px;
+        }
+        
+        .sub-menu {
+            display: flex;
+            list-style: none;
+            gap: 20px;
+        }
+        
+        .sub-menu li {
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .sub-menu .active {
+            background-color: #f0f0f0;
+            color: #333;
+            font-weight: bold;
+            border-radius: 3px;
+        }
+        
+        /* 법령 검색 옵션 */
+        .search-options {
+            display: flex;
+            justify-content: space-between;
+            background-color: #f9f9f9;
+            padding: 10px 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .search-type-options {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .search-type-options label {
+            display: flex;
+            align-items: center;
+            font-size: 13px;
+            color: #333;
+            cursor: pointer;
+        }
+        
+        .search-filters {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .search-filters button, .search-filters select {
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            background-color: #fff;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
+        .search-filters .search-button {
+            background-color: #4169e1;
+            color: #fff;
+        }
+        
+        /* 검색 결과 카운트 */
+        .result-count {
+            background-color: #fff;
+            padding: 10px 20px;
+            font-size: 13px;
+            color: #333;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .result-count strong {
+            color: #e74c3c;
+        }
+        
+        .result-options {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .result-options select, .result-options input {
+            border: 1px solid #ddd;
+            padding: 2px 5px;
+            font-size: 12px;
+        }
+        
+        /* 검색 결과 테이블 */
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #fff;
+        }
+        
+        .result-table th {
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            padding: 10px;
+            font-size: 13px;
+            color: #333;
+            text-align: center;
+            font-weight: normal;
+        }
+        
+        .result-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            font-size: 13px;
+            color: #333;
+            vertical-align: top;
+        }
+        
+        .result-table tr:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .result-table .new {
+            display: inline-block;
+            background-color: #e74c3c;
+            color: #fff;
+            font-size: 11px;
+            padding: 2px 4px;
+            border-radius: 2px;
+            margin-right: 5px;
+        }
+        
+        .result-table .centered {
+            text-align: center;
+        }
+        
+        /* 페이지네이션 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            padding: 20px 0;
+            background-color: #fff;
+            border-top: 1px solid #ddd;
+        }
+        
+        .pagination a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            margin: 0 5px;
+            border: 1px solid #ddd;
+            text-decoration: none;
+            color: #666;
+            font-size: 13px;
+        }
+        
+        .pagination a.active {
+            background-color: #4169e1;
+            color: #fff;
+            border-color: #4169e1;
+        }
+        
+        .pagination a:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .pagination .arrow {
+            font-weight: bold;
+        }
+
+        /* 푸터 */
+        .footer {
+            background-color: #333;
+            color: #999;
+            padding: 20px;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .footer-left {
+            display: flex;
+        }
+        
+        .footer-icon {
+            margin-right: 15px;
+        }
+        
+        .footer-icon svg {
+            width: 20px;
+            height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 헤더 -->
+    <div class="header">
+        <div class="logo">
+            <img src="https://via.placeholder.com/40x40/4169e1/ffffff?text=법" alt="법제처">
+            <div class="logo-text">
+                <span>법제처</span>
+                <span>국가법령정보센터</span>
+            </div>
+        </div>
+        <div class="user-menu">
+            <a href="#">로그인</a>
+            <a href="#">회원가입</a>
+            <a href="#">국가법령 안내소식</a>
+            <a href="#">English</a>
+            <a href="#">최근</a>
+            <a href="#">▲</a>
+            <a href="#">▼</a>
+        </div>
+    </div>
+    
+    <!-- 검색 바 -->
+    <div class="search-bar">
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="주제어, 법령명 등을 입력하세요.">
+            <div class="search-type">
+                <span>전체</span>
+                <span>▼</span>
+            </div>
+            <button class="search-button">검색</button>
+        </div>
+    </div>
+    
+    <!-- 메인 네비게이션 -->
+    <nav class="main-nav">
+        <ul class="main-menu">
+            <li class="active">법령<br>(헌법・대통령령・부령)</li>
+            <li>자치법규</li>
+            <li>행정규칙</li>
+            <li>판례・해석례등</li>
+            <li>별표・서식</li>
+            <li>행정・공공기관 정보</li>
+            <li>그밖의 정보</li>
+        </ul>
+    </nav>
+    
+    <!-- 브레드크럼 네비게이션 -->
+    <div class="breadcrumb">
+        <a href="#">HOME</a>
+        <span>></span>
+        <a href="#">법령</a>
+        <span>></span>
+        <a href="#">전체법령</a>
+        <span>></span>
+        <a href="#">법령명</a>
+    </div>
+    
+    <!-- 서브 네비게이션 -->
+    <div class="sub-nav">
+        <ul class="sub-menu">
+            <li class="active">법령명</li>
+            <li>법령본문</li>
+            <li>조문별목록</li>
+            <li>본칙</li>
+            <li>제개정이유</li>
+        </ul>
+    </div>
+    
+    <!-- 법령 검색 옵션 -->
+    <div class="search-options">
+        <div class="search-type-options">
+            <label>
+                <input type="radio" name="law-type" checked> 현행법령
+            </label>
+            <label>
+                <input type="radio" name="law-type"> 연혁법령
+            </label>
+            <label>
+                <input type="radio" name="law-type"> 근대법령
+            </label>
+            <label>
+                <input type="radio" name="law-type"> 외국어법령
+            </label>
+            <label>
+                <input type="radio" name="law-type"> 원문이미지
+            </label>
+            <label>
+                <input type="radio" name="law-type"> 조약
+            </label>
+        </div>
+        <div class="search-filters">
+            <button class="search-button">상세검색</button>
+            <button>초기화</button>
+        </div>
+    </div>
+    
+    <!-- 검색 결과 카운트 -->
+    <div class="result-count">
+        <div>총 <strong>5,049</strong>건</div>
+        <div class="result-options">
+            <select>
+                <option>기본정렬</option>
+            </select>
+            <select>
+                <option>전체</option>
+            </select>
+            <select>
+                <option>50</option>
+            </select>
+            <button>보기</button>
+            <button>↑</button>
+        </div>
+    </div>
+    
+    <!-- 검색 결과 테이블 -->
+    <table class="result-table">
+        <thead>
+            <tr>
+                <th style="width: 5%;">번호</th>
+                <th>법령명</th>
+                <th style="width: 10%;">공포일자</th>
+                <th style="width: 10%;">법령종류</th>
+                <th style="width: 10%;">공포번호</th>
+                <th style="width: 10%;">시행일자</th>
+                <th style="width: 10%;">제정개정구분</th>
+                <th style="width: 10%;">소관부처</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="centered">1</td>
+                <td>10・27판문 피해자의 명예회복 등에 관한 법률</td>
+                <td class="centered">2023. 8. 8.</td>
+                <td class="centered">법률</td>
+                <td class="centered">제19592호</td>
+                <td class="centered">2023. 8. 8.</td>
+                <td class="centered">타법개정</td>
+                <td class="centered">문화체육관광부</td>
+            </tr>
+            <tr>
+                <td class="centered">2</td>
+                <td>10・27판문 피해자의 명예회복 등에 관한 법률 시행령</td>
+                <td class="centered">2024. 11. 12.</td>
+                <td class="centered">대통령령</td>
+                <td class="centered">제34989호</td>
+                <td class="centered">2024. 11. 12.</td>
+                <td class="centered">타법개정</td>
+                <td class="centered">문화체육관광부</td>
+            </tr>
+            <tr>
+                <td class="centered">3</td>
+                <td>10・29미얀마사 피해자 권리보장과 진상규명 및 재발방지를 위한 특별법</td>
+                <td class="centered">2024. 5. 21.</td>
+                <td class="centered">법률</td>
+                <td class="centered">제20427호</td>
+                <td class="centered">2024. 5. 21.</td>
+                <td class="centered">제정</td>
+                <td>10・29미얀마사 피해자 권리보장과진상규명위원회<br>행정안전부</td>
+            </tr>
+            <tr>
+                <td class="centered">4</td>
+                <td>10・29미얀마사 피해자 권리보장과 진상규명 및 재발방지를 위한 특별법 시행령</td>
+                <td class="centered">2025. 1. 14.</td>
+                <td class="centered">대통령령</td>
+                <td class="centered">제35200호</td>
+                <td class="centered">2025. 1. 14.</td>
+                <td class="centered">제정</td>
+                <td>10・29미얀마사 피해자 권리보장과진상규명위원회<br>행정안전부</td>
+            </tr>
+            <tr>
+                <td class="centered">5</td>
+                <td>112신고의 운영 및 위치에 관한 법률</td>
+                <td class="centered">2024. 1. 2.</td>
+                <td class="centered">법률</td>
+                <td class="centered">제19870호</td>
+                <td class="centered">2024. 7. 3.</td>
+                <td class="centered">제정</td>
+                <td class="centered">경찰청</td>
+            </tr>
+            <tr>
+                <td class="centered">6</td>
+                <td>112신고의 운영 및 위치에 관한 법률 시행령</td>
+                <td class="centered">2024. 7. 2.</td>
+                <td class="centered">대통령령</td>
+                <td class="centered">제34629호</td>
+                <td class="centered">2024. 7. 3.</td>
+                <td class="centered">제정</td>
+                <td class="centered">경찰청</td>
+            </tr>
+            <tr>
+                <td class="centered">7</td>
+                <td><span class="new">N</span>119구조・구급에 관한 법률</td>
+                <td class="centered">2024. 12. 3.</td>
+                <td class="centered">법률</td>
+                <td class="centered">제20543호</td>
+                <td class="centered">2025. 6. 4.</td>
+                <td class="centered">일부개정</td>
+                <td class="centered">소방청</td>
+            </tr>
+            <tr>
+                <td class="centered">8</td>
+                <td>119구조・구급에 관한 법률</td>
+                <td class="centered">2024. 1. 2.</td>
+                <td class="centered">법률</td>
+                <td class="centered">제19871호</td>
+                <td class="centered">2024. 7. 3.</td>
+                <td class="centered">일부개정</td>
+                <td class="centered">소방청</td>
+            </tr>
+            <tr>
+                <td class="centered">9</td>
+                <td>119구조・구급에 관한 법률 시행령</td>
+                <td class="centered">2024. 7. 2.</td>
+                <td class="centered">대통령령</td>
+                <td class="centered">제34631호</td>
+                <td class="centered">2024. 7. 3.</td>
+                <td class="centered">일부개정</td>
+                <td class="centered">소방청</td>
+            </tr>
+            <tr>
+                <td class="centered">10</td>
+                <td>119구조・구급에 관한 법률 시행규칙</td>
+                <td class="centered">2024. 10. 4.</td>
+                <td class="centered">행정안전부령</td>
+                <td class="centered">제520호</td>
+                <td class="centered">2025. 1. 1.</td>
+                <td class="centered">일부개정</td>
+                <td class="centered">소방청</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <!-- 페이지네이션 -->
+    <div class="pagination">
+        <a href="#" class="arrow">《</a>
+        <a href="#" class="arrow">〈</a>
+        <a href="#" class="active">1</a>
+        <a href="#">2</a>
+        <a href="#">3</a>
+        <a href="#">4</a>
+        <a href="#">5</a>
+        <a href="#" class="arrow">〉</a>
+        <a href="#" class="arrow">》</a>
+    </div>
+    
+    <!-- 푸터 -->
+    <div class="footer">
+        <div class="footer-left">
+            <div class="footer-icon"></div>
+            <div>검색</div>
+        </div>
+        <div class="footer-right">
+            오후 5:36
+        </div>
+    </div>
+</body>
+</html>

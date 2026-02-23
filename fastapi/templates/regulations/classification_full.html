@@ -1,0 +1,973 @@
+{% extends "common/base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="/static/styles.css">
+<style>
+    /* 단색 깔끔한 디자인 */
+    body {
+        background: #f8f9fa;
+        margin: -2px;
+        padding: 0;
+    }
+
+    .page-container {
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 20px;
+        background: white;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .page-title {
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: #1f2937;
+    }
+
+    .classification-grid {
+        display: grid;
+        grid-template-columns: 350px 1fr 500px;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .classification-section {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+        border: 1px solid #dee2e6;
+    }
+
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: #4b5563;
+        border-bottom: 2px solid #e5e7eb;
+        padding-bottom: 0.5rem;
+    }
+
+    .tree-view {
+        border: 1px solid #e5e7eb;
+        border-radius: 4px;
+        padding: 1rem;
+        min-height: 400px;
+        max-height: 600px;
+        overflow-y: auto;
+        background: #fafafa;
+    }
+
+    .tree-item {
+        padding: 10px 12px;
+        cursor: pointer;
+        border-radius: 4px;
+        margin-bottom: 4px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.2s;
+    }
+
+    .tree-item:hover {
+        background: #e5e7eb;
+        transform: translateX(2px);
+    }
+
+    .tree-item.selected {
+        background: #667eea;
+        color: white;
+        font-weight: 500;
+    }
+
+    .tree-item-badge {
+        background: rgba(0, 0, 0, 0.08);
+        padding: 2px 3px;
+        border-radius: 2px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        margin-left: 8px;
+        color: #6b7280;
+    }
+
+    .tree-item.selected .tree-item-badge {
+        background: rgba(255, 255, 255, 0.3);
+        color: white;
+    }
+
+    /* 편집 모드일 때 배지 숨김 */
+    .edit-mode .tree-item-badge {
+        display: none;
+    }
+
+    .regulation-list {
+        border: 1px solid #e5e7eb;
+        border-radius: 4px;
+        padding: 0.5rem;
+        max-height: 500px;
+        overflow-y: auto;
+        background: #fafafa;
+    }
+
+    .regulation-item {
+        padding: 10px;
+        border-bottom: 1px solid #e5e7eb;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .regulation-item:hover {
+        background: #f3f4f6;
+    }
+
+    .regulation-item:last-child {
+        border-bottom: none;
+    }
+
+    .regulation-title {
+        color: #2563eb;
+        font-weight: 500;
+        margin-bottom: 4px;
+    }
+
+    .regulation-info {
+        font-size: 0.875rem;
+        color: #6b7280;
+    }
+
+    .form-section {
+        padding: 1rem;
+        background: #f9fafb;
+        border-radius: 4px;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: #374151;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+
+    .btn-primary {
+        background: #667eea;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #5a67d8;
+    }
+
+    .btn-success {
+        background: #48bb78;
+        color: white;
+    }
+
+    .btn-success:hover {
+        background: #38a169;
+    }
+
+    .btn-danger {
+        background: #f56565;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background: #e53e3e;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .stats-box {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 1rem;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 600;
+        color: #667eea;
+    }
+
+    .stat-label {
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+
+    .empty-state {
+        padding: 40px 20px;
+        text-align: center;
+        color: #9ca3af;
+    }
+
+    .empty-state-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+
+    /* 미리보기 모달 */
+    .preview-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 3000;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .preview-modal.active {
+        display: flex;
+    }
+
+    .preview-content {
+        background: white;
+        border-radius: 8px;
+        width: 80%;
+        max-width: 900px;
+        max-height: 80vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .preview-header {
+        padding: 20px;
+        border-bottom: 1px solid #e5e5e5;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #667eea;
+        color: white;
+    }
+
+    .preview-body {
+        padding: 20px;
+        overflow-y: auto;
+        flex: 1;
+        line-height: 1.8;
+    }
+
+    .preview-close {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: white;
+    }
+
+    .preview-close:hover {
+        opacity: 0.8;
+    }
+
+    /* 편집 모드 버튼 스타일 */
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+
+    .btn-edit-mode {
+        background: #f0f0f0;
+        border: 1px solid #d0d0d0;
+        color: #495057;
+        transition: all 0.2s;
+    }
+
+    .btn-edit-mode:hover {
+        background: #e0e0e0;
+        border-color: #b0b0b0;
+    }
+
+    .btn-edit-mode.active {
+        background: #667eea;
+        border-color: #5a67d8;
+        color: white;
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #5a6268;
+    }
+
+    /* 편집 모드 활성화 시 분류 항목 스타일 */
+    .tree-item-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .tree-item-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+    }
+
+    .tree-item-actions {
+        display: none; /* 기본적으로 숨김 */
+        gap: 4px;
+    }
+
+    /* 편집 모드일 때만 액션 버튼 표시 */
+    .edit-mode .tree-item-actions {
+        display: flex;
+    }
+
+    .btn-edit-item {
+        padding: 4px 8px;
+        background: rgba(102, 126, 234, 0.1);
+        border: 1px solid rgba(102, 126, 234, 0.3);
+        border-radius: 4px;
+        color: #667eea;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-edit-item:hover {
+        background: rgba(102, 126, 234, 0.2);
+        border-color: rgba(102, 126, 234, 0.5);
+    }
+
+    .tree-item.selected .btn-edit-item {
+        background: rgba(255, 255, 255, 0.3);
+        border-color: rgba(255, 255, 255, 0.5);
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-container">
+    <div class="page-header">
+        <h2 class="page-title">분류 관리</h2>
+        <div>
+            <button class="btn btn-success" onclick="addNewCategory()">
+                ➕ 새 분류 추가
+            </button>
+        </div>
+    </div>
+
+    <!-- 통계 정보 -->
+    <div class="stats-box" id="statsBox">
+        <!-- 동적으로 생성됨 -->
+    </div>
+
+    <div class="classification-grid">
+        <!-- 분류 목록 -->
+        <div class="classification-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 class="section-title" style="margin-bottom: 0; border-bottom: none; padding-bottom: 0;">📂 분류 목록</h3>
+                <button class="btn btn-sm btn-edit-mode" onclick="toggleEditMode()" id="editModeBtn">
+                    ✏️ 편집
+                </button>
+            </div>
+            <div class="tree-view" id="classificationTree">
+                <!-- 분류 목록이 동적으로 생성됨 -->
+            </div>
+        </div>
+
+        <!-- 분류별 내규 목록 -->
+        <div class="classification-section">
+            <h3 class="section-title">📋 내규 목록</h3>
+            <div id="regulationListSection">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📁</div>
+                    <p>분류를 선택하면 해당 내규 목록이 표시됩니다</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 내규 미리보기 -->
+        <div class="classification-section">
+            <h3 class="section-title">📖 내규 미리보기</h3>
+            <div id="previewSection" class="form-section">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📄</div>
+                    <p>내규를 선택하면 미리보기가 표시됩니다</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 미리보기 모달 -->
+<div id="previewModal" class="preview-modal">
+    <div class="preview-content">
+        <div class="preview-header">
+            <h2 id="previewTitle">내규 미리보기</h2>
+            <button class="preview-close" onclick="closePreviewModal()">✕</button>
+        </div>
+        <div class="preview-body" id="previewBody">
+            <!-- 미리보기 내용이 표시됩니다 -->
+        </div>
+    </div>
+</div>
+
+<!-- 분류 추가 모달 -->
+<div id="categoryModal" class="preview-modal">
+    <div class="preview-content" style="max-width: 500px;">
+        <div class="preview-header">
+            <h2>새 분류 추가</h2>
+            <button class="preview-close" onclick="closeCategoryModal()">✕</button>
+        </div>
+        <div class="preview-body">
+            <div class="form-group">
+                <label>분류 번호 (장)</label>
+                <input type="number" class="form-control" id="newCategoryCode" placeholder="예: 16" min="1">
+            </div>
+            <div class="form-group">
+                <label>분류명</label>
+                <input type="text" class="form-control" id="newCategoryName" placeholder="예: 의료정보관리">
+            </div>
+            <div class="btn-group" style="justify-content: flex-end; margin-top: 20px;">
+                <button class="btn btn-secondary" onclick="closeCategoryModal()">취소</button>
+                <button class="btn btn-primary" onclick="saveNewCategory()">저장</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 분류 편집 모달 -->
+<div id="editCategoryModal" class="preview-modal">
+    <div class="preview-content" style="max-width: 500px;">
+        <div class="preview-header">
+            <h2>분류 편집</h2>
+            <button class="preview-close" onclick="closeEditCategoryModal()">✕</button>
+        </div>
+        <div class="preview-body">
+            <div class="form-group">
+                <label>분류 번호 (장)</label>
+                <input type="number" class="form-control" id="editCategoryCode" readonly style="background: #f0f0f0; cursor: not-allowed;">
+            </div>
+            <div class="form-group">
+                <label>분류명 <span style="color: #999; font-size: 0.875rem;">(최대 200자)</span></label>
+                <input type="text" class="form-control" id="editCategoryName" placeholder="분류명을 입력하세요" maxlength="200" required>
+            </div>
+            <div class="btn-group" style="justify-content: flex-end; margin-top: 20px;">
+                <button class="btn btn-secondary" onclick="closeEditCategoryModal()">취소</button>
+                <button class="btn btn-primary" onclick="saveEditCategory()">저장</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+let selectedCategory = null;
+let categories = [];
+let regulations = {};
+let editMode = false;
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadCategories();
+});
+
+// 분류 목록 로드
+async function loadCategories() {
+    try {
+        const response = await fetch('/api/v1/classification/list', {
+            credentials: 'include'
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            categories = data.classifications || [];
+            displayTree(categories);
+            updateStats(categories);
+        }
+    } catch (error) {
+        console.error('Error loading categories:', error);
+    }
+}
+
+// 분류 트리 표시
+function displayTree(data) {
+    const tree = document.getElementById('classificationTree');
+
+    if (!data || data.length === 0) {
+        tree.innerHTML = '<div class="empty-state"><p>분류 데이터가 없습니다.</p></div>';
+        return;
+    }
+
+    // 정렬 (order 우선, 그 다음 id)
+    data.sort((a, b) => {
+        if (a.order && b.order) return a.order - b.order;
+        return parseInt(a.id) - parseInt(b.id);
+    });
+
+    let html = '';
+    data.forEach(cat => {
+        html += `
+            <div class="tree-item" onclick="selectCategory('${cat.id}')">
+                <div class="tree-item-content">
+                    <div class="tree-item-left">
+                        <span>제${cat.id}장. ${cat.name}</span>
+                        <span class="tree-item-badge">${cat.count || 0}개</span>
+                    </div>
+                    <div class="tree-item-actions">
+                        <button class="btn-edit-item" onclick="event.stopPropagation(); editCategory('${cat.id}', '${cat.name.replace(/'/g, "\\'")}')">
+                            ✏️
+                        </button>
+                        <button class="btn-edit-item" style="background: #dc3545;" onclick="event.stopPropagation(); deleteCategory('${cat.id}', '${cat.name.replace(/'/g, "\\'")}', ${cat.count || 0})">
+                            🗑️
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    tree.innerHTML = html;
+}
+
+// 통계 업데이트
+function updateStats(data) {
+    const statsBox = document.getElementById('statsBox');
+
+    // 전체 규정 수 계산
+    const totalRegulations = data.reduce((sum, cat) => sum + (cat.count || 0), 0);
+
+    let html = `
+        <div class="stat-card">
+            <div class="stat-value">${data.length}</div>
+            <div class="stat-label">전체 분류</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">${totalRegulations}</div>
+            <div class="stat-label">전체 내규</div>
+        </div>
+    `;
+
+    statsBox.innerHTML = html;
+}
+
+// 분류 선택
+async function selectCategory(id) {
+    selectedCategory = categories.find(c => c.id === id);
+
+    if (selectedCategory) {
+        // 선택된 아이템 하이라이트
+        document.querySelectorAll('.tree-item').forEach(item => {
+            item.classList.remove('selected');
+        });
+        event.currentTarget.classList.add('selected');
+
+        // 해당 분류의 규정 목록 로드
+        await loadRegulationsByCategory(id);
+    }
+}
+
+// 분류별 규정 목록 로드
+async function loadRegulationsByCategory(categoryId) {
+    try {
+        const response = await fetch(`/api/v1/classification/regulations/${categoryId}`, {
+            credentials: 'include'
+        });
+        const data = await response.json();
+
+        const section = document.getElementById('regulationListSection');
+
+        if (data.success && data.regulations && data.regulations.length > 0) {
+            let html = '<div class="regulation-list">';
+
+            // 분류번호 순서대로 정렬
+            data.regulations.sort((a, b) => {
+                const aNum = a.pubno ? a.pubno.replace(/[^0-9.]/g, '').split('.').map(n => parseInt(n) || 0) : [0];
+                const bNum = b.pubno ? b.pubno.replace(/[^0-9.]/g, '').split('.').map(n => parseInt(n) || 0) : [0];
+                for (let i = 0; i < Math.max(aNum.length, bNum.length); i++) {
+                    if ((aNum[i] || 0) !== (bNum[i] || 0)) {
+                        return (aNum[i] || 0) - (bNum[i] || 0);
+                    }
+                }
+                return 0;
+            });
+
+            data.regulations.forEach(reg => {
+                html += `
+                    <div class="regulation-item" onclick="showRegulationPreview(${reg.id}, '${(reg.name || '').replace(/'/g, "\\'")}')">
+                        <div class="regulation-title">${reg.pubno || ''} ${reg.name || '제목 없음'}</div>
+                        <div class="regulation-info">
+                            제정일: ${formatDate(reg.estabDate)} |
+                            개정일: ${formatDate(reg.lastRevDate)}
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            section.innerHTML = html;
+        } else {
+            section.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📭</div>
+                    <p>이 분류에 속한 내규가 없습니다</p>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Error loading regulations:', error);
+    }
+}
+
+// 규정 미리보기
+async function showRegulationPreview(ruleId, ruleName) {
+    if (!ruleId || ruleId === 'undefined') {
+        console.error('Invalid rule ID:', ruleId);
+        alert('내규 ID가 유효하지 않습니다.');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/v1/json/view/${ruleId}`, {
+            method: 'GET',
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            throw new Error('내규 정보를 가져올 수 없습니다.');
+        }
+
+        const result = await response.json();
+
+        if (result.success && result.data) {
+            const previewSection = document.getElementById('previewSection');
+
+            // JSON 파일 내용 우선, 없으면 텍스트 내용
+            let content = '';
+
+            if (result.data.has_content && result.data.json_content) {
+                // JSON 조문 내용 표시
+                if (result.data.json_content.조문내용) {
+                    result.data.json_content.조문내용.forEach(article => {
+                        if (article.번호) {
+                            content += `<strong>${article.번호}</strong> `;
+                        }
+                        if (article.내용) {
+                            content += `${article.내용}<br><br>`;
+                        }
+                    });
+                }
+            } else if (result.data.content_text) {
+                content = result.data.content_text.replace(/\n/g, '<br>');
+            } else {
+                content = '내규 내용이 등록되지 않았습니다.';
+            }
+
+            previewSection.innerHTML = `
+                <div style="margin-bottom: 20px;">
+                    <h4 style="color: #495057; margin-bottom: 15px;">${result.data.wzname || ruleName || '내규 미리보기'}</h4>
+                    <div style="padding: 15px; background: #f8f9fa; border-radius: 8px; margin-bottom: 20px;">
+                        <strong>분류:</strong> ${result.data.wzpubno || '-'}<br>
+                        <strong>소관부서:</strong> ${result.data.wzmgrdptnm || '-'}<br>
+                        <strong>제정일:</strong> ${result.data.wzestabdate || '-'}<br>
+                        <strong>시행일:</strong> ${result.data.wzexecdate || '-'}<br>
+                        <strong>개정일:</strong> ${result.data.wzlastrevdate || '-'}
+                    </div>
+                </div>
+                <div style="line-height: 1.8; max-height: 500px; overflow-y: auto; padding: 10px; border: 1px solid #dee2e6; border-radius: 4px;">
+                    ${content}
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Preview error:', error);
+        const previewSection = document.getElementById('previewSection');
+        previewSection.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">⚠️</div>
+                <p>미리보기를 로드할 수 없습니다.</p>
+            </div>
+        `;
+    }
+}
+
+// 모달 닫기
+function closePreviewModal() {
+    const modal = document.getElementById('previewModal');
+    modal.classList.remove('active');
+}
+
+// 새 분류 추가
+function addNewCategory() {
+    const modal = document.getElementById('categoryModal');
+
+    // 다음 분류 번호 자동 계산
+    const maxId = Math.max(...categories.map(c => parseInt(c.id)), 0);
+    const nextId = maxId + 1;
+
+    document.getElementById('newCategoryCode').value = nextId;
+    document.getElementById('newCategoryName').value = '';
+
+    modal.classList.add('active');
+}
+
+// 새 분류 저장
+async function saveNewCategory() {
+    const categoryCode = document.getElementById('newCategoryCode').value;
+    const categoryName = document.getElementById('newCategoryName').value;
+
+    if (!categoryCode || !categoryName) {
+        alert('분류 번호와 분류명을 모두 입력하세요.');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/v1/classification/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+                chapter_number: parseInt(categoryCode),
+                name: categoryName
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            alert(result.message || '분류가 추가되었습니다.');
+            closeCategoryModal();
+            loadCategories(); // 목록 새로고침
+        } else {
+            if (result.error === 'duplicate') {
+                alert(result.message || '이미 존재하는 분류 번호입니다.');
+            } else {
+                alert(result.message || '저장 중 오류가 발생했습니다.');
+            }
+        }
+    } catch (error) {
+        console.error('Error saving category:', error);
+        alert('저장 중 오류가 발생했습니다.');
+    }
+}
+
+// 분류 모달 닫기
+function closeCategoryModal() {
+    const modal = document.getElementById('categoryModal');
+    modal.classList.remove('active');
+}
+
+// 편집 모드 토글
+function toggleEditMode() {
+    editMode = !editMode;
+    const tree = document.getElementById('classificationTree');
+    const btn = document.getElementById('editModeBtn');
+
+    if (editMode) {
+        tree.classList.add('edit-mode');
+        btn.classList.add('active');
+        btn.innerHTML = '✓ 완료';
+    } else {
+        tree.classList.remove('edit-mode');
+        btn.classList.remove('active');
+        btn.innerHTML = '✏️ 편집';
+    }
+}
+
+// 분류 편집
+function editCategory(categoryId, categoryName) {
+    const modal = document.getElementById('editCategoryModal');
+
+    // 폼에 현재 값 설정
+    document.getElementById('editCategoryCode').value = categoryId;
+    document.getElementById('editCategoryName').value = categoryName;
+
+    // 모달 열기
+    modal.classList.add('active');
+}
+
+// 분류 편집 저장
+async function saveEditCategory() {
+    const categoryId = document.getElementById('editCategoryCode').value;
+    const newCategoryName = document.getElementById('editCategoryName').value.trim();
+
+    // 유효성 검사
+    if (!newCategoryName) {
+        alert('분류명을 입력하세요.');
+        document.getElementById('editCategoryName').focus();
+        return;
+    }
+
+    if (newCategoryName.length > 200) {
+        alert('분류명은 200자를 초과할 수 없습니다.');
+        document.getElementById('editCategoryName').focus();
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/v1/classification/update/${categoryId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+                new_name: newCategoryName
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            alert(result.message || '분류명이 수정되었습니다.');
+            closeEditCategoryModal();
+            loadCategories(); // 목록 새로고침
+        } else {
+            alert(result.message || '수정 중 오류가 발생했습니다.');
+        }
+    } catch (error) {
+        console.error('Error updating category:', error);
+        alert('수정 중 오류가 발생했습니다.');
+    }
+}
+
+// 분류 편집 모달 닫기
+function closeEditCategoryModal() {
+    const modal = document.getElementById('editCategoryModal');
+    modal.classList.remove('active');
+}
+
+// 분류 삭제
+async function deleteCategory(categoryId, categoryName, regulationCount) {
+    // 규정이 있는 경우 삭제 불가
+    if (regulationCount > 0) {
+        alert(`❌ 삭제 불가\n\n제${categoryId}장 "${categoryName}"에 ${regulationCount}개의 내규가 있습니다.\n\n분류를 삭제하려면 먼저 해당 분류의 모든 내규를 삭제하거나 다른 분류로 이동해야 합니다.`);
+        return;
+    }
+
+    // 삭제 확인
+    const confirmed = confirm(`⚠️ 분류 삭제 확인\n\n제${categoryId}장 "${categoryName}"을(를) 정말 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`);
+
+    if (!confirmed) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/v1/classification/delete/${categoryId}`, {
+            method: 'DELETE',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            alert(`✅ 삭제 완료\n\n제${categoryId}장 "${categoryName}"이(가) 성공적으로 삭제되었습니다.`);
+            // 분류 목록 새로고침
+            loadCategories();
+            // 선택 초기화
+            selectedCategoryId = null;
+            document.getElementById('previewSection').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📄</div>
+                    <p>분류를 선택하면 해당 내규 목록이 표시됩니다</p>
+                </div>
+            `;
+        } else {
+            // API에서 규정이 있다고 판단한 경우
+            if (result.error === 'has_regulations') {
+                alert(`❌ 삭제 실패\n\n${result.message}`);
+            } else {
+                alert(`❌ 삭제 실패\n\n${result.error || result.message || '분류 삭제에 실패했습니다.'}`);
+            }
+        }
+    } catch (error) {
+        console.error('Error deleting category:', error);
+        alert('❌ 삭제 중 오류가 발생했습니다.\n\n' + error.message);
+    }
+}
+
+// 날짜 포맷 (yyyy-mm-dd -> yyyy.mm.dd.)
+function formatDate(dateStr) {
+    if (!dateStr || dateStr === '-') return '-';
+    const match = dateStr.match(/(\d{4})-(\d{2})-(\d{2})/);
+    if (match) {
+        return `${match[1]}.${match[2]}.${match[3]}.`;
+    }
+    return dateStr;
+}
+
+// ESC 키로 모달 닫기
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closePreviewModal();
+        closeEditCategoryModal();
+        closeCategoryModal();
+    }
+});
+
+// 모달 외부 클릭시 닫기
+document.getElementById('previewModal').addEventListener('click', (e) => {
+    if (e.target.id === 'previewModal') {
+        closePreviewModal();
+    }
+});
+
+document.getElementById('editCategoryModal').addEventListener('click', (e) => {
+    if (e.target.id === 'editCategoryModal') {
+        closeEditCategoryModal();
+    }
+});
+
+document.getElementById('categoryModal').addEventListener('click', (e) => {
+    if (e.target.id === 'categoryModal') {
+        closeCategoryModal();
+    }
+});
+</script>
+{% endblock %}
