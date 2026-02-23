@@ -58,6 +58,9 @@ fastapi/applib/docx/*.zip
 .env.local
 .env.*.local
 
+# Git credentials
+docs/gitkey
+
 # IDE
 .vscode/
 .idea/
