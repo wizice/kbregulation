@@ -352,8 +352,8 @@ async def search_regulations(
 
                 # 분류 필터
                 if classification:
-                    query_parts.append("AND wzpubno LIKE %s")
-                    params.append(f'{classification}.%')
+                    query_parts.append("AND wzcateseq = %s")
+                    params.append(int(classification))
 
                 # 정렬 및 페이징
                 query_parts.append("ORDER BY relevance DESC, wzname")
@@ -380,8 +380,8 @@ async def search_regulations(
                     count_params.append(department)
 
                 if classification:
-                    count_query += " AND wzpubno LIKE %s"
-                    count_params.append(f'{classification}.%')
+                    count_query += " AND wzcateseq = %s"
+                    count_params.append(int(classification))
 
                 cur.execute(count_query, count_params)
                 total_count = cur.fetchone()[0]

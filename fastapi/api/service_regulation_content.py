@@ -243,9 +243,9 @@ async def get_regulations_by_classification(
                         wzlastrevdate,
                         wzcontent_path
                     FROM wz_rule
-                    WHERE wzpubno LIKE %s
+                    WHERE wzcateseq = %s
                     ORDER BY wzpubno
-                """, (f'{chapter_id}.%',))
+                """, (chapter_id,))
 
                 results = cur.fetchall()
 

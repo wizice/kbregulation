@@ -28,6 +28,22 @@ router = APIRouter(
 
 logger = logging.getLogger(__name__)
 
+def resolve_json_path(json_value: str) -> str:
+    """wzfilejson DB 값을 절대경로로 변환. 파일명만 저장된 경우 www/static/file/ 기준."""
+    if not json_value:
+        return ""
+    if os.path.isabs(json_value):
+        return json_value
+    # 디렉토리 구분자가 없으면 파일명만 저장된 것
+    if os.sep not in json_value and '/' not in json_value:
+        return os.path.join(settings.WWW_STATIC_FILE_DIR, json_value)
+    # 상대경로인 경우 BASE_DIR 기준
+    abs_path = os.path.join(settings.BASE_DIR, json_value)
+    if os.path.exists(abs_path):
+        return abs_path
+    # fallback
+    return os.path.join(settings.WWW_STATIC_FILE_DIR, os.path.basename(json_value))
+
 def get_db_connection():
     """데이터베이스 연결 설정"""
     db_config = {
@@ -82,7 +98,7 @@ async def update_regulation_content(
             raise HTTPException(status_code=404, detail="규정을 찾을 수 없습니다.")
 
         current_rule = result[0]
-        existing_json_path = current_rule.get('wzfilejson')
+        existing_json_path = resolve_json_path(current_rule.get('wzfilejson', ''))
 
         logger.info(f"Updating rule {rule_id}, existing JSON path: {existing_json_path}")
 
@@ -332,7 +348,7 @@ async def get_backup_list(
         if not result:
             raise HTTPException(status_code=404, detail="규정을 찾을 수 없습니다.")
 
-        json_path = result[0].get('wzfilejson')
+        json_path = resolve_json_path(result[0].get('wzfilejson', ''))
         if not json_path:
             return {"backups": []}
 
@@ -531,29 +547,39 @@ async def save_revision_content(
 # ==================== 이미지 관리 API ====================
 
 def get_json_path_from_rule_id(rule_id: int) -> Optional[str]:
-    """규정 ID로부터 JSON 파일 경로 조회 (최신 개정본)"""
+    """규정 ID로부터 JSON 파일 경로 조회 (wzruleseq 또는 wzruleid)"""
     try:
         db_manager = get_db_connection()
-        # wzruleid로 검색하되, 개정본이 여러 개일 경우 최신 것만 가져오기
-        query = """
-            SELECT wzfilejson
-            FROM wz_rule
-            WHERE wzruleid = %s
-            ORDER BY wzruleseq DESC
-            LIMIT 1
-        """
 
         with db_manager.get_connection() as conn:
             with conn.cursor() as cur:
-                cur.execute(query, (rule_id,))
+                # 먼저 wzruleseq로 검색 (편집기에서 주로 사용하는 키)
+                cur.execute("SELECT wzfilejson FROM wz_rule WHERE wzruleseq = %s", (rule_id,))
                 result = cur.fetchone()
 
+                # 못 찾으면 wzruleid로 검색 (최신 개정본)
+                if not result or not result[0]:
+                    cur.execute("""
+                        SELECT wzfilejson FROM wz_rule
+                        WHERE wzruleid = %s ORDER BY wzruleseq DESC LIMIT 1
+                    """, (rule_id,))
+                    result = cur.fetchone()
+
                 if result:
-                    # wzfilejson은 상대 경로이므로 절대 경로로 변환
                     relative_path = result[0]
                     if relative_path:
-                        # JSON 파일은 BASE_DIR 위치에 있음 (fastapi 제외)
-                        return os.path.join(settings.BASE_DIR, relative_path)
+                        # 파일명만 저장된 경우 www/static/file/ 에서 찾기
+                        if os.sep not in relative_path and '/' not in relative_path:
+                            abs_path = os.path.join(settings.WWW_STATIC_FILE_DIR, relative_path)
+                        else:
+                            abs_path = os.path.join(settings.BASE_DIR, relative_path)
+                        if os.path.exists(abs_path):
+                            return abs_path
+                        # fallback: www/static/file/ 에서 재시도
+                        fallback = os.path.join(settings.WWW_STATIC_FILE_DIR, os.path.basename(relative_path))
+                        if os.path.exists(fallback):
+                            return fallback
+                        return abs_path
 
         return None
     except Exception as e:

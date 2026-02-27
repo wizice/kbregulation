@@ -622,17 +622,21 @@ async function getAppendixFileFromAPI(regulationCode, appendixIndex) {
         const summaryData = await summaryResponse.json();
 
         // summary JSON에서 해당 규정 찾기
+        // 구조: {"KB규정": {"1편 ...": {"regulations": [...]}, ...}} (중첩)
+        // 또는: {"1장": {"regulations": [...]}} (단일)
         let regulation = null;
-        for (const chapterKey in summaryData) {
-            const chapterData = summaryData[chapterKey];
-            if (chapterData.regulations) {
-                const found = chapterData.regulations.find(r => r.code === regulationCode);
-                if (found) {
-                    regulation = found;
-                    break;
-                }
+        function findRegulation(data) {
+            if (!data || typeof data !== 'object') return;
+            if (data.regulations) {
+                const found = data.regulations.find(r => r.code === regulationCode);
+                if (found) { regulation = found; return; }
+            }
+            for (const key of Object.keys(data)) {
+                if (regulation) break;
+                findRegulation(data[key]);
             }
         }
+        findRegulation(summaryData);
 
         if (!regulation) {
             console.warn(`[API] 규정을 찾을 수 없습니다: ${regulationCode}`);
@@ -707,16 +711,23 @@ async function openAppendixPdf(regulationCode, appendixIndex, appendixName) {
         let parentRegulation = null;
         let parentChapter = null;
 
-        Object.keys(hospitalRegulations).forEach(chapter => {
-            const chapterData = hospitalRegulations[chapter];
-            if (chapterData.regulations) {
-                const foundReg = chapterData.regulations.find(reg => reg.code === regulationCode);
+        // 중첩 구조 지원: {"KB규정": {"1편 ...": {"regulations": [...]}, ...}}
+        function findParentReg(data, chapterName) {
+            if (!data || typeof data !== 'object') return;
+            if (data.regulations) {
+                const foundReg = data.regulations.find(reg => reg.code === regulationCode);
                 if (foundReg) {
                     parentRegulation = foundReg;
-                    parentChapter = chapter;
+                    parentChapter = chapterName;
+                    return;
                 }
             }
-        });
+            for (const [key, val] of Object.entries(data)) {
+                if (parentRegulation) break;
+                findParentReg(val, key);
+            }
+        }
+        findParentReg(hospitalRegulations, null);
 
         if (parentRegulation && parentChapter) {
             const appendixItem = {
@@ -744,20 +755,24 @@ async function openAppendixPdf(regulationCode, appendixIndex, appendixName) {
             const summaryData = await summaryResponse.json();
             regulation = null;  // 이미 함수 시작 부분에서 선언됨
             let allCodes = [];  // 디버깅: 모든 코드 수집
-            for (const chapterKey in summaryData) {
-                const chapterData = summaryData[chapterKey];
-                if (chapterData.regulations) {
-                    // 디버깅: 해당 챕터의 모든 코드 수집
-                    allCodes.push(...chapterData.regulations.map(r => r.code));
-
-                    const found = chapterData.regulations.find(r => r.code === regulationCode);
+            // 중첩 구조 지원: {"KB규정": {"1편 ...": {"regulations": [...]}, ...}}
+            function findReg(data) {
+                if (!data || typeof data !== 'object') return;
+                if (data.regulations) {
+                    allCodes.push(...data.regulations.map(r => r.code));
+                    const found = data.regulations.find(r => r.code === regulationCode);
                     if (found) {
                         regulation = found;
                         console.log(`[openAppendixPdf] Step 3: summary에서 regulation 찾음 - code="${found.code}", wzRuleSeq=${found.wzRuleSeq || found.wzruleseq}`);
-                        break;
+                        return;
                     }
                 }
+                for (const key of Object.keys(data)) {
+                    if (regulation) break;
+                    findReg(data[key]);
+                }
             }
+            findReg(summaryData);
 
             if (regulation) {
                 const ruleSeq = regulation.wzRuleSeq || regulation.wzruleseq;
@@ -811,7 +826,9 @@ async function openAppendixPdf(regulationCode, appendixIndex, appendixName) {
 
     if (!pdfUrl) {
         console.error(`[openAppendixPdf] 최종 실패: PDF URL 생성 불가 - "${appendixName}"`);
-        showToast(`"${appendixName}" 부록 파일을 찾을 수 없습니다.`, 'error');
+        // 별표/별첨/서식이면 해당 유형으로 표시, 아니면 부록
+        const typeLabel = /^(별표|별첨|서식)/.test(appendixName) ? '' : '부록 ';
+        showToast(`"${appendixName}" ${typeLabel}파일을 찾을 수 없습니다.`, 'error');
         return;
     }
 
@@ -820,11 +837,14 @@ async function openAppendixPdf(regulationCode, appendixIndex, appendixName) {
     // 부록 조회 로그 기록 (RegulationViewLogger 사용)
     if (window.RegulationViewLogger) {
         const ruleId = regulation ? (regulation.id || regulation.wzRuleSeq) : null;
-        // appendixIndex는 0부터 시작하므로 +1 해서 표시
-        const displayIndex = appendixIndex + 1;
-        // 형식: "부록N. 부록명"
-        const ruleName = `부록${displayIndex}. ${appendixName}`;
-        // rule_pubno는 점(.) 없이 저장 (대시보드에서 "pubno. name" 형식으로 표시하므로)
+        // 별표/별첨/서식 패턴이면 그대로 사용, 아니면 기존 부록 N 형식
+        let ruleName;
+        if (/^(별표|별첨|서식)\s*제\d+호/.test(appendixName)) {
+            ruleName = appendixName;
+        } else {
+            const displayIndex = appendixIndex + 1;
+            ruleName = `부록${displayIndex}. ${appendixName}`;
+        }
         const rulePubno = regulationCode.replace(/\.+$/, '');
 
         RegulationViewLogger.logView(ruleId, ruleName, rulePubno)
@@ -1223,43 +1243,9 @@ function isPrintAllowed() {
     return true;
 }
 
-// PDF 파일 인쇄 방법 (static/pdf/print 폴더의 PDF 사용)
-async function printRegulation() {
-    if (!currentRegulation || !currentChapter) {
-        showToast('인쇄할 내규가 선택되지 않았습니다.', 'error');
-        return;
-    }
-
-    // 내규 코드로 print PDF 파일 검색
-    const regCode = currentRegulation.code;
-    console.log('[Print] 내규 코드:', regCode);
-
-    try {
-        // API 호출하여 PDF 파일명 찾기
-        const response = await fetch(`/api/v1/pdf/print-file/${regCode}`);
-        const result = await response.json();
-
-        if (!result.success) {
-            showToast(result.error || '해당 내규의 PDF 파일을 찾을 수 없습니다.', 'error');
-            console.warn('[Print] PDF 파일을 찾을 수 없습니다:', regCode, result.error);
-            return;
-        }
-
-        // PDF 뷰어 URL 생성
-        const pdfViewerUrl = `/static/viewer/web/viewer.html?file=${encodeURIComponent(result.path)}`;
-        console.log('[Print] PDF 인쇄 URL:', pdfViewerUrl);
-
-        // 새창으로 PDF 열기
-        const printWindow = window.open(pdfViewerUrl, '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes');
-
-        if (!printWindow) {
-            alert('팝업이 차단되었습니다. 브라우저 설정에서 팝업을 허용해주세요.');
-            return;
-        }
-    } catch (error) {
-        console.error('[Print] API 호출 오류:', error);
-        showToast('PDF 파일을 찾는 중 오류가 발생했습니다.', 'error');
-    }
+// 브라우저 인쇄 기능
+function printRegulation() {
+    window.print();
 }
 
 

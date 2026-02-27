@@ -157,97 +157,118 @@ async def update_json_files(rule_id: int, wzruleid: str, wzpubno: str = None):
 
         if wzpubno:
             clean_pubno = wzpubno.rstrip('.')
-            pattern = f"{clean_pubno}._부록*"
+            # 부록/별표/별첨/서식 패턴 모두 검색
+            patterns = [
+                f"{clean_pubno}._부록*",
+                f"{clean_pubno}._별표제*",
+                f"{clean_pubno}._별첨제*",
+                f"{clean_pubno}._서식제*",
+            ]
 
-            for file_path in WWW_PDF_DIR.glob(pattern):
+            all_files = []
+            for pattern in patterns:
+                all_files.extend(WWW_PDF_DIR.glob(pattern))
+
+            for file_path in all_files:
                 if file_path.is_file():
-                    # 파일명에서 부록 정보 추출: "1.2.1._부록1._제목_20250723개정.pdf"
+                    import re
                     filename = file_path.stem  # 확장자 제외
                     parts = filename.split('._')
 
-                    if len(parts) >= 3:
-                        appendix_no = parts[1]  # "부록1", "부록2" 등
-                        full_name = '_'.join(parts[2:])  # "구두처방_의약품_목록_20250723개정"
+                    appendix_no = None
+                    full_name = None
+                    display_name = None
 
-                        # 날짜 추출 (yyyymmdd 또는 yyyymm 패턴, 6~9자리)
-                        import re
-                        date_match = re.search(r'_(\d{6,9})개정', full_name)
+                    if len(parts) >= 2:
+                        part1 = parts[1]  # "부록1" 또는 "별표제1호" 등
 
-                        if date_match:
-                            date_str = date_match.group(1)
-                            # 날짜 부분을 제외한 기본 제목
-                            base_name = re.sub(r'_\d{6,9}개정$', '', full_name)
+                        # KB 패턴: "별표제1호", "별첨제1호", "서식제1호"
+                        kb_match = re.match(r'(별표|별첨|서식)제(\d+)호', part1)
+                        # 기존 패턴: "부록1", "부록2"
+                        legacy_match = re.match(r'부록(\d+)', part1)
 
-                            # 간단한 표시 제목 생성
-                            # 1. 날짜와 개정/검토/제정/수정 제거
-                            display_name = re.sub(r'[_\s]*\d{6,8}(개정|검토|제정|수정)', '', full_name)
-                            # 2. (다른규정 부록X 동일) 패턴 제거
-                            display_name = re.sub(r'[_\s]*\([\d._\s]*부록\d+[_\s]*동일\)', '', display_name)
-                            # 3. trailing 언더스코어나 공백 제거
-                            display_name = display_name.rstrip('_ ')
-                            # 4. 언더스코어를 공백으로 변환
-                            display_name = display_name.replace('_', ' ')
-                            # 5. 규정번호 패턴 제거
-                            title_match = re.search(r'(?:\d+(?:\.\d+)*\.\s*부록\d+\.\s*)?(.+)$', display_name)
-                            if title_match:
-                                display_name = title_match.group(1).strip()
-
-                            # 부록 번호 + 기본 제목을 키로 사용
-                            key = f"{appendix_no}_{base_name}"
-
-                            # 같은 제목의 부록이 있으면 날짜 비교
-                            if key in appendix_files_dict:
-                                # 중복 발견: 날짜가 더 최신인지 확인
-                                if date_str > appendix_files_dict[key]['date']:
-                                    # 기존 파일을 삭제 목록에 추가
-                                    files_to_delete.append(appendix_files_dict[key]['file_path'])
-                                    appendix_files_dict[key] = {
-                                        'date': date_str,
-                                        'full_name': full_name,
-                                        'display_name': display_name,
-                                        'appendix_no': appendix_no,
-                                        'file_path': file_path
-                                    }
-                                else:
-                                    # 현재 파일이 더 오래됨: 현재 파일을 삭제 목록에 추가
-                                    files_to_delete.append(file_path)
+                        if kb_match:
+                            appendix_type = kb_match.group(1)
+                            appendix_num = kb_match.group(2)
+                            appendix_no = f"{appendix_type}제{appendix_num}호"
+                            full_name = '_'.join(parts[2:]) if len(parts) >= 3 else ''
+                            title = full_name.replace('_', ' ').strip() if full_name else ''
+                            if title:
+                                display_name = f"{appendix_type} 제{appendix_num}호 {title}"
                             else:
+                                display_name = f"{appendix_type} 제{appendix_num}호"
+                        elif legacy_match:
+                            appendix_no = part1
+                            full_name = '_'.join(parts[2:]) if len(parts) >= 3 else ''
+                        else:
+                            continue
+
+                    if appendix_no is None:
+                        continue
+
+                    # KB 패턴은 이미 display_name이 설정됨
+                    if display_name:
+                        key = f"{appendix_no}_{full_name}"
+                        if key in appendix_files_dict:
+                            files_to_delete.append(appendix_files_dict[key].get('file_path'))
+                        appendix_files_dict[key] = {
+                            'date': '',
+                            'full_name': full_name,
+                            'display_name': display_name,
+                            'appendix_no': appendix_no,
+                            'file_path': file_path
+                        }
+                        continue
+
+                    # 기존 부록 패턴: 날짜 추출 및 display_name 생성
+                    if full_name:
+                        date_match = re.search(r'_(\d{6,9})개정', full_name)
+                    else:
+                        date_match = None
+
+                    if date_match:
+                        date_str = date_match.group(1)
+                        base_name = re.sub(r'_\d{6,9}개정$', '', full_name)
+                        display_name = re.sub(r'[_\s]*\d{6,8}(개정|검토|제정|수정)', '', full_name)
+                        display_name = re.sub(r'[_\s]*\([\d._\s]*부록\d+[_\s]*동일\)', '', display_name)
+                        display_name = display_name.rstrip('_ ').replace('_', ' ')
+                        title_match = re.search(r'(?:\d+(?:\.\d+)*\.\s*부록\d+\.\s*)?(.+)$', display_name)
+                        if title_match:
+                            display_name = title_match.group(1).strip()
+
+                        key = f"{appendix_no}_{base_name}"
+                        if key in appendix_files_dict:
+                            if date_str > appendix_files_dict[key]['date']:
+                                files_to_delete.append(appendix_files_dict[key]['file_path'])
                                 appendix_files_dict[key] = {
-                                    'date': date_str,
-                                    'full_name': full_name,
-                                    'display_name': display_name,
-                                    'appendix_no': appendix_no,
+                                    'date': date_str, 'full_name': full_name,
+                                    'display_name': display_name, 'appendix_no': appendix_no,
                                     'file_path': file_path
                                 }
+                            else:
+                                files_to_delete.append(file_path)
                         else:
-                            # 날짜 패턴이 없는 경우에도 검토/제정/수정 제거
-                            # 1. 날짜와 개정/검토/제정/수정 제거 (개정 외 패턴도 처리)
-                            display_name = re.sub(r'[_\s]*\d{6,8}(개정|검토|제정|수정)', '', full_name)
-                            # 2. (다른규정 부록X 동일) 패턴 제거
-                            display_name = re.sub(r'[_\s]*\([\d._\s]*부록\d+[_\s]*동일\)', '', display_name)
-                            # 3. trailing 언더스코어나 공백 제거
-                            display_name = display_name.rstrip('_ ')
-                            # 4. 언더스코어를 공백으로 변환
-                            display_name = display_name.replace('_', ' ')
-                            # 5. 규정번호 패턴 제거
-                            title_match = re.search(r'(?:\d+(?:\.\d+)*\.\s*부록\d+\.\s*)?(.+)$', display_name)
-                            if title_match:
-                                display_name = title_match.group(1).strip()
-
-                            key = f"{appendix_no}_{full_name}"
-
-                            # 중복 확인 (날짜 없는 경우)
-                            if key in appendix_files_dict:
-                                # 기존 파일을 삭제 목록에 추가하고 새 파일로 교체
-                                files_to_delete.append(appendix_files_dict[key].get('file_path'))
-
                             appendix_files_dict[key] = {
-                                'date': '',
-                                'full_name': full_name,
-                                'display_name': display_name,
-                                'appendix_no': appendix_no,
+                                'date': date_str, 'full_name': full_name,
+                                'display_name': display_name, 'appendix_no': appendix_no,
                                 'file_path': file_path
                             }
+                    else:
+                        display_name = re.sub(r'[_\s]*\d{6,8}(개정|검토|제정|수정)', '', full_name) if full_name else ''
+                        display_name = re.sub(r'[_\s]*\([\d._\s]*부록\d+[_\s]*동일\)', '', display_name)
+                        display_name = display_name.rstrip('_ ').replace('_', ' ')
+                        title_match = re.search(r'(?:\d+(?:\.\d+)*\.\s*부록\d+\.\s*)?(.+)$', display_name)
+                        if title_match:
+                            display_name = title_match.group(1).strip()
+
+                        key = f"{appendix_no}_{full_name}"
+                        if key in appendix_files_dict:
+                            files_to_delete.append(appendix_files_dict[key].get('file_path'))
+                        appendix_files_dict[key] = {
+                            'date': '', 'full_name': full_name,
+                            'display_name': display_name, 'appendix_no': appendix_no,
+                            'file_path': file_path
+                        }
 
         # 중복된 오래된 파일 삭제
         if files_to_delete:
@@ -277,19 +298,25 @@ async def update_json_files(rule_id: int, wzruleid: str, wzpubno: str = None):
                 summary_data = json.load(f)
 
             # 해당 규정을 찾아서 appendix 정보 업데이트
-            # JSON 구조: {"1장": {"regulations": [...]}, "2장": {...}, ...}
+            # JSON 구조: {"KB규정": {"1편 ...": {"regulations": [...]}, ...}} 또는
+            #            {"1장": {"regulations": [...]}, "2장": {...}, ...}
             updated = False
-            for chapter_key, chapter_data in summary_data.items():
-                if isinstance(chapter_data, dict) and 'regulations' in chapter_data:
-                    for regulation in chapter_data['regulations']:
-                        # code로 찾기 (예: "1.2.1")
-                        if regulation.get('code') == wzpubno.rstrip('.'):
-                            regulation['appendix'] = appendix_files
-                            updated = True
-                            logger.info(f"[Appendix] Found regulation by code: {wzpubno} in {chapter_key}, updated appendix: {appendix_files}")
-                            break
-                if updated:
-                    break
+            def _find_and_update_regulation(data):
+                nonlocal updated
+                if isinstance(data, dict):
+                    if 'regulations' in data:
+                        for regulation in data['regulations']:
+                            if regulation.get('code') == wzpubno.rstrip('.'):
+                                regulation['appendix'] = appendix_files
+                                updated = True
+                                logger.info(f"[Appendix] Found regulation by code: {wzpubno}, updated appendix: {appendix_files}")
+                                return
+                    else:
+                        for v in data.values():
+                            _find_and_update_regulation(v)
+                            if updated:
+                                return
+            _find_and_update_regulation(summary_data)
 
             if updated:
                 with open(SUMMARY_JSON, 'w', encoding='utf-8') as f:
@@ -420,44 +447,59 @@ async def upload_appendix_files(
                 original_path = Path(file.filename)
                 file_stem = original_path.stem  # 확장자 제외한 이름
 
-                # 원본 파일명에서 부록 번호 추출 시도
-                # 예: "1.2.1. 부록3. TEST 검사 목록_202501106개정" -> 부록번호: 3, 제목: "TEST 검사 목록_202501106개정"
                 import re
                 appendix_no_from_filename = None
-                appendix_match = re.search(r'부록(\d+)', file_stem)
-                if appendix_match:
-                    appendix_no_from_filename = appendix_match.group(1)
-                    logger.info(f"[Appendix] Extracted appendix number from filename: {appendix_no_from_filename}")
+                kb_appendix_type = None  # 별표, 별첨, 서식
+
+                # KB 파일명 패턴: "(N-M) 별표/별첨/서식 제X호_제목"
+                kb_match = re.match(
+                    r'^\(\d+-\d+\)\s*(별표|별첨|서식)\s*제(\d+)호[_\s]*(.*)',
+                    file_stem
+                )
+                if kb_match:
+                    kb_appendix_type = kb_match.group(1)
+                    appendix_no_from_filename = kb_match.group(2)
+                    cleaned_stem = kb_match.group(3).strip().rstrip('_') if kb_match.group(3) else ''
+                    logger.info(f"[Appendix] KB pattern: {kb_appendix_type} 제{appendix_no_from_filename}호, title={cleaned_stem}")
+                else:
+                    # 기존 패턴: "1.2.1. 부록3. TEST 검사 목록_202501106개정"
+                    appendix_match = re.search(r'부록(\d+)', file_stem)
+                    if appendix_match:
+                        appendix_no_from_filename = appendix_match.group(1)
+                        logger.info(f"[Appendix] Legacy pattern: 부록{appendix_no_from_filename}")
+
+                    # 원본 파일명에서 규정번호 및 부록 번호 패턴 제거
+                    cleaned_stem = re.sub(r'^\d+(?:\.\d+)*\.[_\s]*부록\d+\.[_\s]*', '', file_stem)
+                    if cleaned_stem == file_stem:
+                        cleaned_stem = file_stem
 
                 # 파일명에서 명시한 부록 번호가 있으면 사용, 없으면 자동 생성
                 if appendix_no_from_filename:
                     appendix_no = appendix_no_from_filename
-                # else: appendix_no는 이미 get_next_appendix_no()에서 받아옴
 
-                # 원본 파일명에서 규정번호 및 부록 번호 패턴 제거
-                # 패턴: "숫자.숫자.숫자. 부록숫자. " 또는 "숫자.숫자.숫자._부록숫자._" 제거
-                # 공백 또는 언더스코어 모두 허용
-                cleaned_stem = re.sub(r'^\d+(?:\.\d+)*\.[_\s]*부록\d+\.[_\s]*', '', file_stem)
-
-                # 만약 패턴이 제거되지 않았다면 원본 사용
-                if cleaned_stem == file_stem:
-                    cleaned_stem = file_stem
-
-                # 새 파일명 생성: {wzpubno}._부록{번호}._{정리된_파일명}.pdf
-                new_filename = f"{clean_pubno}._부록{appendix_no}._{cleaned_stem}{file_extension}"
+                # 새 파일명 생성
+                if kb_appendix_type:
+                    # KB 형식: {pubno}._별표제N호._{제목}.pdf
+                    title_part = f"._{cleaned_stem.replace(' ', '_')}" if cleaned_stem else ""
+                    new_filename = f"{clean_pubno}._{kb_appendix_type}제{appendix_no}호{title_part}{file_extension}"
+                else:
+                    # 기존 형식: {pubno}._부록N._{제목}.pdf
+                    new_filename = f"{clean_pubno}._부록{appendix_no}._{cleaned_stem}{file_extension}"
                 file_path = upload_dir / new_filename
 
                 # 부록 제목 추출 (깔끔하게 정리)
-                # 1. 날짜와 개정/검토/제정 제거
-                # 예: "PRN 처방 의약품 목록_20251103개정" → "PRN 처방 의약품 목록"
-                appendix_title = re.sub(r'[_\s]*\d{6,8}(개정|검토|제정)', '', cleaned_stem)
-                # 2. (다른규정 부록X 동일) 패턴 제거
-                # 예: "자살의_위험성_평가(SSS)_(3.2.6.1._부록2_동일)" → "자살의_위험성_평가(SSS)"
-                appendix_title = re.sub(r'[_\s]*\([\d._\s]*부록\d+[_\s]*동일\)', '', appendix_title)
-                # 3. trailing 언더스코어나 공백 제거
-                appendix_title = appendix_title.rstrip('_ ')
-                # 4. 언더스코어를 공백으로 변환
-                appendix_title = appendix_title.replace('_', ' ')
+                if kb_appendix_type:
+                    # KB 형식: "별표 제N호 제목"
+                    title = cleaned_stem.replace('_', ' ').strip()
+                    if title:
+                        appendix_title = f"{kb_appendix_type} 제{appendix_no}호 {title}"
+                    else:
+                        appendix_title = f"{kb_appendix_type} 제{appendix_no}호"
+                else:
+                    # 기존 형식
+                    appendix_title = re.sub(r'[_\s]*\d{6,8}(개정|검토|제정)', '', cleaned_stem)
+                    appendix_title = re.sub(r'[_\s]*\([\d._\s]*부록\d+[_\s]*동일\)', '', appendix_title)
+                    appendix_title = appendix_title.rstrip('_ ').replace('_', ' ')
 
                 appendix_data = {
                     'wzruleseq': rule_id,
@@ -530,13 +572,48 @@ async def upload_appendix_files(
                     wzappendixseq = await insert_appendix_record(appendix_data)
                     logger.info(f"[Appendix] Created new appendix record: wzappendixseq={wzappendixseq}")
 
-                # 5. 파일 저장 (덮어쓰기 - 캐시 갱신을 위해 기존 파일 먼저 삭제)
+                # 5. 파일 저장 (DOCX/XLSX는 PDF로 변환)
                 if file_path.exists():
                     file_path.unlink()
                     logger.info(f"[Appendix] Deleted existing file for cache refresh: {file_path}")
 
-                with file_path.open("wb") as buffer:
-                    shutil.copyfileobj(file.file, buffer)
+                if file_extension in ('.docx', '.xlsx'):
+                    # DOCX/XLSX → PDF 자동 변환
+                    import tempfile
+                    import subprocess
+                    with tempfile.TemporaryDirectory() as tmpdir:
+                        tmp_src = Path(tmpdir) / f"input{file_extension}"
+                        with tmp_src.open("wb") as buffer:
+                            shutil.copyfileobj(file.file, buffer)
+
+                        # PDF 파일명으로 변경
+                        pdf_filename = new_filename.rsplit('.', 1)[0] + '.pdf'
+                        pdf_path = upload_dir / pdf_filename
+
+                        if file_extension == '.docx':
+                            cmd = ["libreoffice", "--headless", "--convert-to", "pdf",
+                                   "--outdir", tmpdir, str(tmp_src)]
+                            result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+                            tmp_pdf = Path(tmpdir) / "input.pdf"
+                            if tmp_pdf.exists():
+                                shutil.move(str(tmp_pdf), str(pdf_path))
+                                logger.info(f"[Appendix] DOCX→PDF converted: {pdf_filename}")
+                            else:
+                                raise RuntimeError(f"LibreOffice 변환 실패: {result.stderr}")
+                        else:
+                            # XLSX → PDF (openpyxl + reportlab)
+                            from applib.utils._xlsx_to_pdf import xlsx_to_pdf
+                            xlsx_to_pdf(tmp_src, pdf_path)
+                            logger.info(f"[Appendix] XLSX→PDF converted: {pdf_filename}")
+
+                        # DB 경로도 PDF로 업데이트
+                        new_filename = pdf_filename
+                        file_path = pdf_path
+                        appendix_data['wzfiletype'] = '.pdf'
+                        appendix_data['wzfilepath'] = f'www/static/pdf/{pdf_filename}'
+                else:
+                    with file_path.open("wb") as buffer:
+                        shutil.copyfileobj(file.file, buffer)
 
                 logger.info(f"[Appendix] File saved to: {file_path}")
 

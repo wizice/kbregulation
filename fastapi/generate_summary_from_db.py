@@ -31,24 +31,10 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def get_category_for_regulation(rule_name, dept_name):
-    """
-    규정명과 담당부서를 기반으로 카테고리 결정
-
-    KB신용정보 규정은 별도 카테고리로 분류
-    """
-    # KB 규정은 "KB규정" 카테고리
-    # '인사' 키워드 제거 (세브란스 규정과 중복됨)
-    if any(keyword in rule_name for keyword in ['여비', 'KB', '급여', '복리']):
-        return "KB규정"
-
-    # 세브란스 규정은 기존 분류 유지 (임시로 "기타" 사용)
-    return "기타"
-
-
 def generate_summary_from_db(output_file):
     """
     DB에서 직접 summary_kbregulation.json 생성
+    wz_cate 분류 기반으로 카테고리별 규정 그룹핑
     """
     db = TimescaleDB(
         database=settings.DB_NAME,
@@ -61,6 +47,16 @@ def generate_summary_from_db(output_file):
     try:
         db.connect()
         logger.info("DB 연결 성공")
+
+        # 분류 목록 조회
+        cate_query = """
+        SELECT wzcateseq, wzcatename, wzorder
+        FROM wz_cate
+        WHERE wzvisible = 'Y' OR wzvisible IS NULL
+        ORDER BY wzorder, wzcateseq
+        """
+        categories_list = db.query(cate_query)
+        logger.info(f"분류 {len(categories_list)}개 조회")
 
         # 현행 규정 조회
         query = """
@@ -75,31 +71,36 @@ def generate_summary_from_db(output_file):
             wzmgrdptnm,
             wzfilejson,
             wzfilepdf,
-            wzfiledocx
+            wzfiledocx,
+            wzcateseq
         FROM wz_rule
         WHERE wznewflag = '현행'
-        ORDER BY wzruleid ASC
+        ORDER BY wzcateseq,
+            CASE WHEN split_part(wzpubno, '-', 1) ~ '^\d+$'
+                 THEN CAST(split_part(wzpubno, '-', 1) AS INTEGER) ELSE 9999 END,
+            CASE WHEN split_part(wzpubno, '-', 2) ~ '^\d+$'
+                 THEN CAST(split_part(wzpubno, '-', 2) AS INTEGER) ELSE 9999 END
         """
 
         regulations = db.query(query)
         logger.info(f"DB에서 {len(regulations)}개 규정 조회 완료")
 
         # 카테고리별로 분류
-        categories = {}
-        kb_regulations = []
-        other_regulations = []
+        cate_map = {c['wzcateseq']: c['wzcatename'].strip() for c in categories_list}
+        cate_regulations = {}
 
         for reg in regulations:
             rule_name = reg['wzname'] or ''
             dept_name = reg['wzmgrdptnm'] or ''
-            category = get_category_for_regulation(rule_name, dept_name)
+            cate_seq = reg['wzcateseq'] or 0
+            cate_name = cate_map.get(cate_seq, '미분류')
+            cate_key = f"{cate_seq}편 {cate_name}"
 
-            # 규정 정보 구성
             regulation_data = {
                 'code': reg['wzpubno'] or '',
                 'name': rule_name,
                 'wzRuleSeq': reg['wzruleseq'],
-                'appendix': [],  # 부록은 별도 조회 필요
+                'appendix': [],
                 'detail': {
                     'documentInfo': {
                         '규정명': rule_name,
@@ -107,7 +108,7 @@ def generate_summary_from_db(output_file):
                         '제정일': reg['wzestabdate'] or '',
                         '최종개정일': reg['wzlastrevdate'] or '',
                         '시행일': reg['wzexecdate'] or '',
-                        '담당부서': dept_name,
+                        '소관부서': dept_name,
                         '파일명': reg['wzfilejson'] or '',
                         '현행내규PDF': reg['wzfilepdf'] or None,
                         '신구대비표PDF': None
@@ -115,31 +116,30 @@ def generate_summary_from_db(output_file):
                 }
             }
 
-            if category == "KB규정":
-                kb_regulations.append(regulation_data)
-            else:
-                other_regulations.append(regulation_data)
+            if cate_key not in cate_regulations:
+                cate_regulations[cate_key] = []
+            cate_regulations[cate_key].append(regulation_data)
 
         # Summary 구조 생성
-        summary = {}
+        # JS가 기대하는 2단계 중첩: { "KB규정": { "1편 정관·이사회": { regulations }, ... } }
+        chapters = {}
 
-        # KB규정 카테고리 추가
-        if kb_regulations:
-            summary["KB규정"] = {
-                "title": "KB신용정보 사규",
+        for cate in categories_list:
+            cate_seq = cate['wzcateseq']
+            cate_name = cate['wzcatename'].strip()
+            cate_key = f"{cate_seq}편 {cate_name}"
+
+            regs = cate_regulations.get(cate_key, [])
+            chapters[cate_key] = {
+                "title": f"제{cate_seq}편 {cate_name}",
                 "icon": "fas fa-building",
-                "regulations": kb_regulations
+                "regulations": regs
             }
-            logger.info(f"KB규정 카테고리 생성: {len(kb_regulations)}개 규정")
+            logger.info(f"{cate_key}: {len(regs)}개 규정")
 
-        # 기타 규정은 "세브란스규정" 카테고리로
-        if other_regulations:
-            summary["세브란스규정"] = {
-                "title": "세브란스병원 내규 (백업)",
-                "icon": "fas fa-hospital",
-                "regulations": other_regulations
-            }
-            logger.info(f"세브란스규정 카테고리 생성: {len(other_regulations)}개 규정")
+        summary = {
+            "KB규정": chapters
+        }
 
         # 파일 저장
         output_path = Path(output_file)

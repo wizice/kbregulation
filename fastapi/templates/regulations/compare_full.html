@@ -1,0 +1,293 @@
+{% extends "common/base.html" %}
+
+{% block title %}규정 비교{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="/static/styles.css?v=20251106e">
+<style>
+    body { background: #f8f9fa; margin: 0; padding: 0; }
+    .page-container { max-width: 1600px; margin: 0 auto; padding: 20px; background: white; }
+
+    .compare-header {
+        background: #f8f9fa;
+        padding: 15px 20px;
+        border-bottom: 1px solid #dee2e6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    .compare-header h2 { margin: 0; font-size: 18px; color: #333; }
+
+    .version-selector {
+        display: flex; gap: 10px; align-items: center;
+    }
+    .version-selector select {
+        padding: 6px 12px; border: 1px solid #ced4da; border-radius: 4px; font-size: 14px;
+    }
+    .btn-compare {
+        padding: 6px 16px; background: #0d6efd; color: white; border: none;
+        border-radius: 4px; cursor: pointer; font-size: 14px;
+    }
+    .btn-compare:hover { background: #0b5ed7; }
+
+    .compare-container {
+        display: flex; gap: 0; border: 1px solid #dee2e6; border-radius: 4px; overflow: hidden;
+    }
+    .compare-panel {
+        flex: 1; overflow-y: auto; max-height: calc(100vh - 200px);
+    }
+    .compare-panel + .compare-panel { border-left: 2px solid #dee2e6; }
+
+    .panel-header {
+        position: sticky; top: 0; z-index: 10;
+        background: #e9ecef; padding: 10px 15px; font-weight: bold; font-size: 14px;
+        border-bottom: 1px solid #dee2e6;
+    }
+    .panel-header.old { background: #ffeeba; color: #856404; }
+    .panel-header.new { background: #c3e6cb; color: #155724; }
+
+    .panel-content { padding: 15px; }
+
+    .article-row {
+        display: flex; padding: 6px 10px; border-bottom: 1px solid #f0f0f0;
+        font-size: 13px; line-height: 1.6;
+    }
+    .article-row:hover { background: #f8f9fa; }
+    .article-seq { min-width: 40px; color: #888; font-size: 12px; text-align: right; padding-right: 10px; }
+    .article-content { flex: 1; }
+
+    .article-row.added { background: #d4edda; }
+    .article-row.removed { background: #f8d7da; }
+    .article-row.changed { background: #fff3cd; }
+
+    .doc-info { margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 4px; font-size: 13px; }
+    .doc-info-row { display: flex; padding: 3px 0; }
+    .doc-info-label { min-width: 100px; font-weight: 600; color: #555; }
+    .doc-info-value { color: #333; }
+
+    .no-data { text-align: center; padding: 40px; color: #999; font-size: 14px; }
+
+    .legend {
+        display: flex; gap: 20px; padding: 10px 20px; font-size: 12px; color: #666;
+    }
+    .legend-item { display: flex; align-items: center; gap: 5px; }
+    .legend-color { width: 14px; height: 14px; border-radius: 2px; }
+    .legend-color.added { background: #d4edda; }
+    .legend-color.removed { background: #f8d7da; }
+    .legend-color.changed { background: #fff3cd; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="compare-header">
+        <h2>규정 비교</h2>
+        <div class="version-selector">
+            <select id="leftVersion">
+                <option value="">이전 버전 선택</option>
+            </select>
+            <span>vs</span>
+            <select id="rightVersion">
+                <option value="">현재 버전 선택</option>
+            </select>
+            <button class="btn-compare" onclick="loadComparison()">비교</button>
+        </div>
+    </div>
+
+    <div class="legend">
+        <div class="legend-item"><div class="legend-color added"></div> 추가</div>
+        <div class="legend-item"><div class="legend-color removed"></div> 삭제</div>
+        <div class="legend-item"><div class="legend-color changed"></div> 변경</div>
+    </div>
+
+    <div class="compare-container">
+        <div class="compare-panel" id="leftPanel">
+            <div class="panel-header old" id="leftTitle">이전 버전</div>
+            <div class="panel-content" id="leftContent">
+                <div class="no-data">버전을 선택하세요</div>
+            </div>
+        </div>
+        <div class="compare-panel" id="rightPanel">
+            <div class="panel-header new" id="rightTitle">현재 버전</div>
+            <div class="panel-content" id="rightContent">
+                <div class="no-data">버전을 선택하세요</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const ruleId = new URLSearchParams(window.location.search).get('rule_id');
+const wzRuleId = new URLSearchParams(window.location.search).get('wzruleid');
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadVersions();
+});
+
+async function loadVersions() {
+    if (!ruleId && !wzRuleId) {
+        document.getElementById('leftContent').innerHTML = '<div class="no-data">rule_id 또는 wzruleid 파라미터가 필요합니다</div>';
+        return;
+    }
+
+    try {
+        // 같은 wzRuleId를 가진 모든 버전 조회
+        const param = wzRuleId ? `wzruleid=${wzRuleId}` : `rule_id=${ruleId}`;
+        const response = await fetch(`/api/v1/regulations/compare/versions?${param}`, {
+            credentials: 'include'
+        });
+
+        if (!response.ok) throw new Error('버전 목록을 불러올 수 없습니다');
+        const data = await response.json();
+
+        if (data.versions && data.versions.length > 0) {
+            const leftSelect = document.getElementById('leftVersion');
+            const rightSelect = document.getElementById('rightVersion');
+
+            data.versions.forEach((v, i) => {
+                const label = `${v.wzname} (${v.wznewflag}) - ${v.wzlastrevdate || ''}`;
+                const opt1 = new Option(label, v.wzruleseq);
+                const opt2 = new Option(label, v.wzruleseq);
+                leftSelect.add(opt1);
+                rightSelect.add(opt2);
+            });
+
+            // 자동 선택: 연혁은 왼쪽, 현행은 오른쪽
+            const historyVersion = data.versions.find(v => v.wznewflag === '연혁');
+            const currentVersion = data.versions.find(v => v.wznewflag === '현행');
+            if (historyVersion) leftSelect.value = historyVersion.wzruleseq;
+            if (currentVersion) rightSelect.value = currentVersion.wzruleseq;
+
+            if (historyVersion && currentVersion) {
+                loadComparison();
+            }
+        }
+    } catch (error) {
+        console.error('Error loading versions:', error);
+    }
+}
+
+async function loadComparison() {
+    const leftId = document.getElementById('leftVersion').value;
+    const rightId = document.getElementById('rightVersion').value;
+
+    if (!leftId || !rightId) {
+        alert('두 버전을 모두 선택하세요');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/v1/regulations/compare/diff?left=${leftId}&right=${rightId}`, {
+            credentials: 'include'
+        });
+
+        if (!response.ok) throw new Error('비교 데이터를 불러올 수 없습니다');
+        const data = await response.json();
+
+        renderPanel('left', data.left);
+        renderPanel('right', data.right);
+        highlightDiffs(data.left, data.right);
+    } catch (error) {
+        console.error('Error loading comparison:', error);
+        alert('비교 데이터를 불러올 수 없습니다: ' + error.message);
+    }
+}
+
+function renderPanel(side, versionData) {
+    const titleEl = document.getElementById(`${side}Title`);
+    const contentEl = document.getElementById(`${side}Content`);
+
+    if (!versionData) {
+        contentEl.innerHTML = '<div class="no-data">데이터 없음</div>';
+        return;
+    }
+
+    const docInfo = versionData.doc_info || {};
+    const flag = versionData.wznewflag || '';
+    titleEl.textContent = `${docInfo['규정명'] || versionData.wzname || ''} (${flag})`;
+    titleEl.className = `panel-header ${flag === '연혁' ? 'old' : 'new'}`;
+
+    let html = '<div class="doc-info">';
+    const fields = ['규정명', '최종개정일', '제정일', '담당부서'];
+    fields.forEach(f => {
+        if (docInfo[f]) {
+            html += `<div class="doc-info-row"><span class="doc-info-label">${f}</span><span class="doc-info-value">${docInfo[f]}</span></div>`;
+        }
+    });
+    html += '</div>';
+
+    const articles = versionData.articles || [];
+    articles.forEach((art, i) => {
+        const content = art['내용'] || art.content || '';
+        const num = art['번호'] || art.number || '';
+        html += `<div class="article-row" data-seq="${art.seq || i}">
+            <span class="article-seq">${art.seq || i + 1}</span>
+            <span class="article-content">${num ? `<b>${num}</b> ` : ''}${content}</span>
+        </div>`;
+    });
+
+    if (articles.length === 0) {
+        html += '<div class="no-data">조문 데이터 없음</div>';
+    }
+
+    contentEl.innerHTML = html;
+}
+
+function highlightDiffs(leftData, rightData) {
+    if (!leftData || !rightData) return;
+
+    const leftArticles = leftData.articles || [];
+    const rightArticles = rightData.articles || [];
+
+    // seq 기반 매칭
+    const leftMap = {};
+    leftArticles.forEach((a, i) => { leftMap[a.seq || i] = a['내용'] || a.content || ''; });
+    const rightMap = {};
+    rightArticles.forEach((a, i) => { rightMap[a.seq || i] = a['내용'] || a.content || ''; });
+
+    // 왼쪽 패널 - 삭제/변경 표시
+    document.querySelectorAll('#leftContent .article-row').forEach(row => {
+        const seq = row.dataset.seq;
+        if (!(seq in rightMap)) {
+            row.classList.add('removed');
+        } else if (leftMap[seq] !== rightMap[seq]) {
+            row.classList.add('changed');
+        }
+    });
+
+    // 오른쪽 패널 - 추가/변경 표시
+    document.querySelectorAll('#rightContent .article-row').forEach(row => {
+        const seq = row.dataset.seq;
+        if (!(seq in leftMap)) {
+            row.classList.add('added');
+        } else if (leftMap[seq] !== rightMap[seq]) {
+            row.classList.add('changed');
+        }
+    });
+}
+
+// 스크롤 동기화
+document.addEventListener('DOMContentLoaded', function() {
+    const leftPanel = document.querySelector('#leftPanel');
+    const rightPanel = document.querySelector('#rightPanel');
+    let syncing = false;
+
+    leftPanel.addEventListener('scroll', function() {
+        if (syncing) return;
+        syncing = true;
+        rightPanel.scrollTop = leftPanel.scrollTop;
+        syncing = false;
+    });
+
+    rightPanel.addEventListener('scroll', function() {
+        if (syncing) return;
+        syncing = true;
+        leftPanel.scrollTop = rightPanel.scrollTop;
+        syncing = false;
+    });
+});
+</script>
+{% endblock %}

@@ -14,7 +14,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from fastapi import FastAPI, Request, Depends, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, FileResponse
 from fastapi.templating import Jinja2Templates
 from jinja2 import Environment, FileSystemLoader, FileSystemBytecodeCache
 
@@ -413,6 +413,144 @@ async def admin_support_redirect(request: Request):
     from fastapi.responses import RedirectResponse
     return RedirectResponse(url="/regulations/service", status_code=301)
 
+# 규정 비교 페이지
+@app.get("/regulations/compare", response_class=HTMLResponse)
+@login_required(redirect_to="/login")
+async def regulations_compare_page(
+    request: Request,
+    user: Dict[str, Any] = Depends(get_current_user)
+):
+    """두 버전 규정 비교 페이지"""
+    return templates.TemplateResponse(
+        "regulations/compare_full.html",
+        {"request": request, "user": user, "page_title": "규정 비교"}
+    )
+
+
+# 비교 API - 같은 wzRuleId의 버전 목록
+@app.get("/api/v1/regulations/compare/versions", dependencies=[Depends(get_current_user)])
+async def get_compare_versions(
+    rule_id: int = None,
+    wzruleid: int = None,
+    user: Dict[str, Any] = Depends(get_current_user)
+):
+    """같은 규정의 모든 버전 목록 조회"""
+    try:
+        from api.timescaledb_manager_v2 import DatabaseConnectionManager
+        db_config = {
+            'host': settings.DB_HOST, 'port': settings.DB_PORT,
+            'database': settings.DB_NAME, 'user': settings.DB_USER,
+            'password': settings.DB_PASSWORD,
+        }
+        db_manager = DatabaseConnectionManager(**db_config)
+
+        with db_manager.get_connection() as conn:
+            with conn.cursor() as cur:
+                # rule_id에서 wzRuleId를 먼저 조회
+                if rule_id and not wzruleid:
+                    cur.execute("SELECT wzRuleId FROM wz_rule WHERE wzRuleSeq = %s", (rule_id,))
+                    row = cur.fetchone()
+                    if row:
+                        wzruleid = row[0]
+
+                if not wzruleid:
+                    return {"versions": []}
+
+                # 같은 wzRuleId의 모든 버전 조회
+                cur.execute("""
+                    SELECT wzRuleSeq, wzRuleId, wzName, wzPubNo, wzNewFlag,
+                           wzLastRevDate, wzEstabDate, wzEditType, wzFileJson
+                    FROM wz_rule
+                    WHERE wzRuleId = %s
+                    ORDER BY wzRuleSeq DESC
+                """, (wzruleid,))
+
+                columns = ['wzruleseq', 'wzruleid', 'wzname', 'wzpubno', 'wznewflag',
+                           'wzlastrevdate', 'wzestabdate', 'wzedittype', 'wzfilejson']
+                versions = []
+                for row in cur.fetchall():
+                    v = dict(zip(columns, row))
+                    # 날짜 문자열 변환
+                    for k in ['wzlastrevdate', 'wzestabdate']:
+                        if v[k]: v[k] = str(v[k])
+                    versions.append(v)
+
+                return {"versions": versions}
+    except Exception as e:
+        logger.error(f"Error getting compare versions: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# 비교 API - 두 버전의 조문 데이터 반환
+@app.get("/api/v1/regulations/compare/diff", dependencies=[Depends(get_current_user)])
+async def get_compare_diff(
+    left: int = None,
+    right: int = None,
+    user: Dict[str, Any] = Depends(get_current_user)
+):
+    """두 규정 버전의 조문 데이터 비교"""
+    if not left or not right:
+        raise HTTPException(status_code=400, detail="left와 right 파라미터가 필요합니다")
+
+    try:
+        from api.timescaledb_manager_v2 import DatabaseConnectionManager
+        db_config = {
+            'host': settings.DB_HOST, 'port': settings.DB_PORT,
+            'database': settings.DB_NAME, 'user': settings.DB_USER,
+            'password': settings.DB_PASSWORD,
+        }
+        db_manager = DatabaseConnectionManager(**db_config)
+
+        def load_version_data(rule_seq):
+            """규정 버전 데이터 로드"""
+            with db_manager.get_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""
+                        SELECT wzRuleSeq, wzName, wzNewFlag, wzFileJson, wzPubNo
+                        FROM wz_rule WHERE wzRuleSeq = %s
+                    """, (rule_seq,))
+                    row = cur.fetchone()
+                    if not row:
+                        return None
+
+                    wzruleseq, wzname, wznewflag, wzfilejson, wzpubno = row
+                    articles = []
+                    doc_info = {}
+
+                    # JSON 파일에서 조문 로드
+                    if wzfilejson:
+                        import json
+                        json_path = wzfilejson
+                        if not os.path.isabs(json_path):
+                            json_path = os.path.join(settings.BASE_DIR, json_path)
+
+                        if os.path.exists(json_path):
+                            with open(json_path, 'r', encoding='utf-8') as f:
+                                data = json.load(f)
+                            articles = data.get('조문내용', data.get('sections', []))
+                            doc_info = data.get('문서정보', data.get('document_info', {}))
+
+                    return {
+                        'wzruleseq': wzruleseq,
+                        'wzname': wzname,
+                        'wznewflag': wznewflag,
+                        'wzpubno': wzpubno,
+                        'doc_info': doc_info,
+                        'articles': articles
+                    }
+
+        left_data = load_version_data(left)
+        right_data = load_version_data(right)
+
+        return {
+            "left": left_data,
+            "right": right_data
+        }
+    except Exception as e:
+        logger.error(f"Error getting compare diff: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # Health check
 @app.get("/health")
 async def health_check():
@@ -459,6 +597,34 @@ async def find_print_pdf(reg_code: str):
         "filename": filename,
         "path": f"/static/pdf/print/{filename}"
     }
+
+@app.get("/api/v1/docx/download/{reg_code}")
+async def download_regulation_docx(reg_code: str):
+    """
+    내규 코드로 DOCX 원본 파일을 다운로드합니다.
+    reg_code: "5-5" 형태의 내규 코드
+    """
+    import glob as glob_mod
+
+    docx_folder = Path(__file__).parent / "applib" / "docx"
+    prefix = f"({reg_code})_"
+    matching = glob_mod.glob(str(docx_folder / f"{prefix}*.docx"))
+
+    if not matching:
+        return JSONResponse(
+            content={"success": False, "error": f"내규 코드 {reg_code}에 해당하는 DOCX 파일을 찾을 수 없습니다."},
+            status_code=404
+        )
+
+    file_path = matching[0]
+    file_name = os.path.basename(file_path)
+    logger.info(f"[DOCX Download] 파일 발견: {file_name}")
+
+    return FileResponse(
+        path=file_path,
+        filename=file_name,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    )
 
 # 특정 라우터만 템플릿 새로 로딩
 @app.get("/force-reload", response_class=HTMLResponse)
@@ -1224,11 +1390,11 @@ async def get_current_regulations(
             WHERE wznewflag = '현행'
             ORDER BY
                 wzcateseq,
-                -- wzpubno를 숫자로 정렬 (예: 2.1.3.2 → 2.1.3.10 순서)
-                CAST(NULLIF(split_part(wzpubno, '.', 1), '') AS INTEGER) NULLS LAST,
-                CAST(NULLIF(split_part(wzpubno, '.', 2), '') AS INTEGER) NULLS LAST,
-                CAST(NULLIF(split_part(wzpubno, '.', 3), '') AS INTEGER) NULLS LAST,
-                CAST(NULLIF(split_part(wzpubno, '.', 4), '') AS INTEGER) NULLS LAST
+                -- wzpubno를 숫자로 정렬 (하이픈 기반)
+                CASE WHEN split_part(wzpubno, '-', 1) ~ '^\d+$'
+                     THEN CAST(split_part(wzpubno, '-', 1) AS INTEGER) ELSE 9999 END,
+                CASE WHEN split_part(wzpubno, '-', 2) ~ '^\d+$'
+                     THEN CAST(split_part(wzpubno, '-', 2) AS INTEGER) ELSE 9999 END
             LIMIT 1000
         """
 

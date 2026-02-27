@@ -270,7 +270,7 @@ class JsonToDbImporter:
                 "wzclosedate": "",  # 종료일자는 비움
                 
                 # 부서 정보
-                "wzmgrdptnm": doc_info.get("담당부서", ""),
+                "wzmgrdptnm": doc_info.get("소관부서", "") or doc_info.get("담당부서", ""),
                 "wzmgrdptorgcd": "",  # 담당부서 코드 (추후 매핑)
                 "wzreldptnm": "",  # 유관부서
                 "wzreldptorgcd": "",  # 유관부서 코드

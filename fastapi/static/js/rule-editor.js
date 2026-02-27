@@ -3221,10 +3221,10 @@ ${mergeResult.text_content || ''}
         console.log('[RuleEditor] Performing advanced search...');
 
         const searchData = {
-            keyword: document.getElementById('searchKeyword')?.value || '',
+            search: document.getElementById('searchKeyword')?.value || '',
             department: document.getElementById('searchDepartment')?.value || '',
-            dateFrom: document.getElementById('searchDateFrom')?.value || '',
-            dateTo: document.getElementById('searchDateTo')?.value || '',
+            announce_start: document.getElementById('searchDateFrom')?.value || '',
+            announce_end: document.getElementById('searchDateTo')?.value || '',
             status: document.getElementById('searchStatus')?.value || ''
         };
 
@@ -3236,7 +3236,7 @@ ${mergeResult.text_content || ''}
                 if (value) queryParams.append(key, value);
             }
 
-            const response = await fetch(`/api/v1/regulations/search?${queryParams}`, {
+            const response = await fetch(`/api/v1/regulations/advanced-search?${queryParams}`, {
                 method: 'GET',
                 credentials: 'include',
                 headers: {

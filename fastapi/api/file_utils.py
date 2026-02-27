@@ -18,9 +18,10 @@ def get_absolute_path(relative_path: str) -> str:
 
     Args:
         relative_path: BASE_DIR 기준 상대경로 (예: "fastapi/applib/pdf/file.pdf")
+                       또는 파일명만 (예: "(6-8)_여비규정_250305_merged.json")
 
     Returns:
-        절대경로 (예: "/home/wizice/regulation/fastapi/applib/pdf/file.pdf")
+        절대경로 (예: "/home/wizice/kbregulation/fastapi/applib/pdf/file.pdf")
     """
     if not relative_path:
         return ""
@@ -29,7 +30,22 @@ def get_absolute_path(relative_path: str) -> str:
     if os.path.isabs(relative_path):
         return relative_path
 
-    return os.path.join(settings.BASE_DIR, relative_path)
+    # 디렉토리 구분자가 없으면 파일명만 저장된 것 → JSON 서비스 폴더에서 찾기
+    if os.sep not in relative_path and '/' not in relative_path:
+        json_service_path = os.path.join(settings.BASE_DIR, settings.JSON_SERVICE_RELATIVE_PATH, relative_path)
+        if os.path.exists(json_service_path):
+            return json_service_path
+
+    base_path = os.path.join(settings.BASE_DIR, relative_path)
+    if os.path.exists(base_path):
+        return base_path
+
+    # fallback: www/static/file/ 에서 파일명으로 재시도
+    fallback = os.path.join(settings.BASE_DIR, settings.JSON_SERVICE_RELATIVE_PATH, os.path.basename(relative_path))
+    if os.path.exists(fallback):
+        return fallback
+
+    return base_path
 
 
 def get_relative_path(absolute_path: str) -> str:

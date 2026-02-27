@@ -12,7 +12,8 @@
 """
 
 from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form, Request, BackgroundTasks
-from typing import Dict, Any, Optional
+from fastapi.responses import StreamingResponse
+from typing import Dict, Any, Optional, List
 import os
 import io
 import json
@@ -542,7 +543,7 @@ async def create_regulation(
         if publication_no:
             # 첫 번째 숫자 추출 (1.6.1. -> 1)
             import re
-            match = re.match(r'^(\d+)\.', publication_no)
+            match = re.match(r'^(\d+)[-.]', publication_no)
             if match:
                 wz_cate_seq = int(match.group(1))
                 logger.info(f"Extracted wzCateSeq={wz_cate_seq} from publication_no={publication_no}")
@@ -627,6 +628,25 @@ async def create_regulation(
 
             cursor.execute(insert_query, params)
             result = cursor.fetchone()
+
+            # wz_rule_history에 제정 이력 INSERT
+            new_rule_id = result[0] if isinstance(result, tuple) else result
+            try:
+                cursor.execute("""
+                    INSERT INTO wz_rule_history (
+                        wzruleseq, wzruleid, wzpubno, wzname,
+                        wzversion, wzactiontype, wzrevisiondate,
+                        wzmodificationdate, wzchangedby
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """, (
+                    new_rule_id, wzruleid, publication_no, name,
+                    1, '제정', established_date,
+                    datetime.now().strftime('%Y-%m-%d'), user.get('username')
+                ))
+                logger.info(f"Inserted creation history for rule {new_rule_id}")
+            except Exception as hist_err:
+                logger.warning(f"Failed to insert creation history: {hist_err}")
+
             conn.commit()
             cursor.close()
 
@@ -1973,6 +1993,43 @@ async def create_revision(
 
                 cur.execute(insert_query, params)
                 new_id = cur.fetchone()[0]
+
+                # wz_rule_history에 개정 이력 INSERT
+                try:
+                    cur.execute("""
+                        INSERT INTO wz_rule_history (
+                            wzruleseq, wzruleid, wzpubno, wzname,
+                            wzversion, wzactiontype, wzrevisiondate,
+                            wzmodificationdate, wzfiledocx, wzfilepdf,
+                            wzfilecomparison, wznote, wzchangedby,
+                            wzorigdocxname, wzorigpdfname
+                        ) VALUES (
+                            %s, %s, %s, %s,
+                            %s, %s, %s,
+                            %s, %s, %s,
+                            %s, %s, %s,
+                            %s, %s
+                        )
+                    """, (
+                        new_id,
+                        wzruleid,
+                        original.get('wzpubno'),
+                        original.get('wzname'),
+                        1,  # version (첫 개정)
+                        '개정',
+                        revision_data.get('revision_date', datetime.now().strftime('%Y-%m-%d')),
+                        datetime.now().strftime('%Y-%m-%d'),
+                        original.get('wzfiledocx', ''),
+                        original.get('wzfilepdf', ''),
+                        '',  # wzfilecomparison - 나중에 업로드 시 업데이트
+                        f'규정 개정 (원본 wzRuleSeq: {rule_id})',
+                        user.get('username'),
+                        original.get('wzfiledocx', ''),
+                        original.get('wzfilepdf', '')
+                    ))
+                    logger.info(f"Inserted revision history for rule {new_id}")
+                except Exception as hist_err:
+                    logger.warning(f"Failed to insert revision history: {hist_err}")
 
                 # 커밋
                 conn.commit()
@@ -4339,3 +4396,89 @@ async def update_existing_json(
     except Exception as e:
         logger.error(f"Error updating JSON: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ==================== 규정 내보내기(Export) ====================
+
+from pydantic import BaseModel
+
+class ExportRequest(BaseModel):
+    rule_ids: List[str]
+
+@router.post("/export")
+async def export_regulations(
+    request: ExportRequest,
+    user: Dict[str, Any] = Depends(get_current_user)
+):
+    """선택된 규정을 Excel 파일로 내보내기"""
+    try:
+        from openpyxl import Workbook
+        from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
+
+        rule_ids = [int(rid) for rid in request.rule_ids]
+        if not rule_ids:
+            raise HTTPException(status_code=400, detail="내보낼 규정을 선택해주세요.")
+
+        db_manager = get_db_connection()
+
+        placeholders = ', '.join(['%s'] * len(rule_ids))
+        query = f"""
+            SELECT wzruleseq, wzname, wzpubno, wzmgrdptnm,
+                   wzestabdate, wzlastrevdate, wzexecdate, wzNewFlag, wzlkndname
+            FROM wz_rule
+            WHERE wzruleseq IN ({placeholders})
+            ORDER BY wzpubno
+        """
+
+        with db_manager.get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(query, rule_ids)
+                rows = cur.fetchall()
+
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "규정 목록"
+
+        # 헤더 스타일
+        header_font = Font(bold=True, size=11)
+        header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+        header_font_white = Font(bold=True, size=11, color="FFFFFF")
+        thin_border = Border(
+            left=Side(style='thin'), right=Side(style='thin'),
+            top=Side(style='thin'), bottom=Side(style='thin')
+        )
+
+        headers = ["번호", "규정명", "규정번호", "소관부서", "제정일", "최종개정일", "시행일", "상태", "분류"]
+        col_widths = [8, 40, 15, 20, 15, 15, 15, 10, 20]
+
+        for col_idx, (header, width) in enumerate(zip(headers, col_widths), 1):
+            cell = ws.cell(row=1, column=col_idx, value=header)
+            cell.font = header_font_white
+            cell.fill = header_fill
+            cell.alignment = Alignment(horizontal='center', vertical='center')
+            cell.border = thin_border
+            ws.column_dimensions[chr(64 + col_idx)].width = width
+
+        for row_idx, row in enumerate(rows, 2):
+            values = [row_idx - 1, row[1], row[2], row[3], row[4], row[5], row[6], row[7] or '현행', row[8] or '']
+            for col_idx, value in enumerate(values, 1):
+                cell = ws.cell(row=row_idx, column=col_idx, value=value or '')
+                cell.border = thin_border
+                cell.alignment = Alignment(vertical='center')
+
+        output = io.BytesIO()
+        wb.save(output)
+        output.seek(0)
+
+        filename = f"regulations_export_{datetime.now().strftime('%Y%m%d')}.xlsx"
+        return StreamingResponse(
+            output,
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error exporting regulations: {e}")
+        raise HTTPException(status_code=500, detail=f"내보내기 실패: {str(e)}")

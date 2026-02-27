@@ -142,8 +142,62 @@ cd /home/wizice/kbregulation/fastapi
 
 ## 코드 컨벤션
 
-- Python 3.9 호환 (venv3)
+- Python 3.9 호환 (venv3 경로: `/home/wizice/venv3/bin/python`)
 - 한글 주석/변수명 혼용
 - API 경로: `/api/v1/` 또는 `/api/v2/` 접두사
 - 템플릿: Jinja2 (fastapi/templates/)
 - 프론트엔드: 바닐라 JS + jQuery + Bootstrap
+- wzpubno 형식: `N-M` (하이픈 기반, 예: 6-8, 11-16)
+
+## KB신용정보 데이터 현황 (2026-02-27 기준)
+
+### 마이그레이션 완료
+- 세브란스 데이터 → KB신용정보 데이터로 완전 교체
+- **wz_cate**: 11개 분류 (1~11편)
+- **wz_dept**: 7개 부서
+- **wz_rule**: 91개 규정 (현행)
+- 8개 규정 DOCX 파싱 완료 (JSON+DB), 83개 플레이스홀더 (기본정보만)
+- 등록 스크립트: `fastapi/register_kb_regulations.py`
+
+### 별표/서식 관리 (구현 완료)
+
+4개 규정의 별표/별첨/서식 파일을 PDF로 변환하여 관리:
+
+| 규정 (wzruleseq/wzpubno) | 별표/서식 |
+|---|---|
+| 운영리스크관리지침 (356/5-5) | 별첨 제1~2호 (DOCX 2개) |
+| 여비규정 (350/6-8) | 별표 제1~6호 (DOCX 6개) |
+| 문서관리규정 (358/7-2) | 별표 제2~5호 (DOCX 4개, #1 파일 손상) |
+| 열쇠관리지침 (359/7-6) | 서식 제1~4호 (XLSX 4개) |
+
+**변환 결과**: 16/17 파일 PDF 변환 성공, wz_appendix 테이블에 16건 등록
+
+**관련 파일**:
+- `fastapi/register_kb_appendix.py` - 일괄 변환 및 등록 스크립트
+- `fastapi/applib/utils/_xlsx_to_pdf.py` - XLSX→PDF 변환 유틸리티 (openpyxl+reportlab)
+- `fastapi/api/router_appendix.py` - 관리자 부록 API (업로드, 삭제, JSON 업데이트)
+- `fastapi/api/router_appendix_download.py` - 공개 부록 다운로드 API
+- PDF 파일: `www/static/pdf/{N-M}._별표제{X}호._{제목}.pdf`
+
+**파일명 규칙**:
+- 원본: `(N-M) 별표/별첨/서식 제X호_제목.docx|xlsx`
+- PDF: `{N-M}._별표제{X}호._{제목}.pdf` (공백→언더스코어)
+
+### 환경 제약
+- LibreOffice 7.1.8: **Writer만** 설치 (Calc 미설치)
+  - DOCX→PDF: LibreOffice 변환 (한글 파일명 이슈로 temp `input.docx` 사용)
+  - XLSX→PDF: openpyxl + reportlab Python 변환
+- summary JSON 구조: `{"KB규정": {"N편 ...": {"regulations": [...]}}}` (중첩)
+
+## 향후 작업
+
+### 미완료
+- [ ] ES 재색인 (index_sev.py 실행 필요, 별표/서식 포함)
+- [ ] `(7-2) 별표 제1호_기안문.docx` 정상 파일 확보 후 재변환
+- [ ] 나머지 83개 규정 DOCX 파싱 (원본 확보 시)
+- [ ] 서버 재시작 필요 (uvicorn --workers 2 환경에서 코드 변경 반영)
+
+### 검증 필요
+- [ ] 사이드바에서 별표/서식 클릭 → PDF 뷰어 열기 동작 확인
+- [ ] 관리자 편집기에서 부록 탭 별표/서식 목록 표시 확인
+- [ ] API 테스트: `/api/v1/appendix/list/{ruleSeq}` 응답 확인

@@ -96,21 +96,21 @@ async def get_current_regulations(
 
                 # 분류 필터
                 if classification:
-                    query += " AND wzpubno LIKE %s"
-                    params.append(f'{classification}.%')
+                    query += " AND wzcateseq = %s"
+                    params.append(int(classification))
 
                 # 부서 필터
                 if department:
                     query += " AND wzmgrdptnm = %s"
                     params.append(department)
 
-                # 자연스러운 숫자 정렬 적용
+                # 자연스러운 숫자 정렬 적용 (하이픈 기반)
                 query += """ ORDER BY
                     wzcateseq,
-                    CAST(NULLIF(split_part(wzpubno, '.', 1), '') AS INTEGER) NULLS LAST,
-                    CAST(NULLIF(split_part(wzpubno, '.', 2), '') AS INTEGER) NULLS LAST,
-                    CAST(NULLIF(split_part(wzpubno, '.', 3), '') AS INTEGER) NULLS LAST,
-                    CAST(NULLIF(split_part(wzpubno, '.', 4), '') AS INTEGER) NULLS LAST,
+                    CASE WHEN split_part(wzpubno, '-', 1) ~ '^\d+$'
+                         THEN CAST(split_part(wzpubno, '-', 1) AS INTEGER) ELSE 9999 END,
+                    CASE WHEN split_part(wzpubno, '-', 2) ~ '^\d+$'
+                         THEN CAST(split_part(wzpubno, '-', 2) AS INTEGER) ELSE 9999 END,
                     wzruleseq
                 """
                 query += f" LIMIT {limit} OFFSET {offset}"
@@ -147,8 +147,8 @@ async def get_current_regulations(
                         count_query += " AND (wzname ILIKE %s OR wzpubno ILIKE %s)"
                         count_params.extend([search_pattern, search_pattern])
                     if classification:
-                        count_query += " AND wzpubno LIKE %s"
-                        count_params.append(f'{classification}.%')
+                        count_query += " AND wzcateseq = %s"
+                        count_params.append(int(classification))
                     if department:
                         count_query += " AND wzmgrdptnm = %s"
                         count_params.append(department)
@@ -213,8 +213,8 @@ async def get_history_regulations(
 
                 # 분류 필터
                 if classification:
-                    query += " AND wzpubno LIKE %s"
-                    params.append(f'{classification}.%')
+                    query += " AND wzcateseq = %s"
+                    params.append(int(classification))
 
                 # 부서 필터
                 if department:
@@ -256,8 +256,8 @@ async def get_history_regulations(
                         count_query += " AND (wzname ILIKE %s OR wzpubno ILIKE %s)"
                         count_params.extend([search_pattern, search_pattern])
                     if classification:
-                        count_query += " AND wzpubno LIKE %s"
-                        count_params.append(f'{classification}.%')
+                        count_query += " AND wzcateseq = %s"
+                        count_params.append(int(classification))
                     if department:
                         count_query += " AND wzmgrdptnm = %s"
                         count_params.append(department)

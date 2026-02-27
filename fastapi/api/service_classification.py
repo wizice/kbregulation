@@ -84,9 +84,9 @@ async def get_classifications(
                     cur.execute("""
                         SELECT COUNT(*)
                         FROM wz_rule
-                        WHERE wzpubno LIKE %s
+                        WHERE wzcateseq = %s
                         AND (wzNewFlag = '현행' OR wzNewFlag IS NULL)
-                    """, (f'{cate_seq}.%',))
+                    """, (cate_seq,))
 
                     count = cur.fetchone()[0]
 
@@ -256,10 +256,10 @@ async def get_regulations_by_category(
                         wzexecdate,
                         wzlastrevdate
                     FROM wz_rule
-                    WHERE wzpubno LIKE %s
+                    WHERE wzcateseq = %s
                     AND (wzNewFlag = '현행' OR wzNewFlag IS NULL)
                     ORDER BY wzpubno
-                """, (f'{cate_seq}.%',))
+                """, (cate_seq,))
 
                 results = cur.fetchall()
 
@@ -327,8 +327,8 @@ async def delete_classification(
                 # 해당 분류에 연결된 규정이 있는지 확인
                 cur.execute("""
                     SELECT COUNT(*) FROM wz_rule
-                    WHERE wzpubno LIKE %s
-                """, (f'{cate_seq}.%',))
+                    WHERE wzcateseq = %s
+                """, (cate_seq,))
 
                 regulation_count = cur.fetchone()[0]
                 if regulation_count > 0:

@@ -445,47 +445,9 @@
                 <button type="submit" class="login-btn" id="loginBtn">로그인</button>
             </form>
 
-            <!-- 토큰 발급 섹션 (로그인 성공 시 표시) -->
-            <div id="tokenSection" class="token-section">
-                <div class="token-header">
-                    <h3>🔑 인증 토큰 발급 완료</h3>
-                </div>
-
-                <div class="token-display">
-                    <code id="accessToken"></code>
-                    <button class="copy-btn" onclick="copyToken()">복사</button>
-                </div>
-
-                <div class="token-info">
-                    <p><strong>Claude Code에서 사용하기:</strong><br>
-                    Authorization 헤더에 <code>Bearer {토큰}</code> 형식으로 사용하세요.</p>
-                </div>
-
-                <div class="claude-code-guide">
-                    <h4>📋 Claude Code 설정 방법</h4>
-                    <pre><span class="comment"># 환경변수 설정</span>
-export KB_API_TOKEN=<span class="string">"Bearer {토큰}"</span>
-
-<span class="comment"># 또는 .claude/settings.json에 추가</span>
-{
-  "apiKey": "<span class="string">{토큰}</span>"
-}</pre>
-                </div>
-
-                <div class="action-buttons">
-                    <button class="btn-secondary" onclick="goToRegulations()">
-                        📋 규정 관리로 이동
-                    </button>
-                    <button class="btn-outline" onclick="goToApiKeys()">
-                        🔐 API 키 관리
-                    </button>
-                </div>
-
-                <div class="api-key-link">
-                    <a href="/admin/api-keys">
-                        💡 장기 사용을 위한 API 키를 발급받으세요 →
-                    </a>
-                </div>
+            <!-- 토큰 발급 섹션 (사용하지 않음 - 로그인 성공 시 규정 목록으로 바로 이동) -->
+            <div id="tokenSection" class="token-section" style="display: none !important;">
+                <code id="accessToken"></code>
             </div>
         </div>
 
@@ -571,18 +533,10 @@ export KB_API_TOKEN=<span class="string">"Bearer {토큰}"</span>
 
                     // 관리자 권한 확인 (서버 응답에서)
                     if (data.user && data.user.role === 'admin') {
-                        // 토큰 저장 및 표시
-                        currentToken = data.access_token;
-                        accessTokenDisplay.textContent = currentToken;
-
-                        // 로그인 폼 숨기고 토큰 섹션 표시
-                        loginForm.style.display = 'none';
-                        document.querySelector('.admin-notice').style.display = 'none';
-                        tokenSection.classList.add('show');
-
-                        // 버튼 텍스트 변경
+                        // 로그인 성공 → 규정 관리 페이지로 바로 이동
                         loginBtn.textContent = '로그인 성공!';
                         loginBtn.style.background = '#28a745';
+                        window.location.href = '/regulations/current';
 
                     } else {
                         // 관리자 권한이 없는 경우
@@ -602,36 +556,9 @@ export KB_API_TOKEN=<span class="string">"Bearer {토큰}"</span>
             }
         });
 
-        // 토큰 복사
-        function copyToken() {
-            navigator.clipboard.writeText(currentToken).then(() => {
-                const btn = document.querySelector('.copy-btn');
-                btn.textContent = '복사됨!';
-                btn.classList.add('copied');
-                setTimeout(() => {
-                    btn.textContent = '복사';
-                    btn.classList.remove('copied');
-                }, 2000);
-            }).catch(() => {
-                // Fallback
-                const textArea = document.createElement('textarea');
-                textArea.value = currentToken;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                alert('토큰이 클립보드에 복사되었습니다.');
-            });
-        }
-
         // 규정 관리로 이동
         function goToRegulations() {
             window.location.href = '/regulations/current';
-        }
-
-        // API 키 관리로 이동
-        function goToApiKeys() {
-            window.location.href = '/admin/api-keys';
         }
 
         // 엔터 키로 로그인

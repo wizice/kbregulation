@@ -82,10 +82,10 @@ def get_wzruleid_by_code(cursor, code: str) -> Optional[int]:
     cursor.execute("""
         SELECT wzruleid, wzruleseq, wzname, wzfilejson
         FROM wz_rule
-        WHERE wzpubno LIKE %s
+        WHERE wzpubno = %s
         ORDER BY wzruleseq DESC
         LIMIT 1
-    """, (f'{code}%',))
+    """, (code,))
 
     result = cursor.fetchone()
     if result:

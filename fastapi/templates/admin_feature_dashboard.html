@@ -465,8 +465,8 @@
         </div>
     </div>
 
-    <!-- API 키 정보 -->
-    <div class="feature-card" style="margin-top: 24px;">
+    <!-- API 키 정보 (숨김 처리) -->
+    <div class="feature-card" style="margin-top: 24px; display: none !important;">
         <div class="feature-card-header">
             <div class="icon" style="background: #fef3c7;">&#128273;</div>
             <div>
@@ -601,7 +601,7 @@
         loadPendingApprovals();
         loadMultiStepStats();
         loadRecentActivity();
-        loadApiKeys();
+        // loadApiKeys();  // API 키 관리 섹션 숨김 처리로 비활성화
         loadRulesList();
     });
 

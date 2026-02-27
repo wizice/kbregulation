@@ -86,6 +86,19 @@ function safeSetStorage(key, value) {
     return false;
 }
 
+// localStorage 안전 읽기 헬퍼 함수 (Android 대응)
+function safeGetStorage(key) {
+    if (isStorageAvailable) {
+        try {
+            return localStorage.getItem(key);
+        } catch (error) {
+            console.warn(`[localStorage] 읽기 실패 (${key}):`, error.message);
+            return null;
+        }
+    }
+    return null;
+}
+
 // localStorage 초기화 함수 (Android 대응)
 function initializeLocalStorage() {
     try {
@@ -218,6 +231,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // 페이지 로드 시 즐겨찾기 목록 초기화
     updateFavoritesList();
     updateRecentRegulationsList();
+
+    // 데스크톱 사이드바 접힘 상태 복원
+    restoreDesktopSidebarState();
 
     // 검색 폼 이벤트 리스너 (기존 onsubmit 대신 addEventListener 사용)
     const searchForm = document.querySelector('.search-form');
@@ -2016,7 +2032,12 @@ function generateTreeMenu() {
 
                     // 텍스트에서 중복된 번호가 제거를　위해　cleanAppendixItem　사용
                     const cleanAppendixItem = appendixItem.replace(/^\d+\.\s*/, '');
-                    subChild.textContent = `부록 ${index + 1}. ${cleanAppendixItem}`;
+                    // 별표/별첨/서식 패턴이면 그대로 표시, 아니면 기존 부록 N 형식
+                    if (/^(별표|별첨|서식)\s*제\d+호/.test(cleanAppendixItem)) {
+                        subChild.textContent = cleanAppendixItem;
+                    } else {
+                        subChild.textContent = `부록 ${index + 1}. ${cleanAppendixItem}`;
+                    }
                     
                     // 핵심 수정: PDF 열기로 변경
                     subChild.onclick = (event) => {
@@ -2081,6 +2102,12 @@ function toggleTreeItem(header, chapter) {
 
 // 내규 선택
 async function selectRegulation(regulation, chapter, element) {
+    // 비교 모드에서는 우측 패널에 로드
+    if (isComparisonMode) {
+        loadComparisonRight(regulation, chapter);
+        return;
+    }
+
     // 모바일에서는 sidebar 자동으로 닫기
     const isMobile = window.innerWidth <= 768;
     if (isMobile) {
@@ -4461,29 +4488,55 @@ function closeLayoutSettings() {
     document.body.style.overflow = 'auto';
 }
 
+// ========== 데스크톱 사이드바 토글 ==========
+function toggleDesktopSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const icon = document.getElementById('sidebarToggleIcon');
+    if (!sidebar) return;
+
+    const isCollapsed = sidebar.classList.toggle('collapsed');
+    safeSetStorage('sidebarCollapsed', isCollapsed ? '1' : '0');
+}
+
+function restoreDesktopSidebarState() {
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar || window.innerWidth <= 768) return;
+
+    const saved = safeGetStorage('sidebarCollapsed');
+    if (saved === '1') {
+        sidebar.classList.add('collapsed');
+    }
+}
+
 // 레이아웃 모드 설정
 function setLayoutMode(mode, saveToStorage = true) {
     document.body.classList.remove('layout-mode-1', 'layout-mode-2', 'layout-mode-3');
     document.body.classList.add(`layout-mode-${mode}`);
-    
+
     document.querySelectorAll('.layout-option').forEach(option => {
         option.classList.remove('active');
         if (parseInt(option.dataset.layout) === mode) {
             option.classList.add('active');
         }
     });
-    
+
+    const toggleBtn = document.getElementById('sidebarToggleBtn');
+
     // 수정된 코드
     if (window.innerWidth > 768) {  // ← 데스크톱에서만 적용
         if (mode === 1) {
             if (sidebar) sidebar.style.display = 'none';
+            if (toggleBtn) toggleBtn.style.display = 'none';
         } else {
             if (sidebar) sidebar.style.display = 'block';
+            if (toggleBtn) toggleBtn.style.display = '';
+            // 저장된 사이드바 접힘 상태 복원
+            restoreDesktopSidebarState();
         }
     } else {
         if (sidebar) sidebar.style.display = 'block';
-    }   
- 
+    }
+
     currentLayoutMode = mode;
 
     if (saveToStorage) {
@@ -8885,51 +8938,265 @@ function closeContentSearch() {
     if (searchBar) searchBar.classList.remove('show');
 }
 
-// ========== 2단보기 기능 ==========
-let isColumnView = false;
+// ========== 2단 규정 비교 모드 ==========
+let isComparisonMode = false;
+let comparisonLeftRegulation = null;
+let comparisonLeftChapter = null;
+let comparisonOriginalHtml = '';
 
 function toggleColumnView() {
-    const content = document.querySelector('.regulation-content');
-    if (!content) return;
-    isColumnView = !isColumnView;
-    if (isColumnView) {
-        content.style.columnCount = '2';
-        content.style.columnGap = '30px';
-        content.style.columnRule = '1px solid #e0e0e0';
-    } else {
-        content.style.columnCount = '';
-        content.style.columnGap = '';
-        content.style.columnRule = '';
+    if (isComparisonMode) {
+        exitComparisonMode();
+        return;
     }
+
+    const contentBody = document.getElementById('contentBody');
+    if (!contentBody || !currentRegulation) return;
+
+    // 비교 모드 진입
+    isComparisonMode = true;
+    comparisonLeftRegulation = currentRegulation;
+    comparisonLeftChapter = currentChapter;
+
+    // 현재 콘텐츠를 좌측 패널로 보존
+    comparisonOriginalHtml = contentBody.innerHTML;
+
+    const leftContent = contentBody.innerHTML;
+
+    contentBody.innerHTML = `
+        <div class="comparison-container">
+            <div class="comparison-header">
+                <span><i class="fas fa-columns"></i> 규정 비교 모드 — 사이드바에서 비교할 규정을 선택하세요</span>
+            </div>
+            <div class="comparison-panels">
+                <div class="comparison-panel" id="comparisonLeft">
+                    <div class="comparison-panel-header">
+                        <strong>${currentRegulation.code}. ${currentRegulation.name}</strong>
+                    </div>
+                    <div class="comparison-panel-body">${leftContent}</div>
+                </div>
+                <div class="comparison-divider"></div>
+                <div class="comparison-panel" id="comparisonRight">
+                    <div class="comparison-panel-header">
+                        <strong>비교 대상</strong>
+                    </div>
+                    <div class="comparison-panel-body">
+                        <div class="comparison-placeholder">
+                            <i class="fas fa-arrow-left" style="font-size: 32px; margin-bottom: 15px;"></i>
+                            <p>사이드바에서 비교할 규정을 선택하세요</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // 부모 content-body의 스크롤을 비활성화 (각 패널이 독립 스크롤)
+    const contentBodyEl = contentBody.closest('.content-body');
+    if (contentBodyEl) contentBodyEl.style.overflow = 'hidden';
+
+    // 사이드바가 접혀있으면 자동 펼침
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar && sidebar.classList.contains('collapsed')) {
+        sidebar.classList.remove('collapsed');
+        safeSetStorage('sidebarCollapsed', '0');
+    }
+
+    // 버튼 텍스트 변경
     const btn = document.getElementById('btnColumnToggle');
     if (btn) {
-        btn.classList.toggle('active', isColumnView);
-        btn.textContent = isColumnView ? '1단보기' : '2단보기';
+        btn.classList.add('active');
+        btn.textContent = '비교종료';
     }
 }
 
-// ========== 전문다운(PDF) 기능 ==========
-async function downloadRegulationPdf(regulationCode, regulationName) {
-    const apiCode = regulationCode.replace(/\./g, '_');
-    try {
-        const apiResponse = await fetch(`/api/v1/pdf/print-file/${apiCode}`);
-        const result = await apiResponse.json();
+function exitComparisonMode() {
+    isComparisonMode = false;
 
-        if (!result.success) {
-            showToast(result.error || `"${regulationName}" PDF 파일을 찾을 수 없습니다.`, 'error');
+    // 부모 content-body 스크롤 복원
+    const contentBodyEl = document.getElementById('contentBody');
+    const parentBody = contentBodyEl ? contentBodyEl.closest('.content-body') : null;
+    if (parentBody) parentBody.style.overflow = '';
+
+    const btn = document.getElementById('btnColumnToggle');
+    if (btn) {
+        btn.classList.remove('active');
+        btn.textContent = '2단보기';
+    }
+
+    // 원래 규정 다시 로드
+    if (comparisonLeftRegulation && comparisonLeftChapter) {
+        showRegulationDetailWithoutSidebarUpdate(comparisonLeftRegulation, comparisonLeftChapter);
+    }
+    comparisonLeftRegulation = null;
+    comparisonLeftChapter = null;
+    comparisonOriginalHtml = '';
+}
+
+async function loadComparisonRight(regulation, chapter) {
+    const rightPanel = document.getElementById('comparisonRight');
+    if (!rightPanel) return;
+
+    // 헤더 업데이트
+    const header = rightPanel.querySelector('.comparison-panel-header');
+    if (header) {
+        header.innerHTML = `<strong>${regulation.code}. ${regulation.name}</strong>`;
+    }
+
+    const body = rightPanel.querySelector('.comparison-panel-body');
+    if (!body) return;
+
+    body.innerHTML = '<div class="comparison-placeholder"><p>규정 로딩 중...</p></div>';
+
+    try {
+        // 파일명 가져오기
+        const fileName = regulation.detail?.documentInfo?.파일명;
+        if (!fileName) {
+            body.innerHTML = '<div class="comparison-placeholder"><p>규정 파일 정보를 찾을 수 없습니다.</p></div>';
             return;
         }
 
-        // 다운로드 링크 생성
-        const a = document.createElement('a');
-        a.href = result.path;
-        a.download = `${regulationName}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        const detailData = await loadRegulationDetail(fileName);
+        if (!detailData || !detailData.조문내용) {
+            body.innerHTML = '<div class="comparison-placeholder"><p>규정 데이터를 불러올 수 없습니다.</p></div>';
+            return;
+        }
+
+        // 메타 정보 생성
+        const docInfo = detailData.문서정보 || detailData.document_info || {};
+        let metaHtml = `
+            <div class="regulation-meta-container">
+                <table class="regulation-meta-table">
+                    <tr>
+                        <th class="header-cell">제정일</th>
+                        <td class="content-cell" style="text-align:center;">${docInfo.제정일 || '-'}</td>
+                        <th class="header-cell" style="border-left:1px solid #000">최종개정일</th>
+                        <td class="content-cell" style="text-align:center;">${docInfo.최종개정일 || '-'}</td>
+                    </tr>
+                    <tr>
+                        <th class="header-cell">소관부서</th>
+                        <td class="content-cell" colspan="3">${docInfo.소관부서 || '-'}</td>
+                    </tr>
+                </table>
+            </div>
+        `;
+
+        // 조문 내용 렌더링
+        const contentParts = [];
+        let previousArticle = null;
+
+        detailData.조문내용.forEach((article) => {
+            if (!article) return;
+
+            if (article.레벨 === 0) {
+                if (article.번호 && /^제\d+(장|절)$/.test(article.번호)) {
+                    contentParts.push(`<div class="chapter-title">${article.번호} ${article.내용 || ''}</div>`);
+                }
+                previousArticle = article;
+                return;
+            }
+
+            if (article.레벨 === 1 && !article.번호 && /^제\d+절/.test((article.내용 || '').replace(/<[^>]+>/g, '').trim())) {
+                contentParts.push(`<div class="section-title">${article.내용}</div>`);
+                previousArticle = article;
+                return;
+            }
+
+            let paddingLeft = 0;
+            switch(article.레벨) {
+                case 1: paddingLeft = 0; break;
+                case 2: paddingLeft = 20; break;
+                case 3: paddingLeft = 60; break;
+                case 4: paddingLeft = 80; break;
+                case 5: paddingLeft = 105; break;
+                default: paddingLeft = 125; break;
+            }
+
+            let additionalStyle = '';
+            if (previousArticle && article.레벨 === 2 && (previousArticle.레벨 >= 3 || previousArticle.레벨 === 2)) {
+                additionalStyle = 'margin-top: 15px;';
+            }
+            if (article.정렬 === 'center') additionalStyle += 'text-align: center;';
+            if (article.글꼴크기) additionalStyle += ` font-size: ${article.글꼴크기}pt;`;
+
+            let className = article.레벨 === 1 ? 'article-title' : (article.레벨 === 2 ? 'article-item' : 'article-sub-item');
+
+            let displayText = article.번호 && article.레벨 === 1
+                ? `<b>${article.번호}</b> ${article.내용}`
+                : (article.번호 ? `${article.번호} ${article.내용}` : article.내용);
+
+            if (className === 'article-item' && article.레벨 === 2) {
+                contentParts.push(`<div class="${className}" style="padding-left: 35px; text-indent: -15px; ${additionalStyle}">${displayText}</div>`);
+            } else if (className === 'article-sub-item') {
+                contentParts.push(`<div class="${className}" style="padding-left: ${paddingLeft}px; text-indent: -20px;">${displayText}</div>`);
+            } else {
+                contentParts.push(`<div class="${className}" style="padding-left: ${paddingLeft}px; ${additionalStyle}">${displayText}</div>`);
+            }
+
+            previousArticle = article;
+
+            if (article.관련이미지 && article.관련이미지.length > 0) {
+                article.관련이미지.forEach(img => {
+                    contentParts.push(`<div style="margin: 10px 0; padding-left: ${paddingLeft + 20}px;">
+                        <img src="${img.file_path}" style="max-width: 100%; height: auto; border: 1px solid #e0e0e0; border-radius: 4px;">
+                    </div>`);
+                });
+            }
+        });
+
+        const docFontFamily = detailData.문서정보?.기본글꼴;
+        const regFontStyle = docFontFamily ? ` style="font-family: '${docFontFamily}', sans-serif;"` : '';
+
+        body.innerHTML = `
+            <div class="regulation-detail mal-font">
+                <div class="regulation-header">${metaHtml}</div>
+                <div class="regulation-content"${regFontStyle}>${contentParts.join('')}</div>
+            </div>
+        `;
     } catch (error) {
-        console.error('PDF 다운로드 중 오류:', error);
-        showToast('PDF 다운로드 중 오류가 발생했습니다.', 'error');
+        console.error('비교 규정 로드 실패:', error);
+        body.innerHTML = '<div class="comparison-placeholder"><p>규정 데이터를 불러오는 중 오류가 발생했습니다.</p></div>';
+    }
+}
+
+// ========== 전문다운(DOCX) 기능 ==========
+async function downloadRegulationPdf(regulationCode, regulationName) {
+    try {
+        const response = await fetch(`/api/v1/docx/download/${encodeURIComponent(regulationCode)}`);
+        if (response.ok) {
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('json')) {
+                const result = await response.json();
+                showToast(result.error || `"${regulationName}" 다운로드 파일을 찾을 수 없습니다.`, 'error');
+                return;
+            }
+            // Content-Disposition 헤더에서 원본 파일명 추출
+            let fileName = `${regulationName}.docx`;
+            const disposition = response.headers.get('content-disposition');
+            if (disposition) {
+                // filename*=utf-8'' 형식 우선
+                const utf8Match = disposition.match(/filename\*=(?:UTF-8|utf-8)''(.+)/i);
+                if (utf8Match) {
+                    fileName = decodeURIComponent(utf8Match[1]);
+                } else {
+                    const match = disposition.match(/filename="?([^";\n]+)"?/i);
+                    if (match) fileName = decodeURIComponent(match[1]);
+                }
+            }
+            const blob = await response.blob();
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+            return;
+        }
+        showToast(`"${regulationName}" 다운로드 파일을 찾을 수 없습니다.`, 'error');
+    } catch (error) {
+        console.error('DOCX 다운로드 중 오류:', error);
+        showToast('다운로드 중 오류가 발생했습니다.', 'error');
     }
 }
 

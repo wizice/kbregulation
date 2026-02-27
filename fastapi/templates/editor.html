@@ -6,6 +6,13 @@
     <title>내규자료 현행화 편집기</title>
     <link rel="stylesheet" href="/static/styles.css">
     <style>
+        /* 부서 드롭다운 스타일 */
+        .dept-item { padding: 8px 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .dept-item:hover { background: #f0f0f0; }
+        .dept-name { font-size: 14px; }
+        .dept-code { font-size: 12px; color: #888; }
+        .no-results { padding: 8px 12px; color: #999; font-size: 13px; }
+
         /* 분류 배지 스타일 */
         .classification-badge {
             display: inline-block;
@@ -537,37 +544,48 @@
 
                 <div class="form-group">
                     <label class="form-label">
-                        제목 <span class="required">*</span>
+                        규정명 <span class="required">*</span>
                     </label>
-                    <input type="text" class="form-input" id="newTitle" placeholder="내규 제목을 입력하세요">
+                    <input type="text" class="form-input" id="newRegulationName" placeholder="규정명을 입력하세요">
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">
-                        담당부서 <span class="required">*</span>
+                        분류번호 <span class="required">*</span>
                     </label>
-                    <select class="form-select" id="newDepartment">
-                        <option value="">선택하세요</option>
-                        <option value="인사팀">인사팀</option>
-                        <option value="재무팀">재무팀</option>
-                        <option value="법무팀">법무팀</option>
-                        <option value="IT팀">IT팀</option>
-                    </select>
+                    <input type="text" class="form-input" id="newPublicationNo" placeholder="예: 1.6.1.">
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">
-                        등록 유형 <span class="required">*</span>
+                        소관부서 <span class="required">*</span>
                     </label>
-                    <select class="form-select" id="newType">
-                        <option value="new">신규 제정</option>
-                        <option value="hwpx">DOCX 파일 업로드</option>
-                    </select>
+                    <div class="searchable-select-wrapper" style="position: relative;">
+                        <input type="text" class="form-input" id="deptSearchInput" placeholder="부서명을 검색하세요" autocomplete="off">
+                        <input type="hidden" id="selectedDeptCode" value="">
+                        <select class="form-select" id="newDepartment" style="display: none;">
+                            <option value="">선택하세요</option>
+                        </select>
+                        <div id="deptDropdown" class="dept-dropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; max-height: 200px; overflow-y: auto; background: white; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.15); z-index: 1000;"></div>
+                    </div>
                 </div>
 
-                <div class="form-group" id="fileUploadSection" style="display: none;">
-                    <label class="form-label">HWPX 파일</label>
-                    <input type="file" class="form-input" id="hwpxFile" accept=".hwpx">
+                <div style="display: flex; gap: 16px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label class="form-label">제정일</label>
+                        <input type="date" class="form-input" id="newEstablishedDate">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label class="form-label">시행일</label>
+                        <input type="date" class="form-input" id="newExecutionDate">
+                    </div>
+                </div>
+
+                <input type="hidden" id="newStatus" value="현행">
+
+                <div class="form-group">
+                    <label class="form-label">수정이력 파일 (선택)</label>
+                    <input type="file" class="form-input" id="newHistoryFile" accept=".pdf,.docx">
                 </div>
             </div>
             <div class="modal-footer">

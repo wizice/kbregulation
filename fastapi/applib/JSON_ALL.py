@@ -333,11 +333,11 @@ def merge_json_files(input_dir, output_file):
     try:
         import psycopg2
         conn = psycopg2.connect(
-            host='localhost',
-            port=35432,
-            database='severance',
-            user='severance',
-            password='rkatkseverance!'
+            host=os.getenv("DB_HOST") or settings.DB_HOST,
+            port=int(os.getenv("DB_PORT") or settings.DB_PORT),
+            database=os.getenv("DB_NAME") or settings.DB_NAME,
+            user=os.getenv("DB_USER") or settings.DB_USER,
+            password=os.getenv("DB_PASSWORD") or settings.DB_PASSWORD
         )
         cursor = conn.cursor()
         cursor.execute("""
