@@ -273,12 +273,15 @@ const RuleEditor = {
                 <td width="80">${this.formatDate(rule.established_date)}</td>
                 <td width="80">${this.formatDate(rule.last_revised_date)}</td>
                 <td width="80">${this.formatDate(rule.execution_date)}</td>
-                <td width="150">
+                <td width="200">
                     <button class="action-btn btn-primary" onclick="RuleEditor.openEditModal(${rule.rule_id || rule.wzruleseq})" style="padding: 6px 12px; font-size: 14px; min-width: 60px;">
                         수정
                     </button>
                     <button class="action-btn btn-warning" onclick="RuleEditor.openRevisionModal(${rule.rule_id || rule.wzruleseq})" style="padding: 6px 12px; font-size: 14px; min-width: 60px;">
                         개정
+                    </button>
+                    <button class="action-btn" onclick="RuleEditor.openComparisonForRule(${rule.rule_id || rule.wzruleseq})" style="padding: 6px 8px; font-size: 12px; min-width: 50px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer;" title="신구대비표 생성">
+                        비교
                     </button>
                 </td>
             `;
@@ -519,6 +522,10 @@ const RuleEditor = {
                                 style="padding: 12px 24px; border: none; background: transparent; cursor: pointer; font-weight: 500;">
                             부록 관리
                         </button>
+                        <button class="edit-tab-btn" onclick="RuleEditor.switchEditTab('regNotice')"
+                                style="padding: 12px 24px; border: none; background: transparent; cursor: pointer; font-weight: 500;">
+                            안내사항
+                        </button>
                     </div>
 
                     <!-- 탭 컨텐츠 -->
@@ -555,11 +562,15 @@ const RuleEditor = {
                                         <input type="file"
                                                id="appendixFileInput"
                                                multiple
-                                               accept=".pdf"
-                                               style="display: block; width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-                                        <div style="margin-top: 8px; font-size: 12px; color: #666;">
-                                            허용 형식: PDF만 가능
+                                               accept=".docx,.xlsx"
+                                               style="display: none;">
+                                        <div id="appendixDropZone"
+                                             style="border: 2px dashed #ccc; border-radius: 8px; padding: 30px 20px; text-align: center; cursor: pointer; transition: all 0.3s; background: #fafafa;">
+                                            <div style="font-size: 32px; margin-bottom: 8px;">📂</div>
+                                            <div style="font-size: 14px; color: #555; font-weight: 500;">파일을 드래그하여 놓거나 클릭하여 선택</div>
+                                            <div style="font-size: 12px; color: #999; margin-top: 6px;">허용 형식: DOCX, XLSX (서버에서 PDF로 자동 변환) | 여러 파일 가능</div>
                                         </div>
+                                        <div id="appendixFileList" style="margin-top: 10px;"></div>
                                         <div id="appendixUploadStatus" style="margin-top: 8px; font-size: 13px; color: #28a745;"></div>
                                     </div>
                                     <button id="uploadAppendixBtn"
@@ -577,6 +588,25 @@ const RuleEditor = {
                                         <div style="text-align: center; padding: 40px; color: #999;">
                                             로딩 중...
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 안내사항 탭 -->
+                        <div id="regNoticeTab" class="edit-tab-content" style="display: none;">
+                            <div style="padding: 20px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                    <h3 style="margin: 0; color: #333; font-size: 16px; font-weight: 600;">📢 안내사항 관리</h3>
+                                    <button onclick="RuleEditor.showRegNoticeForm()"
+                                            style="background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 500;">
+                                        + 안내사항 추가
+                                    </button>
+                                </div>
+                                <div id="regNoticeFormArea"></div>
+                                <div id="regNoticeList" style="min-height: 100px;">
+                                    <div style="text-align: center; padding: 40px; color: #999;">
+                                        탭을 선택하면 안내사항을 불러옵니다.
                                     </div>
                                 </div>
                             </div>
@@ -696,6 +726,14 @@ const RuleEditor = {
                 </div>
 
                 <div class="form-group">
+                    <label class="form-label">유관부서</label>
+                    <select id="editRelDept" class="form-control" style="width: 100%;">
+                        <option value="">선택하세요</option>
+                        <option value="${rule.wzreldptorgcd || ''}" selected>${rule.wzreldptnm || '선택하세요'}</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
                     <label class="form-label">상태 <span style="color: #dc3545; font-size: 0.75em; vertical-align: super;">*필수</span></label>
                     <select id="editNewFlag" class="form-control" style="width: 100%;">
                         <option value="현행" ${rule.wznewflag === '현행' ? 'selected' : ''}>현행</option>
@@ -716,30 +754,9 @@ const RuleEditor = {
         return `
             <div class="upload-section" style="height: 100%; display: flex; flex-direction: column;">
                 <div style="flex: 1; overflow-y: auto; padding-bottom: 20px;">
-                    <p class="info-text" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 8px; margin-bottom: 25px;">
-                        PDF와 DOCX 파일을 모두 업로드해야 합니다.
+                    <p class="info-text" style="background: linear-gradient(135deg, #FFBC00 0%, #60584C 100%); color: white; padding: 15px; border-radius: 8px; margin-bottom: 25px;">
+                        DOCX 파일을 업로드해주세요.
                     </p>
-
-                <!-- PDF 업로드 -->
-                <div class="form-group" style="margin-bottom: 25px;">
-                    <label class="form-label" style="font-weight: 600; margin-bottom: 10px; display: block;">
-                        PDF 파일 <span class="required" style="color: #dc3545; font-size: 0.75em; vertical-align: super;">*필수</span>
-                    </label>
-                    <!-- 등록된 PDF 파일 표시 -->
-                    <div id="registeredPdfFile" style="margin-bottom: 10px; padding: 10px; background: #fff5f5; border-radius: 6px; border: 1px solid #fecaca; display: none;">
-                    </div>
-                    <div class="file-upload-wrapper" style="position: relative; overflow: hidden; display: inline-block; width: 100%;">
-                        <input type="file" id="editPdfFile" accept=".pdf"
-                               onchange="RuleEditor.handleFileSelect('pdf', this.files[0])"
-                               style="position: absolute; left: -9999px;">
-                        <label for="editPdfFile" style="display: block; padding: 12px; background: #f8f9fa; border: 2px dashed #dee2e6; border-radius: 8px; cursor: pointer; text-align: center; transition: all 0.3s;">
-                            <div id="pdfFileName" class="file-name-display" style="color: #6c757d;">
-                                📄 클릭하여 PDF 파일을 선택하세요
-                            </div>
-                        </label>
-                    </div>
-                    <div id="pdfStatus" class="upload-status" style="margin-top: 8px; font-size: 14px;"></div>
-                </div>
 
                 <!-- DOCX 업로드 -->
                 <div class="form-group" style="margin-bottom: 25px;">
@@ -815,7 +832,7 @@ const RuleEditor = {
                     <!-- 진행 상황 표시 -->
                     <div id="uploadProgress" class="progress-section" style="display: none; margin: 25px 0; padding: 20px; background: #f8f9fa; border-radius: 8px;">
                         <div class="progress-bar" style="width: 100%; height: 24px; background: #e9ecef; border-radius: 12px; overflow: hidden;">
-                            <div class="progress-fill" id="progressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); transition: width 0.3s; display: flex; align-items: center; justify-content: center;">
+                            <div class="progress-fill" id="progressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #FFBC00 0%, #60584C 100%); transition: width 0.3s; display: flex; align-items: center; justify-content: center;">
                                 <span style="color: white; font-size: 12px; font-weight: 600;"></span>
                             </div>
                         </div>
@@ -826,7 +843,7 @@ const RuleEditor = {
                 <!-- 버튼 영역 - Sticky 푸터 -->
                 <div class="modal-footer" style="position: sticky; bottom: -20px; padding: 15px 20px; text-align: center; border-top: 2px solid #e2e8f0; background: #f8f9fa; z-index: 100; box-shadow: 0 -2px 10px rgba(0,0,0,0.05);">
                     <button class="btn btn-primary" id="processFilesBtn" onclick="RuleEditor.processFiles()" disabled
-                            style="padding: 12px 35px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 6px; cursor: pointer; opacity: 0.5; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
+                            style="padding: 12px 35px; background: linear-gradient(135deg, #FFBC00 0%, #60584C 100%); color: white; border: none; border-radius: 6px; cursor: pointer; opacity: 0.5; box-shadow: 0 4px 15px rgba(255, 188, 0, 0.3);">
                         📤 업로드 및 파싱
                     </button>
                 </div>
@@ -835,7 +852,7 @@ const RuleEditor = {
             <style>
                 .file-upload-wrapper label:hover {
                     background: #e9ecef !important;
-                    border-color: #667eea !important;
+                    border-color: #60584C !important;
                 }
                 .btn:hover:not(:disabled) {
                     opacity: 0.9;
@@ -971,6 +988,10 @@ const RuleEditor = {
                     }
                 }
                 break;
+            case 'regNotice':
+                tabContentId = 'regNoticeTab';
+                setTimeout(() => this.loadRegNotices(), 100);
+                break;
             default:
                 console.error('[RuleEditor] Unknown tab name:', tabName);
                 return;
@@ -1028,8 +1049,8 @@ const RuleEditor = {
         try {
             // 유관부서 select에서 선택된 옵션 가져오기
             const relDeptSelect = document.getElementById('editRelDept');
-            const relDeptCode = relDeptSelect.value.trim();
-            const relDeptName = relDeptSelect.selectedIndex > 0
+            const relDeptCode = relDeptSelect ? relDeptSelect.value.trim() : '';
+            const relDeptName = (relDeptSelect && relDeptSelect.selectedIndex > 0)
                 ? relDeptSelect.options[relDeptSelect.selectedIndex].text
                 : '';
 
@@ -1080,7 +1101,7 @@ const RuleEditor = {
 
         // uploadedFiles 객체가 없으면 초기화
         if (!this.uploadedFiles) {
-            this.uploadedFiles = { pdf: null, docx: null };
+            this.uploadedFiles = { docx: null };
         }
 
         this.uploadedFiles[type] = file;
@@ -1096,8 +1117,8 @@ const RuleEditor = {
             statusDiv.innerHTML = '<span style="color: #4CAF50;">파일이 선택되었습니다.</span>';
         }
 
-        // 두 파일이 모두 선택되면 처리 버튼 활성화
-        if (this.uploadedFiles.pdf && this.uploadedFiles.docx) {
+        // DOCX 파일이 선택되면 처리 버튼 활성화
+        if (this.uploadedFiles.docx) {
             const processBtn = document.getElementById('processFilesBtn');
             if (processBtn) {
                 processBtn.disabled = false;
@@ -1115,7 +1136,7 @@ const RuleEditor = {
 
         // uploadedFiles 객체가 없으면 초기화
         if (!this.uploadedFiles) {
-            this.uploadedFiles = { pdf: null, docx: null };
+            this.uploadedFiles = { docx: null };
         }
 
         // 파일 저장
@@ -1471,8 +1492,8 @@ const RuleEditor = {
 
     // 파일 처리 및 파싱
     async processFiles() {
-        if (!this.uploadedFiles.pdf || !this.uploadedFiles.docx) {
-            this.showNotification('PDF와 DOCX 파일을 모두 선택해주세요.', 'warning');
+        if (!this.uploadedFiles.docx) {
+            this.showNotification('DOCX 파일을 선택해주세요.', 'warning');
             return;
         }
 
@@ -1483,16 +1504,13 @@ const RuleEditor = {
 
             this.showProgress('파일 업로드 중...');
 
-            // PDF 업로드 및 파싱
-            const pdfResult = await this.uploadAndParsePDF();
-
             // DOCX 업로드 및 파싱
             const docxResult = await this.uploadAndParseDOCX();
 
             this.showProgress('파일 병합 중... 📊');
 
-            // JSON 병합
-            const mergeResult = await this.mergeJSONFiles(pdfResult, docxResult);
+            // JSON 병합 (PDF 없이)
+            const mergeResult = await this.mergeJSONFiles(null, docxResult);
 
             console.log('[RuleEditor] Merge completed, checking result:', {
                 success: mergeResult.success,
@@ -1670,21 +1688,26 @@ const RuleEditor = {
         if (!dateString) return '';
 
         // 날짜 문자열 정리 (공백 제거)
-        let cleaned = dateString.trim();
+        let cleaned = dateString.replace(/\s+/g, '').trim();
 
         // 이미 YYYY-MM-DD 형식인 경우 그대로 반환
         if (/^\d{4}-\d{2}-\d{2}/.test(cleaned)) {
             return cleaned.substring(0, 10);
         }
 
-        // YYYY.MM.DD 또는 YYYY.MM.DD. 형식을 YYYY-MM-DD로 변환
-        if (/^\d{4}\.\d{2}\.\d{2}\.?/.test(cleaned)) {
-            return cleaned.substring(0, 10).replace(/\./g, '-');
+        // YYYY.M.D 또는 YYYY.MM.DD (끝에 점 있을 수도) 형식을 파싱
+        const dotMatch = cleaned.match(/^(\d{4})\.(\d{1,2})\.(\d{1,2})\.?$/);
+        if (dotMatch) {
+            const y = dotMatch[1];
+            const m = dotMatch[2].padStart(2, '0');
+            const d = dotMatch[3].padStart(2, '0');
+            return `${y}-${m}-${d}`;
         }
 
         // YYYY.MM 형식 (일자 없음) -> YYYY-MM-01로 변환
-        if (/^\d{4}\.\d{2}$/.test(cleaned)) {
-            return cleaned.replace('.', '-') + '-01';
+        if (/^\d{4}\.\d{1,2}$/.test(cleaned)) {
+            const parts = cleaned.split('.');
+            return `${parts[0]}-${parts[1].padStart(2, '0')}-01`;
         }
 
         // 기타 형식은 빈 문자열 반환
@@ -2092,9 +2115,37 @@ const RuleEditor = {
                     <div class="form-group" style="margin-bottom: 20px;">
                         <label class="form-label">신구대비표 PDF <span style="color: #dc3545; font-size: 0.75em; vertical-align: super;">*필수</span></label>
                         <input type="file" id="revisionComparisonFile" name="revisionComparisonFile"
-                               class="form-control" accept=".pdf" required
+                               class="form-control" accept=".pdf"
                                style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" />
-                        <p style="color: #6c757d; font-size: 12px; margin-top: 5px;">개정 전후 비교표 PDF 파일을 반드시 업로드하세요</p>
+                        <p style="color: #6c757d; font-size: 12px; margin-top: 5px;">개정 전후 비교표 PDF 파일을 업로드하거나, 아래에서 자동 생성하세요</p>
+                    </div>
+
+                    <!-- 신구대비표 자동 생성 -->
+                    <div style="border: 1px solid #667eea; border-radius: 8px; padding: 15px; background: #f8f9ff; margin-bottom: 20px;">
+                        <div style="font-weight: 600; color: #667eea; margin-bottom: 10px; font-size: 14px;">
+                            📊 또는 신구대비표 자동 생성
+                        </div>
+                        <p style="color: #6c757d; font-size: 12px; margin-bottom: 12px;">
+                            새 버전의 PDF와 DOCX 파일을 모두 업로드하면 현행 규정과 비교하여 신구대비표를 자동 생성합니다.
+                        </p>
+                        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                            <div style="flex: 1;">
+                                <label style="font-size: 12px; color: #555; display: block; margin-bottom: 4px;">새 버전 PDF</label>
+                                <input type="file" id="autoGenPdfFile" accept=".pdf"
+                                       style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px;" />
+                            </div>
+                            <div style="flex: 1;">
+                                <label style="font-size: 12px; color: #555; display: block; margin-bottom: 4px;">새 버전 DOCX</label>
+                                <input type="file" id="autoGenDocxFile" accept=".docx"
+                                       style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px;" />
+                            </div>
+                        </div>
+                        <button id="btnAutoGenerate" class="btn btn-primary btn-sm"
+                                onclick="RuleEditor.autoGenerateComparison()"
+                                style="width: 100%; padding: 8px; font-size: 13px;">
+                            신구대비표 자동 생성
+                        </button>
+                        <div id="autoGenStatus" style="margin-top: 8px; font-size: 12px;"></div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -2173,13 +2224,16 @@ const RuleEditor = {
             return;
         }
 
-        if (!comparisonFile) {
-            alert('신구대비표 PDF 파일은 필수입니다.');
+        // 수동 업로드 파일 또는 자동 생성 파일 확인
+        if (!comparisonFile && !this.pendingComparisonFile) {
+            alert('신구대비표 PDF 파일을 업로드하거나 자동 생성해주세요.');
             return;
         }
 
-        // 신구대비표 파일 저장
-        this.pendingComparisonFile = comparisonFile;
+        // 수동 업로드 파일이 있으면 우선 사용
+        if (comparisonFile) {
+            this.pendingComparisonFile = comparisonFile;
+        }
         console.log('[RuleEditor] 신구대비표 파일 준비됨:', comparisonFile.name);
 
         // 날짜 정보 저장 (DB 형식으로 변환: YYYY-MM-DD -> YYYY.MM.DD)
@@ -2279,17 +2333,7 @@ const RuleEditor = {
                     </div>
                     <div class="modal-body">
                         <div class="upload-section">
-                            <p class="info-text">PDF와 DOCX 파일을 모두 업로드해야 합니다.</p>
-
-                            <!-- PDF 업로드 -->
-                            <div class="form-group">
-                                <label class="form-label">PDF 파일 <span class="required">*</span></label>
-                                <div class="file-upload-wrapper">
-                                    <input type="file" id="pdfFile" accept=".pdf" onchange="RuleEditor.handleFileSelectOld('pdf', this)">
-                                    <div id="pdfFileName" class="file-name-display">파일을 선택하세요</div>
-                                </div>
-                                <div id="pdfStatus" class="upload-status"></div>
-                            </div>
+                            <p class="info-text">DOCX 파일을 업로드해주세요.</p>
 
                             <!-- DOCX 업로드 -->
                             <div class="form-group">
@@ -2356,7 +2400,7 @@ const RuleEditor = {
     // 업로드 준비 확인
     checkUploadReady() {
         const uploadBtn = document.getElementById('uploadBtn');
-        if (this.uploadedFiles.pdf && this.uploadedFiles.docx) {
+        if (this.uploadedFiles.docx) {
             uploadBtn.disabled = false;
             uploadBtn.classList.add('btn-ready');
         } else {
@@ -2367,8 +2411,8 @@ const RuleEditor = {
 
     // 파일 업로드 및 파싱
     async uploadFiles() {
-        if (!this.uploadedFiles.pdf || !this.uploadedFiles.docx) {
-            alert('PDF와 DOCX 파일을 모두 선택해주세요.');
+        if (!this.uploadedFiles.docx) {
+            alert('DOCX 파일을 선택해주세요.');
             return;
         }
 
@@ -2378,15 +2422,12 @@ const RuleEditor = {
         this.showProgress('업로드 중...');
 
         try {
-            // 1. PDF 업로드 및 파싱
-            const pdfResult = await this.uploadAndParsePDF();
-
-            // 2. DOCX 업로드 및 파싱
+            // 1. DOCX 업로드 및 파싱
             const docxResult = await this.uploadAndParseDOCX();
 
-            // 3. JSON 파일 병합
+            // 2. JSON 파일 병합
             this.showProgress('JSON 병합 중...');
-            const mergeResult = await this.mergeJSONFiles(pdfResult, docxResult);
+            const mergeResult = await this.mergeJSONFiles(null, docxResult);
 
             // 4. RuleEditor 상태 업데이트 (내용편집 탭에서 사용)
             if (mergeResult && mergeResult.merged_data) {
@@ -2546,21 +2587,21 @@ const RuleEditor = {
         console.log('[RuleEditor] DOCX Result:', docxResult);
 
         // PDF와 DOCX 결과에서 JSON 파일 경로 추출
-        const pdfJsonPath = pdfResult.json_path || pdfResult.filepath || pdfResult.path;
+        const pdfJsonPath = pdfResult ? (pdfResult.json_path || pdfResult.filepath || pdfResult.path) : '';
         const docxJsonPath = docxResult.json_path || docxResult.filepath || docxResult.path;
 
         console.log('[RuleEditor] PDF JSON Path:', pdfJsonPath);
         console.log('[RuleEditor] DOCX JSON Path:', docxJsonPath);
 
-        if (!pdfJsonPath || !docxJsonPath) {
-            console.error('[RuleEditor] Missing JSON paths');
-            console.error('PDF path:', pdfJsonPath);
-            console.error('DOCX path:', docxJsonPath);
-            throw new Error('JSON 파일 경로를 찾을 수 없습니다');
+        if (!docxJsonPath) {
+            console.error('[RuleEditor] Missing DOCX JSON path');
+            throw new Error('DOCX JSON 파일 경로를 찾을 수 없습니다');
         }
 
         const formData = new FormData();
-        formData.append('pdf_json_path', pdfJsonPath);
+        if (pdfJsonPath) {
+            formData.append('pdf_json_path', pdfJsonPath);
+        }
         formData.append('docx_json_path', docxJsonPath);
         // rule_id 확인 및 설정
         const ruleId = this.currentRule.wzruleseq || this.currentRule.rule_id || this.currentRule.id;
@@ -3019,6 +3060,17 @@ ${mergeResult.text_content || ''}
         }, 3000);
     },
 
+    escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;')
+            .replace(/`/g, '&#096;');
+    },
+
     // 모달 닫기
     closeModal() {
         if (this.currentModal) {
@@ -3154,10 +3206,134 @@ ${mergeResult.text_content || ''}
                     ServiceManager.loadStatus();
                 }
                 break;
+            case 'notices':
+                if (typeof NoticeManager !== 'undefined') NoticeManager.init();
+                break;
+            case 'faq':
+                if (typeof FAQManager !== 'undefined') FAQManager.init();
+                break;
+            case 'support':
+                if (typeof SupportTabManager !== 'undefined') SupportTabManager.init();
+                break;
+            case 'synonyms':
+                if (typeof SynonymTabManager !== 'undefined') SynonymTabManager.init();
+                break;
+            case 'comparison':
+                this.initComparisonTab();
+                break;
+            case 'users':
+                if (typeof UserManager !== 'undefined') UserManager.init();
+                break;
             case 'search':
                 // 상세 검색 탭 초기화
                 this.initAdvancedSearch();
                 break;
+        }
+    },
+
+    // 신구대비표 탭 초기화
+    initComparisonTab(ruleId) {
+        const iframe = document.getElementById('comparisonIframe');
+        if (!iframe) return;
+
+        let url = '/regulations/comparison-generator?embed=1';
+        if (ruleId) {
+            url += `&rule_id=${ruleId}`;
+        }
+
+        // iframe이 아직 로드되지 않았거나 다른 rule_id로 요청된 경우만 로드
+        if (!iframe.src || iframe.src === '' || iframe.src === 'about:blank' || (ruleId && !iframe.src.includes(`rule_id=${ruleId}`))) {
+            iframe.src = url;
+        }
+    },
+
+    // 신구대비표 새 탭에서 열기
+    openComparisonInNewTab() {
+        window.open('/regulations/comparison-generator', '_blank');
+    },
+
+    // 버전 비교 뷰어 열기
+    openVersionCompare() {
+        window.open('/regulations/compare', '_blank');
+    },
+
+    // 특정 규정의 신구대비표 탭으로 이동
+    openComparisonForRule(ruleId) {
+        this.switchTab('comparison');
+        // iframe에 rule_id 전달
+        this.initComparisonTab(ruleId);
+    },
+
+    // 개정 모달에서 신구대비표 자동 생성
+    async autoGenerateComparison() {
+        const ruleId = this.currentRule?.id;
+        if (!ruleId) {
+            alert('규정이 선택되지 않았습니다.');
+            return;
+        }
+
+        const pdfFile = document.getElementById('autoGenPdfFile')?.files[0];
+        const docxFile = document.getElementById('autoGenDocxFile')?.files[0];
+
+        if (!pdfFile || !docxFile) {
+            alert('신구대비표 자동 생성에는 새 버전의 PDF와 DOCX 파일이 모두 필요합니다.');
+            return;
+        }
+
+        const statusDiv = document.getElementById('autoGenStatus');
+        const btn = document.getElementById('btnAutoGenerate');
+        if (statusDiv) statusDiv.innerHTML = '<span style="color: #667eea;">신구대비표 생성 중...</span>';
+        if (btn) btn.disabled = true;
+
+        try {
+            const formData = new FormData();
+            formData.append('rule_id', ruleId);
+            formData.append('output_format', 'pdf');
+            formData.append('remarks', '개정 시 자동 생성');
+            if (pdfFile) formData.append('pdf_file', pdfFile);
+            if (docxFile) formData.append('docx_file', docxFile);
+
+            const response = await fetch('/api/v1/compare/generate-download', {
+                method: 'POST',
+                credentials: 'include',
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                throw new Error(errData.detail || `생성 실패 (${response.status})`);
+            }
+
+            // 생성된 PDF를 Blob으로 받아서 File 객체로 변환
+            const blob = await response.blob();
+            const ruleName = this.currentRule?.name || '규정';
+            const generatedFile = new File([blob], `신구대비표_${ruleName}.pdf`, { type: 'application/pdf' });
+
+            // 수동 업로드 필드에 자동 설정
+            const comparisonInput = document.getElementById('revisionComparisonFile');
+            if (comparisonInput) {
+                // File input은 직접 설정 불가하므로 pendingComparisonFile에 저장
+                this.pendingComparisonFile = generatedFile;
+            }
+
+            if (statusDiv) {
+                statusDiv.innerHTML = `<span style="color: #28a745;">✅ 신구대비표 생성 완료: ${generatedFile.name} (${(generatedFile.size / 1024).toFixed(1)}KB)</span>`;
+            }
+
+            // 수동 업로드 필드의 필수 해제 (자동 생성으로 대체)
+            if (comparisonInput) {
+                comparisonInput.removeAttribute('required');
+            }
+
+            this.showNotification('신구대비표가 자동 생성되었습니다.', 'success');
+        } catch (error) {
+            console.error('[RuleEditor] Auto-generate comparison failed:', error);
+            if (statusDiv) {
+                statusDiv.innerHTML = `<span style="color: #dc3545;">❌ 생성 실패: ${error.message}</span>`;
+            }
+            this.showNotification(`신구대비표 생성 실패: ${error.message}`, 'error');
+        } finally {
+            if (btn) btn.disabled = false;
         }
     },
 
@@ -3865,8 +4041,8 @@ ${mergeResult.text_content || ''}
 
                 .form-control:focus {
                     outline: none;
-                    border-color: #667eea;
-                    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+                    border-color: #60584C;
+                    box-shadow: 0 0 0 3px rgba(255, 188, 0, 0.1);
                 }
                 .file-upload-wrapper {
                     position: relative;
@@ -3882,7 +4058,7 @@ ${mergeResult.text_content || ''}
                 }
 
                 .file-upload-wrapper input[type="file"]:hover {
-                    border-color: #667eea;
+                    border-color: #60584C;
                 }
 
                 .file-name-display {
@@ -3910,7 +4086,7 @@ ${mergeResult.text_content || ''}
 
                 .progress-fill {
                     height: 100%;
-                    background-color: #667eea;
+                    background-color: #60584C;
                     width: 0%;
                     transition: width 0.3s;
                 }
@@ -4666,11 +4842,11 @@ ${mergeResult.text_content || ''}
                     <!-- 드래그 앤 드롭 영역 -->
                     <div id="imageDropZone"
                          style="border: 2px dashed #dee2e6; border-radius: 8px; padding: 40px; text-align: center; background: #f8f9fa; margin-bottom: 30px; cursor: pointer; transition: all 0.3s;">
-                        <p style="font-size: 16px; margin-bottom: 10px; color: #667eea;">📤 이미지를 여기에 드래그하세요</p>
+                        <p style="font-size: 16px; margin-bottom: 10px; color: #60584C;">📤 이미지를 여기에 드래그하세요</p>
                         <p style="font-size: 13px; color: #6c757d; margin-bottom: 20px;">또는 아래 버튼을 클릭하여 파일을 선택하세요</p>
                         <input type="file" id="imageFileInput" accept="image/*" multiple style="display: none;">
                         <button onclick="document.getElementById('imageFileInput').click()"
-                                style="padding: 10px 24px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;">
+                                style="padding: 10px 24px; background: #FFBC00; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;">
                             📁 파일 선택
                         </button>
                         <p style="font-size: 12px; color: #6c757d; margin-top: 15px;">지원 형식: PNG, JPG, GIF (최대 10MB)</p>
@@ -4709,29 +4885,95 @@ ${mergeResult.text_content || ''}
         const fileInput = document.getElementById('appendixFileInput');
         const uploadBtn = document.getElementById('uploadAppendixBtn');
         const statusEl = document.getElementById('appendixUploadStatus');
+        const dropZone = document.getElementById('appendixDropZone');
+        const fileListEl = document.getElementById('appendixFileList');
 
         if (!fileInput) {
             console.warn('[RuleEditor] appendixFiles input not found');
             return;
         }
 
-        // 파일 선택 이벤트
-        fileInput.addEventListener('change', (e) => {
-            const files = e.target.files;
-            console.log('[RuleEditor] Files selected:', files.length);
+        // 드래그앤드롭으로 추가된 파일을 보관
+        this.appendixPendingFiles = [];
 
-            if (files && files.length > 0) {
-                const fileNames = Array.from(files).map(f => f.name).join(', ');
-                if (statusEl) {
-                    statusEl.textContent = `${files.length}개 파일 선택됨: ${fileNames}`;
-                    statusEl.style.color = '#28a745';
-                }
-            } else {
-                if (statusEl) {
-                    statusEl.textContent = '';
+        const allowedExts = ['.docx', '.xlsx'];
+
+        // 선택된 파일 목록 표시 함수
+        const updateFileList = () => {
+            if (!fileListEl) return;
+            const files = this.appendixPendingFiles;
+            if (files.length === 0) {
+                fileListEl.innerHTML = '';
+                return;
+            }
+            fileListEl.innerHTML = files.map((f, i) => `
+                <div style="display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: #f0f7ff; border-radius: 4px; margin-bottom: 4px; font-size: 13px;">
+                    <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">📄 ${f.name} <span style="color: #999;">(${(f.size / 1024).toFixed(1)} KB)</span></span>
+                    <button onclick="RuleEditor.removeAppendixFile(${i})" style="background: none; border: none; color: #dc3545; cursor: pointer; font-size: 16px; padding: 0 4px;" title="제거">&times;</button>
+                </div>
+            `).join('');
+        };
+
+        // 파일 추가 (유효성 검사 포함)
+        const addFiles = (newFiles) => {
+            let rejected = [];
+            for (const f of newFiles) {
+                const ext = '.' + f.name.split('.').pop().toLowerCase();
+                if (allowedExts.includes(ext)) {
+                    this.appendixPendingFiles.push(f);
+                } else {
+                    rejected.push(f.name);
                 }
             }
+            if (rejected.length > 0) {
+                if (statusEl) {
+                    statusEl.textContent = `허용되지 않는 파일: ${rejected.join(', ')} (DOCX, XLSX만 가능)`;
+                    statusEl.style.color = '#dc3545';
+                }
+            } else if (statusEl) {
+                statusEl.textContent = `${this.appendixPendingFiles.length}개 파일 선택됨`;
+                statusEl.style.color = '#28a745';
+            }
+            updateFileList();
+        };
+
+        // 파일 선택 이벤트 (input)
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files.length > 0) {
+                addFiles(Array.from(e.target.files));
+                fileInput.value = '';  // reset so same file can be re-selected
+            }
         });
+
+        // 드롭존 클릭 → 파일 선택 다이얼로그
+        if (dropZone) {
+            dropZone.addEventListener('click', () => fileInput.click());
+
+            // 드래그 이벤트
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.style.borderColor = '#2196F3';
+                dropZone.style.background = '#e3f2fd';
+            });
+            dropZone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.style.borderColor = '#ccc';
+                dropZone.style.background = '#fafafa';
+            });
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.style.borderColor = '#ccc';
+                dropZone.style.background = '#fafafa';
+
+                const droppedFiles = e.dataTransfer.files;
+                if (droppedFiles && droppedFiles.length > 0) {
+                    addFiles(Array.from(droppedFiles));
+                }
+            });
+        }
 
         // 업로드 버튼 클릭 이벤트
         if (uploadBtn) {
@@ -4741,15 +4983,42 @@ ${mergeResult.text_content || ''}
         }
     },
 
+    // 드래그앤드롭 파일 목록에서 개별 파일 제거
+    removeAppendixFile(index) {
+        if (!this.appendixPendingFiles) return;
+        this.appendixPendingFiles.splice(index, 1);
+        // 목록 갱신
+        const fileListEl = document.getElementById('appendixFileList');
+        const statusEl = document.getElementById('appendixUploadStatus');
+        if (fileListEl) {
+            if (this.appendixPendingFiles.length === 0) {
+                fileListEl.innerHTML = '';
+                if (statusEl) statusEl.textContent = '';
+            } else {
+                fileListEl.innerHTML = this.appendixPendingFiles.map((f, i) => `
+                    <div style="display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: #f0f7ff; border-radius: 4px; margin-bottom: 4px; font-size: 13px;">
+                        <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">📄 ${f.name} <span style="color: #999;">(${(f.size / 1024).toFixed(1)} KB)</span></span>
+                        <button onclick="RuleEditor.removeAppendixFile(${i})" style="background: none; border: none; color: #dc3545; cursor: pointer; font-size: 16px; padding: 0 4px;" title="제거">&times;</button>
+                    </div>
+                `).join('');
+                if (statusEl) {
+                    statusEl.textContent = `${this.appendixPendingFiles.length}개 파일 선택됨`;
+                    statusEl.style.color = '#28a745';
+                }
+            }
+        }
+    },
+
     // 부록 파일 업로드
     async uploadAppendixFiles() {
         console.log('[RuleEditor] uploadAppendixFiles called');
 
-        const fileInput = document.getElementById('appendixFileInput');
         const statusEl = document.getElementById('appendixUploadStatus');
         const uploadBtn = document.getElementById('uploadAppendixBtn');
 
-        if (!fileInput.files || fileInput.files.length === 0) {
+        // 드래그앤드롭 파일 목록 사용
+        const pendingFiles = this.appendixPendingFiles || [];
+        if (pendingFiles.length === 0) {
             alert('파일을 선택해주세요.');
             return;
         }
@@ -4771,8 +5040,8 @@ ${mergeResult.text_content || ''}
         formData.append('wzruleid', wzruleid);
 
         // 파일 추가
-        for (let i = 0; i < fileInput.files.length; i++) {
-            formData.append('files', fileInput.files[i]);
+        for (const f of pendingFiles) {
+            formData.append('files', f);
         }
 
         // 업로드 시작
@@ -4783,6 +5052,7 @@ ${mergeResult.text_content || ''}
         try {
             const response = await fetch(`/api/v1/appendix/upload/${ruleSeq}`, {
                 method: 'POST',
+                credentials: 'include',
                 body: formData
             });
 
@@ -4793,19 +5063,29 @@ ${mergeResult.text_content || ''}
 
             const data = await response.json();
 
-            // 성공 메시지
-            statusEl.textContent = `✓ ${data.uploaded_count}개 파일 업로드 완료!`;
-            statusEl.style.color = '#28a745';
+            // 성공/실패 메시지
+            if (data.uploaded_count > 0 && data.failed_count === 0) {
+                statusEl.textContent = `✓ ${data.uploaded_count}개 파일 업로드 완료! (PDF 자동 변환)`;
+                statusEl.style.color = '#28a745';
+            } else if (data.uploaded_count > 0 && data.failed_count > 0) {
+                statusEl.textContent = `✓ ${data.uploaded_count}개 성공, ✗ ${data.failed_count}개 실패`;
+                statusEl.style.color = '#ff9800';
+            } else {
+                const failDetails = data.failed_files ? data.failed_files.map(f => `${f.filename}: ${f.error}`).join('\n') : '';
+                statusEl.textContent = `✗ 업로드 실패: ${failDetails || '변환 오류'}`;
+                statusEl.style.color = '#dc3545';
+                console.error('[RuleEditor] All files failed:', data.failed_files);
+            }
 
-            // 파일 입력 초기화 (연속 업로드를 위해 초기화만 하고 버튼은 숨기지 않음)
-            fileInput.value = '';
-            // 업로드 버튼은 숨기지 않음 - 연속 업로드 가능하도록 유지
-            // uploadBtn.style.display = 'none';
+            // 파일 목록 초기화
+            this.appendixPendingFiles = [];
+            const fileListEl = document.getElementById('appendixFileList');
+            if (fileListEl) fileListEl.innerHTML = '';
 
-            // 3초 후 상태 메시지 초기화
+            // 5초 후 상태 메시지 초기화
             setTimeout(() => {
                 statusEl.textContent = '';
-            }, 3000);
+            }, 5000);
 
             // 부록 파일 목록 새로고침
             this.loadAppendixFilesList(ruleSeq, wzpubno);
@@ -5003,6 +5283,182 @@ ${mergeResult.text_content || ''}
             alert('부록 파일 삭제 중 오류가 발생했습니다.');
         }
     },
+
+    // ==================== 안내사항 CRUD ====================
+
+    async loadRegNotices() {
+        const listEl = document.getElementById('regNoticeList');
+        if (!listEl) return;
+
+        const regCode = this.currentRule?.wzpubno;
+        if (!regCode) {
+            listEl.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">규정을 먼저 선택해주세요.</div>';
+            return;
+        }
+
+        listEl.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">불러오는 중...</div>';
+
+        try {
+            const response = await fetch(`/api/regulation-notices/${encodeURIComponent(regCode)}`);
+            if (!response.ok) throw new Error('API 오류');
+            const notices = await response.json();
+
+            if (!notices || notices.length === 0) {
+                listEl.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">등록된 안내사항이 없습니다.</div>';
+                return;
+            }
+
+            // 데이터를 캐시해서 수정 시 참조
+            this._regNoticesCache = {};
+            notices.forEach(n => { this._regNoticesCache[n.id] = n; });
+
+            listEl.innerHTML = notices.map(n => `
+                <div style="background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; margin-bottom: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; font-size: 15px; color: #333; margin-bottom: 6px;">
+                                ${this.escapeHtml(n.title || '(제목 없음)')}
+                            </div>
+                            <div style="font-size: 12px; color: #888; margin-bottom: 8px;">
+                                ${this.escapeHtml(n.created_by || '관리자')} | ${n.created_at ? new Date(n.created_at).toLocaleDateString('ko-KR') : '-'}
+                            </div>
+                            <div style="font-size: 14px; color: #555; white-space: pre-wrap; line-height: 1.6;">
+                                ${this.escapeHtml(n.content || '')}
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 6px; margin-left: 12px; flex-shrink: 0;">
+                            <button onclick="RuleEditor.editRegNotice(${n.id})"
+                                    style="background: #f0f0f0; border: 1px solid #ddd; border-radius: 4px; padding: 4px 10px; cursor: pointer; font-size: 12px; color: #555;">
+                                수정
+                            </button>
+                            <button onclick="RuleEditor.deleteRegNotice(${n.id})"
+                                    style="background: #fff0f0; border: 1px solid #ffcccc; border-radius: 4px; padding: 4px 10px; cursor: pointer; font-size: 12px; color: #dc3545;">
+                                삭제
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        } catch (error) {
+            console.error('[RuleEditor] loadRegNotices error:', error);
+            listEl.innerHTML = '<div style="text-align: center; padding: 40px; color: #dc3545;">안내사항 로드 실패</div>';
+        }
+    },
+
+    editRegNotice(noticeId) {
+        const n = this._regNoticesCache?.[noticeId];
+        if (!n) return;
+        this.showRegNoticeForm(noticeId, n.title || '', n.created_by || '', n.content || '');
+    },
+
+    showRegNoticeForm(noticeId, title, createdBy, content) {
+        const formArea = document.getElementById('regNoticeFormArea');
+        if (!formArea) return;
+
+        const isEdit = noticeId != null;
+        formArea.innerHTML = `
+            <div style="background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; margin-bottom: 16px;">
+                <h4 style="margin: 0 0 14px 0; font-size: 14px; color: #333;">${isEdit ? '안내사항 수정' : '새 안내사항'}</h4>
+                <div style="margin-bottom: 10px;">
+                    <label style="display: block; font-size: 13px; font-weight: 500; color: #555; margin-bottom: 4px;">제목</label>
+                    <input type="text" id="regNoticeTitle" value="${isEdit ? this.escapeHtml(title || '') : ''}"
+                           placeholder="안내사항 제목"
+                           style="width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box;">
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <label style="display: block; font-size: 13px; font-weight: 500; color: #555; margin-bottom: 4px;">작성자</label>
+                    <input type="text" id="regNoticeCreatedBy" value="${isEdit ? this.escapeHtml(createdBy || '') : this.escapeHtml(window.__currentUser?.full_name || '관리자')}"
+                           placeholder="작성자"
+                           style="width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box;">
+                </div>
+                <div style="margin-bottom: 14px;">
+                    <label style="display: block; font-size: 13px; font-weight: 500; color: #555; margin-bottom: 4px;">내용</label>
+                    <textarea id="regNoticeContent" rows="5" placeholder="안내사항 내용을 입력하세요..."
+                              style="width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; resize: vertical; box-sizing: border-box;">${isEdit ? this.escapeHtml(content || '') : ''}</textarea>
+                </div>
+                <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                    <button onclick="RuleEditor.cancelRegNoticeForm()"
+                            style="background: #f0f0f0; border: 1px solid #ddd; border-radius: 4px; padding: 8px 16px; cursor: pointer; font-size: 13px;">
+                        취소
+                    </button>
+                    <button onclick="RuleEditor.saveRegNotice(${isEdit ? noticeId : 'null'})"
+                            style="background: #2196F3; color: white; border: none; border-radius: 4px; padding: 8px 16px; cursor: pointer; font-size: 13px; font-weight: 500;">
+                        저장
+                    </button>
+                </div>
+            </div>
+        `;
+        document.getElementById('regNoticeTitle')?.focus();
+    },
+
+    cancelRegNoticeForm() {
+        const formArea = document.getElementById('regNoticeFormArea');
+        if (formArea) formArea.innerHTML = '';
+    },
+
+    async saveRegNotice(noticeId) {
+        const title = document.getElementById('regNoticeTitle')?.value?.trim() || '';
+        const createdBy = document.getElementById('regNoticeCreatedBy')?.value?.trim() || '';
+        const content = document.getElementById('regNoticeContent')?.value?.trim() || '';
+
+        if (!content) {
+            alert('내용을 입력해주세요.');
+            return;
+        }
+
+        const regCode = this.currentRule?.wzpubno;
+        if (!regCode) return;
+
+        try {
+            const isEdit = noticeId != null;
+            const url = isEdit
+                ? `/api/regulation-notices/${encodeURIComponent(regCode)}/${noticeId}`
+                : `/api/regulation-notices/${encodeURIComponent(regCode)}`;
+
+            const body = isEdit
+                ? { title, content }
+                : { title, content, created_by: createdBy };
+
+            const response = await fetch(url, {
+                method: isEdit ? 'PUT' : 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+
+            if (!response.ok) throw new Error('저장 실패');
+
+            this.cancelRegNoticeForm();
+            this.loadRegNotices();
+            this.showNotification(isEdit ? '안내사항이 수정되었습니다.' : '안내사항이 등록되었습니다.', 'success');
+        } catch (error) {
+            console.error('[RuleEditor] saveRegNotice error:', error);
+            alert('안내사항 저장에 실패했습니다.');
+        }
+    },
+
+    async deleteRegNotice(noticeId) {
+        if (!confirm('이 안내사항을 삭제하시겠습니까?')) return;
+
+        const regCode = this.currentRule?.wzpubno;
+        if (!regCode) return;
+
+        try {
+            const response = await fetch(
+                `/api/regulation-notices/${encodeURIComponent(regCode)}/${noticeId}`,
+                { method: 'DELETE' }
+            );
+
+            if (!response.ok) throw new Error('삭제 실패');
+
+            this.loadRegNotices();
+            this.showNotification('안내사항이 삭제되었습니다.', 'success');
+        } catch (error) {
+            console.error('[RuleEditor] deleteRegNotice error:', error);
+            alert('안내사항 삭제에 실패했습니다.');
+        }
+    },
+
+    // ==================== 수정 이력파일 ====================
 
     // 수정 이력파일 업로드
     async uploadHistoryFileForRule(ruleId, file) {

@@ -18,11 +18,11 @@
             display: inline-block;
             padding: 4px 8px;
             background: #e7f1ff;
-            color: #667eea;
+            color: #60584C;
             border-radius: 4px;
             font-size: 12px;
             font-weight: 500;
-            border: 1px solid #667eea33;
+            border: 1px solid #FFBC0033;
             max-width: 160px;
             white-space: nowrap;
             overflow: hidden;
@@ -103,12 +103,47 @@
 
         .sort-indicator.asc::after {
             content: '▲';
-            color: #667eea;
+            color: #60584C;
         }
 
         .sort-indicator.desc::after {
             content: '▼';
-            color: #667eea;
+            color: #60584C;
+        }
+
+        /* 탭 overflow 대응 */
+        .nav-tabs {
+            overflow-x: auto;
+            flex-wrap: wrap;
+        }
+
+        /* 서브탭 스타일 */
+        .sup-sub-tab {
+            padding: 8px 16px;
+            border: 1px solid #dee2e6;
+            background: #f8f9fa;
+            cursor: pointer;
+            border-radius: 4px 4px 0 0;
+            font-size: 14px;
+        }
+        .sup-sub-tab.active {
+            background: white;
+            border-bottom: 2px solid #FFBC00;
+            color: #60584C;
+            font-weight: 600;
+        }
+        /* 파일 업로드 영역 */
+        .file-upload-area {
+            border: 2px dashed #dee2e6;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .file-upload-area:hover, .file-upload-area.drag-over {
+            border-color: #60584C;
+            background: #f8f9ff;
         }
     </style>
 </head>
@@ -121,8 +156,8 @@
                 내규자료 현행화 편집기
             </h1>
             <div class="user-info" style="display: flex !important; align-items: center; gap: 15px;">
-                <span style="color: white; font-weight: 500;">관리자님</span>
-                <div class="user-avatar">A</div>
+                <span style="color: white; font-weight: 500;">{{ user.full_name|default('관리자') }}님</span>
+                <div class="user-avatar">{{ user.full_name|default('A')|first|upper }}</div>
                 <button class="btn btn-secondary" onclick="RuleEditor.logout()"
                         style="display: inline-block !important; padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500;">
                     로그아웃
@@ -152,6 +187,24 @@
             </button>
             <button class="nav-tab" onclick="RuleEditor.switchTab('service')">
                 서비스 페이지
+            </button>
+            <button class="nav-tab" onclick="RuleEditor.switchTab('notices')">
+                공지사항
+            </button>
+            <button class="nav-tab" onclick="RuleEditor.switchTab('faq')">
+                FAQ
+            </button>
+            <button class="nav-tab" onclick="RuleEditor.switchTab('support')">
+                지원페이지
+            </button>
+            <button class="nav-tab" onclick="RuleEditor.switchTab('synonyms')">
+                동의어사전
+            </button>
+            <button class="nav-tab" onclick="RuleEditor.switchTab('comparison')">
+                신구대비표
+            </button>
+            <button class="nav-tab" onclick="RuleEditor.switchTab('users')">
+                유저관리
             </button>
             <button class="nav-tab" onclick="window.location.href='/admin/view-analytics'">
                 조회수 분석
@@ -408,9 +461,19 @@
                                     <!-- 동적 생성 -->
                                 </tbody>
                             </table>
-                            <button class="btn btn-primary" onclick="ClassificationManager.addChapter()" style="margin-top: 20px;">
-                                + 분류 추가
-                            </button>
+                            <div style="margin-top: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                                <button class="btn btn-primary" onclick="ClassificationManager.addChapter()">
+                                    + 분류 추가
+                                </button>
+                                <button class="btn btn-secondary" onclick="ClassificationManager.downloadExcel()">
+                                    Excel 다운로드 (별표제1호)
+                                </button>
+                                <label class="btn btn-secondary" style="cursor:pointer; margin:0;">
+                                    Excel 업로드
+                                    <input type="file" accept=".xlsx,.xls" style="display:none;"
+                                           onchange="ClassificationManager.uploadExcel(this)">
+                                </label>
+                            </div>
                         </div>
                         
                         <!-- 오른쪽: 조문 미리보기 -->
@@ -441,6 +504,12 @@
                         <button class="btn btn-primary full-width" onclick="SearchEngine.reindexAll()">
                             전체 재색인
                         </button>
+                        <div style="margin-top: 15px; display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button id="reindex-rules-btn" class="btn btn-secondary" style="flex:1;font-size:13px;" onclick="SearchEngine.reindexByType('rules')">규정 본문 재색인</button>
+                            <button id="reindex-articles-btn" class="btn btn-secondary" style="flex:1;font-size:13px;" onclick="SearchEngine.reindexByType('articles')">조문 재색인</button>
+                            <button id="reindex-appendices-btn" class="btn btn-secondary" style="flex:1;font-size:13px;" onclick="SearchEngine.reindexByType('appendices')">별표/서식 재색인</button>
+                        </div>
+                        <div id="reindexProgress" style="margin-top: 10px; font-size: 13px; color: #6c757d;"></div>
                     </div>
 
                     <!-- 검색 테스트 -->
@@ -509,22 +578,454 @@
                     <!-- 접속 통계 섹션 -->
                     <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
                         <h4 style="margin-bottom: 20px;">접속 통계</h4>
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
-                            <div style="text-align: center;">
-                                <div style="font-size: 28px; font-weight: bold; color: #667eea;">1,234</div>
-                                <div style="font-size: 14px; color: #6c757d; margin-top: 5px;">오늘 조회수</div>
-                            </div>
-                            <div style="text-align: center;">
-                                <div style="font-size: 28px; font-weight: bold; color: #28a745;">8,567</div>
-                                <div style="font-size: 14px; color: #6c757d; margin-top: 5px;">이번 주 조회수</div>
-                            </div>
-                            <div style="text-align: center;">
-                                <div style="font-size: 28px; font-weight: bold; color: #17a2b8;">34,289</div>
-                                <div style="font-size: 14px; color: #6c757d; margin-top: 5px;">이번 달 조회수</div>
-                            </div>
+                        <div style="text-align: center; color: #6c757d; padding: 20px;">
+                            <p style="font-size: 14px;">조회수 통계는 <strong>조회수 분석</strong> 탭에서 확인하세요.</p>
+                            <button class="btn btn-primary btn-sm" onclick="window.location.href='/admin/view-analytics'">조회수 분석 바로가기</button>
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- 공지사항 관리 탭 -->
+            <div class="tab-content" id="noticesTab">
+                <h3>공지사항 관리</h3>
+                <div class="panel">
+                    <div style="margin-bottom: 15px; display: flex; gap: 10px; align-items: center;">
+                        <input type="text" class="form-input" id="ntcSearchInput" placeholder="제목, 내용으로 검색..." style="flex:1;" onkeyup="if(event.key==='Enter') NoticeManager.searchNotices()">
+                        <button class="btn btn-primary btn-sm" onclick="NoticeManager.searchNotices()">검색</button>
+                        <button class="btn btn-success btn-sm" onclick="NoticeManager.openCreateModal()">+ 공지사항 추가</button>
+                    </div>
+                    <table class="regulation-table">
+                        <thead>
+                            <tr>
+                                <th width="50">ID</th>
+                                <th>제목</th>
+                                <th width="80">작성자</th>
+                                <th width="100">작성일</th>
+                                <th width="70">조회수</th>
+                                <th width="60">중요</th>
+                                <th width="70">상태</th>
+                                <th width="120">작업</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ntcNoticesList">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- FAQ 관리 탭 -->
+            <div class="tab-content" id="faqTab">
+                <h3>FAQ 관리</h3>
+                <div class="panel">
+                    <div style="margin-bottom: 15px; display: flex; gap: 10px; align-items: center;">
+                        <input type="text" class="form-input" id="faqSearchInput" placeholder="질문, 답변으로 검색..." style="flex:1;" onkeyup="if(event.key==='Enter') FAQManager.searchFAQs()">
+                        <select class="filter-select" id="faqCategoryFilter" onchange="FAQManager.searchFAQs()">
+                            <option value="">모든 카테고리</option>
+                            <option value="일반">일반</option>
+                            <option value="검색">검색</option>
+                            <option value="즐겨찾기">즐겨찾기</option>
+                            <option value="개정이력">개정이력</option>
+                            <option value="기타">기타</option>
+                        </select>
+                        <button class="btn btn-primary btn-sm" onclick="FAQManager.searchFAQs()">검색</button>
+                        <button class="btn btn-success btn-sm" onclick="FAQManager.openCreateModal()">+ FAQ 추가</button>
+                    </div>
+                    <table class="regulation-table">
+                        <thead>
+                            <tr>
+                                <th width="50">ID</th>
+                                <th width="80">카테고리</th>
+                                <th>질문</th>
+                                <th width="200">답변</th>
+                                <th width="60">순서</th>
+                                <th width="70">상태</th>
+                                <th width="120">작업</th>
+                            </tr>
+                        </thead>
+                        <tbody id="faqFaqsList">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 지원페이지 관리 탭 -->
+            <div class="tab-content" id="supportTab">
+                <h3>지원페이지 관리</h3>
+                <div class="panel">
+                    <div style="margin-bottom: 15px; display: flex; gap: 10px;">
+                        <button class="sup-sub-tab active" data-tab="procedure" onclick="SupportTabManager.switchSubTab('procedure')">제·개정 절차</button>
+                        <button class="sup-sub-tab" data-tab="usage" onclick="SupportTabManager.switchSubTab('usage')">사용방법</button>
+                    </div>
+                    <div style="margin-bottom: 15px; text-align: right;">
+                        <button class="btn btn-success btn-sm" onclick="SupportTabManager.openCreateModal()">+ 페이지 추가</button>
+                    </div>
+                    <table class="regulation-table">
+                        <thead>
+                            <tr>
+                                <th width="50">ID</th>
+                                <th>제목</th>
+                                <th width="60">순서</th>
+                                <th width="70">조회수</th>
+                                <th width="70">상태</th>
+                                <th width="120">작업</th>
+                            </tr>
+                        </thead>
+                        <tbody id="supPagesList">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 유저관리 탭 -->
+            <div class="tab-content" id="usersTab">
+                <h3>유저관리</h3>
+                <div class="panel">
+                    <div style="margin-bottom: 15px; display: flex; gap: 10px; align-items: center;">
+                        <input type="text" class="form-input" id="userSearchInput" placeholder="이름, 아이디, 부서 검색..." style="flex:1;" onkeyup="if(event.key==='Enter') UserManager.searchUsers()">
+                        <button class="btn btn-primary btn-sm" onclick="UserManager.searchUsers()">검색</button>
+                        <button class="btn btn-success btn-sm" onclick="UserManager.openCreateModal()">+ 유저 추가</button>
+                    </div>
+                    <table class="regulation-table">
+                        <thead>
+                            <tr>
+                                <th width="50">ID</th>
+                                <th width="120">이름</th>
+                                <th width="120">아이디</th>
+                                <th width="160">이메일</th>
+                                <th width="100">부서</th>
+                                <th width="70">역할</th>
+                                <th width="70">상태</th>
+                                <th width="140">작업</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersList">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 신구대비표 탭 -->
+            <div class="tab-content" id="comparisonTab">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="margin: 0;">신구대비표 생성</h3>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-secondary btn-sm" onclick="RuleEditor.openComparisonInNewTab()">새 탭에서 열기</button>
+                        <button class="btn btn-primary btn-sm" onclick="RuleEditor.openVersionCompare()">버전 비교 뷰어</button>
+                    </div>
+                </div>
+                <iframe id="comparisonIframe"
+                        src=""
+                        style="width: 100%; height: calc(100vh - 220px); border: 1px solid #e0e0e0; border-radius: 8px; background: #fff;"
+                        frameborder="0">
+                </iframe>
+            </div>
+
+            <!-- 동의어사전 관리 탭 -->
+            <div class="tab-content" id="synonymsTab">
+                <h3>동의어사전 관리</h3>
+                <div class="panel">
+                    <div id="synStatsCards" style="display: flex; gap: 15px; margin-bottom: 20px;"></div>
+                    <div style="margin-bottom: 15px; display: flex; gap: 10px; align-items: center;">
+                        <input type="text" class="form-input" id="synSearchInput" placeholder="동의어 검색..." style="flex:1;" onkeyup="if(event.key==='Enter') SynonymTabManager.searchSynonyms()">
+                        <select class="filter-select" id="synActiveFilter" onchange="SynonymTabManager.searchSynonyms()">
+                            <option value="">모든 상태</option>
+                            <option value="true">활성</option>
+                            <option value="false">비활성</option>
+                        </select>
+                        <button class="btn btn-primary btn-sm" onclick="SynonymTabManager.searchSynonyms()">검색</button>
+                        <button class="btn btn-success btn-sm" onclick="SynonymTabManager.openCreateModal()">+ 동의어 추가</button>
+                        <button class="btn btn-secondary btn-sm" onclick="SynonymTabManager.openExportModal()">내보내기</button>
+                    </div>
+                    <table class="regulation-table">
+                        <thead>
+                            <tr>
+                                <th width="50">ID</th>
+                                <th width="120">그룹명</th>
+                                <th>동의어</th>
+                                <th width="70">상태</th>
+                                <th width="120">작업</th>
+                            </tr>
+                        </thead>
+                        <tbody id="synSynonymsList">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 공지사항 모달 -->
+    <div class="modal" id="noticeModal" style="display:none;">
+        <div class="modal-content" style="width:600px;">
+            <div class="modal-header">
+                <h2 id="ntcModalTitle">새 공지사항</h2>
+                <button class="modal-close" onclick="NoticeManager.closeModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">제목 <span class="required">*</span></label>
+                    <input type="text" class="form-input" id="ntcTitle" placeholder="제목을 입력하세요">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">내용 <span class="required">*</span></label>
+                    <textarea class="form-input" id="ntcContent" rows="8" placeholder="내용을 입력하세요"></textarea>
+                </div>
+                <div style="display:flex;gap:16px;">
+                    <div class="form-group" style="flex:1;">
+                        <label class="form-label">작성자</label>
+                        <input type="text" class="form-input" id="ntcCreatedBy" value="관리자">
+                    </div>
+                    <div class="form-group" style="flex:0;">
+                        <label class="form-label">중요</label>
+                        <div style="padding-top:8px;">
+                            <input type="checkbox" id="ntcIsImportant">
+                            <label for="ntcIsImportant">중요 공지</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">첨부파일</label>
+                    <div id="ntcCurrentAttachment" style="display:none;margin-bottom:10px;padding:8px;background:#f8f9fa;border-radius:4px;">
+                        기존 파일: <strong id="ntcCurrentFileName"></strong>
+                    </div>
+                    <div class="file-upload-area" id="ntcFileUploadArea" onclick="document.getElementById('ntcFileInput').click()">
+                        파일을 드래그하거나 클릭하여 업로드 (10MB 이하)
+                        <input type="file" id="ntcFileInput" style="display:none" onchange="NoticeManager.handleFileSelect(this)">
+                    </div>
+                    <div id="ntcFileInfo" style="display:none;margin-top:8px;padding:8px;background:#e8f5e9;border-radius:4px;"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="NoticeManager.closeModal()">취소</button>
+                <button class="btn btn-primary" onclick="NoticeManager.saveNotice()">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAQ 모달 -->
+    <div class="modal" id="faqModal" style="display:none;">
+        <div class="modal-content" style="width:600px;">
+            <div class="modal-header">
+                <h2 id="faqModalTitle">새 FAQ</h2>
+                <button class="modal-close" onclick="FAQManager.closeModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">질문 <span class="required">*</span></label>
+                    <input type="text" class="form-input" id="faqQuestion" placeholder="질문을 입력하세요">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">답변 <span class="required">*</span></label>
+                    <textarea class="form-input" id="faqAnswer" rows="6" placeholder="답변을 입력하세요"></textarea>
+                </div>
+                <div style="display:flex;gap:16px;">
+                    <div class="form-group" style="flex:1;">
+                        <label class="form-label">카테고리</label>
+                        <select class="form-input" id="faqCategory">
+                            <option value="일반">일반</option>
+                            <option value="검색">검색</option>
+                            <option value="즐겨찾기">즐겨찾기</option>
+                            <option value="개정이력">개정이력</option>
+                            <option value="기타">기타</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex:0.5;">
+                        <label class="form-label">정렬 순서</label>
+                        <input type="number" class="form-input" id="faqSortOrder" value="0" min="0">
+                    </div>
+                    <div class="form-group" style="flex:0;">
+                        <label class="form-label">상태</label>
+                        <div style="padding-top:8px;">
+                            <input type="checkbox" id="faqIsActive" checked>
+                            <label for="faqIsActive">활성</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="FAQManager.closeModal()">취소</button>
+                <button class="btn btn-primary" onclick="FAQManager.saveFAQ()">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 지원페이지 모달 -->
+    <div class="modal" id="supportModal" style="display:none;">
+        <div class="modal-content" style="width:600px;">
+            <div class="modal-header">
+                <h2 id="supModalTitle">새 지원페이지</h2>
+                <button class="modal-close" onclick="SupportTabManager.closeModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">제목 <span class="required">*</span></label>
+                    <input type="text" class="form-input" id="supTitle" placeholder="제목을 입력하세요">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">내용</label>
+                    <textarea class="form-input" id="supContent" rows="8" placeholder="내용을 입력하세요"></textarea>
+                </div>
+                <div style="display:flex;gap:16px;">
+                    <div class="form-group" style="flex:1;">
+                        <label class="form-label">페이지 유형</label>
+                        <select class="form-input" id="supPageType">
+                            <option value="procedure">제·개정 절차</option>
+                            <option value="usage">사용방법</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex:0.5;">
+                        <label class="form-label">정렬 순서</label>
+                        <input type="number" class="form-input" id="supSortOrder" value="0" min="0">
+                    </div>
+                    <div class="form-group" style="flex:0;">
+                        <label class="form-label">상태</label>
+                        <div style="padding-top:8px;">
+                            <input type="checkbox" id="supIsActive" checked>
+                            <label for="supIsActive">활성</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">첨부파일</label>
+                    <div id="supCurrentAttachment" style="display:none;margin-bottom:10px;padding:8px;background:#f8f9fa;border-radius:4px;">
+                        기존 파일: <strong id="supCurrentFileName"></strong>
+                    </div>
+                    <div class="file-upload-area" onclick="document.getElementById('supFileInput').click()">
+                        파일을 드래그하거나 클릭하여 업로드 (10MB 이하)
+                        <input type="file" id="supFileInput" style="display:none" onchange="SupportTabManager.handleFileSelect(this)">
+                    </div>
+                    <div id="supFileInfo" style="display:none;margin-top:8px;padding:8px;background:#e8f5e9;border-radius:4px;"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="SupportTabManager.closeModal()">취소</button>
+                <button class="btn btn-primary" onclick="SupportTabManager.savePage()">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 동의어 모달 -->
+    <div class="modal" id="synSynonymModal" style="display:none;">
+        <div class="modal-content" style="width:600px;">
+            <div class="modal-header">
+                <h2 id="synModalTitle">새 동의어 그룹</h2>
+                <button class="modal-close" onclick="SynonymTabManager.closeModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">그룹명 <span class="required">*</span></label>
+                    <input type="text" class="form-input" id="synGroupName" placeholder="동의어 그룹명을 입력하세요">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">동의어 추가 <span class="required">*</span></label>
+                    <div style="display:flex;gap:8px;">
+                        <input type="text" class="form-input" id="synTagInput" placeholder="동의어 입력 (쉼표로 구분)" style="flex:1;" onkeyup="if(event.key==='Enter') SynonymTabManager.addSynonymTag()">
+                        <button class="btn btn-primary btn-sm" onclick="SynonymTabManager.addSynonymTag()">추가</button>
+                    </div>
+                    <div id="synTagsContainer" style="margin-top:10px;min-height:30px;"></div>
+                </div>
+                <div class="form-group" style="flex:0;">
+                    <label class="form-label">상태</label>
+                    <div>
+                        <input type="checkbox" id="synIsActive" checked>
+                        <label for="synIsActive">활성</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="SynonymTabManager.closeModal()">취소</button>
+                <button class="btn btn-primary" onclick="SynonymTabManager.saveSynonym()">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 동의어 내보내기 모달 -->
+    <div class="modal" id="synExportModal" style="display:none;">
+        <div class="modal-content" style="width:700px;">
+            <div class="modal-header">
+                <h2>동의어사전 내보내기</h2>
+                <button class="modal-close" onclick="SynonymTabManager.closeExportModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">형식</label>
+                    <select class="form-input" id="synExportFormat" onchange="SynonymTabManager.loadExportPreview(this.value)">
+                        <option value="elasticsearch">Elasticsearch</option>
+                        <option value="solr">Solr</option>
+                        <option value="array">Array (JSON)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">미리보기</label>
+                    <pre id="synExportPreview" style="max-height:300px;overflow:auto;background:#f8f9fa;padding:15px;border-radius:8px;font-size:12px;border:1px solid #dee2e6;"></pre>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="SynonymTabManager.closeExportModal()">닫기</button>
+                <button class="btn btn-primary" onclick="SynonymTabManager.downloadJson()">다운로드</button>
+                <button class="btn btn-secondary" onclick="SynonymTabManager.copyToClipboard()">클립보드 복사</button>
+                <button class="btn btn-success" onclick="SynonymTabManager.saveToServer()">서버 저장</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 유저 모달 -->
+    <div class="modal" id="userModal" style="display:none;">
+        <div class="modal-content" style="width:550px;">
+            <div class="modal-header">
+                <h2 id="userModalTitle">새 유저 추가</h2>
+                <button class="modal-close" onclick="UserManager.closeModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="userEditId" value="">
+                <div class="form-group">
+                    <label class="form-label">아이디 <span class="required">*</span></label>
+                    <input type="text" class="form-input" id="userUsername" placeholder="아이디를 입력하세요">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" id="userPasswordLabel">비밀번호 <span class="required">*</span></label>
+                    <input type="password" class="form-input" id="userPassword" placeholder="비밀번호를 입력하세요">
+                    <small id="userPasswordHint" style="color:#888;display:none;">비워두면 기존 비밀번호가 유지됩니다.</small>
+                </div>
+                <div style="display:flex;gap:16px;">
+                    <div class="form-group" style="flex:1;">
+                        <label class="form-label">이름 <span class="required">*</span></label>
+                        <input type="text" class="form-input" id="userFullName" placeholder="이름을 입력하세요">
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label class="form-label">전화번호</label>
+                        <input type="text" class="form-input" id="userPhone" placeholder="전화번호">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">이메일 <span class="required">*</span></label>
+                    <input type="email" class="form-input" id="userEmail" placeholder="이메일을 입력하세요">
+                </div>
+                <div style="display:flex;gap:16px;">
+                    <div class="form-group" style="flex:1;">
+                        <label class="form-label">부서</label>
+                        <input type="text" class="form-input" id="userDepartments" placeholder="부서명">
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label class="form-label">역할</label>
+                        <select class="form-input" id="userRole">
+                            <option value="admin">관리자 (admin)</option>
+                            <option value="user">일반 (user)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" style="flex:0;">
+                    <label>
+                        <input type="checkbox" id="userIsActive" checked>
+                        활성화
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="UserManager.closeModal()">취소</button>
+                <button class="btn btn-primary" onclick="UserManager.saveUser()">저장</button>
             </div>
         </div>
     </div>
@@ -858,7 +1359,7 @@
                     <!-- PDF 결과 -->
                     <div style="flex: 1; border: 1px solid #ddd; border-radius: 4px; display: flex; flex-direction: column;">
                         <div style="background: #f8f9fa; padding: 10px; border-bottom: 1px solid #ddd;">
-                            <h4 style="margin: 0; color: #667eea;">📄 PDF 파싱 결과</h4>
+                            <h4 style="margin: 0; color: #60584C;">📄 PDF 파싱 결과</h4>
                         </div>
                         <div id="pdfComparisonContent" class="comparison-pane" style="flex: 1; overflow-y: auto; padding: 15px; font-size: 13px; white-space: pre-wrap;">
                             <!-- PDF 파싱 결과 내용 -->
@@ -868,7 +1369,7 @@
                     <!-- DOCX 결과 -->
                     <div style="flex: 1; border: 1px solid #ddd; border-radius: 4px; display: flex; flex-direction: column;">
                         <div style="background: #f8f9fa; padding: 10px; border-bottom: 1px solid #ddd;">
-                            <h4 style="margin: 0; color: #667eea;">📝 DOCX 파싱 결과</h4>
+                            <h4 style="margin: 0; color: #60584C;">📝 DOCX 파싱 결과</h4>
                         </div>
                         <div id="docxComparisonContent" class="comparison-pane" style="flex: 1; overflow-y: auto; padding: 15px; font-size: 13px; white-space: pre-wrap;">
                             <!-- DOCX 파싱 결과 내용 -->
@@ -899,6 +1400,17 @@
         </div>
     </div>
 
+    <!-- 현재 사용자 정보 -->
+    <script>
+        window.__currentUser = {
+            users_id: {{ user.users_id|default(0) }},
+            username: "{{ user.username|default('')|e }}",
+            full_name: "{{ user.full_name|default('')|e }}",
+            departments: "{{ user.departments|default('')|e }}",
+            role: "{{ user.role|default('')|e }}"
+        };
+    </script>
+
     <!-- JavaScript 파일 로드 -->
     <script src="/static/js/classification-manager.js"></script>
     <script src="/static/js/department-manager.js"></script>
@@ -906,6 +1418,11 @@
     <script src="/static/js/rule-editor.js?v=20251113d"></script>
     <script src="/static/js/search-engine.js"></script>
     <script src="/static/js/service-manager.js"></script>
+    <script src="/static/js/notice-manager.js"></script>
+    <script src="/static/js/faq-manager.js"></script>
+    <script src="/static/js/support-tab-manager.js"></script>
+    <script src="/static/js/synonym-tab-manager.js"></script>
+    <script src="/static/js/user-manager.js"></script>
     <script src="/static/js/edit-window.js"></script>
 </body>
 </html>
