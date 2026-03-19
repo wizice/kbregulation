@@ -163,7 +163,25 @@ async def editor_ip_check_middleware(request: Request, call_next):
     return RedirectResponse(url=settings.PUBLIC_URL, status_code=302)
 
 # Static files mounting
+import os as _os
+_www_static = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "www", "static")
+
+# 사용자화면용 정적 파일 서브경로를 먼저 마운트 (더 구체적 경로 우선)
+# /static/file/, /static/pdf/ 등은 www/static/ 에서 서빙
+if _os.path.isdir(_www_static):
+    for _subdir in ["file", "pdf", "pdf_txt", "js", "css", "lib", "images", "img",
+                     "extracted_images", "webfonts"]:
+        _subpath = _os.path.join(_www_static, _subdir)
+        if _os.path.isdir(_subpath):
+            app.mount(f"/static/{_subdir}", StaticFiles(directory=_subpath), name=f"www-{_subdir}")
+
+# 관리자 정적 파일 (fastapi/static/) - 편집기 CSS/JS/webfonts (fallback)
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# 사용자화면 HTML 서빙 (/pub/)
+_www_dir = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "www")
+if _os.path.isdir(_www_dir):
+    app.mount("/pub", StaticFiles(directory=_www_dir, html=True), name="pub")
 
 # WZ_RULE 테이블 API
 app.include_router(service_wz_rule_v1.router,
