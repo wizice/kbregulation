@@ -370,7 +370,7 @@ const ClassificationManager = {
         if (content && content.full_text) {
             htmlContent = `
                 <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                    <h3 style="color: #667eea; margin-bottom: 20px;">${ruleInfo.name}</h3>
+                    <h3 style="color: #60584C; margin-bottom: 20px;">${ruleInfo.name}</h3>
                     <div style="line-height: 1.8; font-size: 14px; margin-bottom: 30px; max-height: 500px; overflow-y: auto;">
                         ${content.full_text}
                     </div>
@@ -688,18 +688,78 @@ const ClassificationManager = {
         }
     },
 
-    // API 호출 메서드 (실제 구현시 백엔드 연동)
-    async saveChapter(chapter) {
-        console.log('장 저장:', chapter);
-        // const response = await fetch('/api/chapters', {
-        //     method: 'POST',
-        //     headers: {'Content-Type': 'application/json'},
-        //     body: JSON.stringify(chapter)
-        // });
+    // Excel 다운로드 (별표 제1호 형식)
+    async downloadExcel() {
+        try {
+            this.showNotification('Excel 생성 중...', 'info');
+            const response = await fetch('/api/v1/classification/export/excel', {
+                credentials: 'include'
+            });
+
+            if (!response.ok) throw new Error('Excel 다운로드 실패');
+
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const today = new Date().toISOString().slice(2, 10).replace(/-/g, '');
+            a.download = `KB신용정보_별표제1호_사규_목차_${today}.xlsx`;
+            a.click();
+            URL.revokeObjectURL(url);
+            this.showNotification('Excel 다운로드 완료', 'success');
+        } catch (error) {
+            console.error('Excel 다운로드 오류:', error);
+            alert('Excel 다운로드에 실패했습니다.');
+        }
     },
 
-    async saveChapters() {
-        console.log('전체 장 저장');
-        // await fetch('/api/chapters/bulk', {...});
+    // Excel 업로드
+    async uploadExcel(input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+            alert('Excel 파일(.xlsx)만 업로드 가능합니다.');
+            input.value = '';
+            return;
+        }
+
+        if (!confirm(`"${file.name}" 파일을 업로드하시겠습니까?\nExcel의 사규명, 소관부서, 개정일, 제정일이 DB에 반영됩니다.`)) {
+            input.value = '';
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            this.showNotification('Excel 업로드 중...', 'info');
+            const response = await fetch('/api/v1/classification/import/excel', {
+                method: 'POST',
+                body: formData,
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.detail || '업로드 실패');
+            }
+
+            const result = await response.json();
+            let msg = result.message;
+            if (result.errors && result.errors.length > 0) {
+                msg += `\n\n경고:\n${result.errors.join('\n')}`;
+            }
+            alert(msg);
+            this.showNotification(`${result.updated}개 규정 업데이트 완료`, 'success');
+
+            // 데이터 새로고침
+            await this.loadData();
+        } catch (error) {
+            console.error('Excel 업로드 오류:', error);
+            alert('Excel 업로드 실패: ' + error.message);
+        }
+
+        input.value = '';
     }
 };

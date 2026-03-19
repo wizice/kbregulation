@@ -711,7 +711,7 @@ async def parse_revision_file(
     revision_date: Optional[str] = Form(None),
     user: Dict[str, Any] = Depends(get_current_user)
 ):
-    """개정 파일 파싱 (DOCX/PDF - 둘 다 업로드 가능)"""
+    """개정 파일 파싱 (DOCX 필수, PDF 선택)"""
     logger.info(f"[PARSE-REVISION] Starting parse-revision request")
     logger.info(f"[PARSE-REVISION] User: {user.get('username')}, Rule ID: {rule_id}")
     logger.info(f"[PARSE-REVISION] Files - PDF: {pdf_file.filename if pdf_file else 'None'}, DOCX: {docx_file.filename if docx_file else 'None'}")
@@ -723,17 +723,11 @@ async def parse_revision_file(
             detail="문서 파싱 라이브러리를 불러올 수 없습니다."
         )
 
-    # 두 파일 모두 필수
-    if not pdf_file or not docx_file:
-        missing_files = []
-        if not pdf_file:
-            missing_files.append("PDF")
-        if not docx_file:
-            missing_files.append("DOCX")
-
+    # DOCX 파일 필수
+    if not docx_file:
         raise HTTPException(
             status_code=400,
-            detail=f"{', '.join(missing_files)} 파일을 업로드해주세요. PDF와 DOCX 파일 모두 필요합니다."
+            detail="DOCX 파일을 업로드해주세요."
         )
 
     try:
@@ -2982,16 +2976,16 @@ async def save_edited_content(
 
 @router.post("/merge-json")
 async def merge_json_files(
-    pdf_json_path: str = Form(...),
+    pdf_json_path: Optional[str] = Form(None),
     docx_json_path: str = Form(...),
     rule_id: int = Form(...),
     user: Dict[str, Any] = Depends(get_current_user)
 ) -> Dict[str, Any]:
     """
-    PDF와 DOCX JSON 파일을 병합
+    DOCX JSON 파일을 처리 (PDF JSON이 있으면 병합)
 
     Args:
-        pdf_json_path: PDF JSON 파일 경로
+        pdf_json_path: PDF JSON 파일 경로 (선택)
         docx_json_path: DOCX JSON 파일 경로
         rule_id: 규정 ID
         user: 현재 사용자
@@ -3012,20 +3006,23 @@ async def merge_json_files(
         logger.info(f"User: {user.get('username', 'unknown')}")
 
         # 파일 경로 확인
-        if not pdf_json_path or not docx_json_path:
-            logger.error(f"Missing file paths - PDF: {pdf_json_path}, DOCX: {docx_json_path}")
-            raise HTTPException(status_code=400, detail="PDF 또는 DOCX JSON 경로가 제공되지 않았습니다")
+        if not docx_json_path:
+            logger.error(f"Missing DOCX file path")
+            raise HTTPException(status_code=400, detail="DOCX JSON 경로가 제공되지 않았습니다")
 
         # 파일 존재 여부 확인
-        if not os.path.exists(pdf_json_path):
-            logger.error(f"PDF JSON file not found: {pdf_json_path}")
-            raise HTTPException(status_code=404, detail=f"PDF JSON 파일을 찾을 수 없습니다: {pdf_json_path}")
+        if pdf_json_path and not os.path.exists(pdf_json_path):
+            logger.warning(f"PDF JSON file not found: {pdf_json_path}, proceeding without PDF")
+            pdf_json_path = None
 
         if not os.path.exists(docx_json_path):
             logger.error(f"DOCX JSON file not found: {docx_json_path}")
             raise HTTPException(status_code=404, detail=f"DOCX JSON 파일을 찾을 수 없습니다: {docx_json_path}")
 
-        logger.info(f"Files exist - PDF: {os.path.getsize(pdf_json_path)} bytes, DOCX: {os.path.getsize(docx_json_path)} bytes")
+        if pdf_json_path:
+            logger.info(f"Files exist - PDF: {os.path.getsize(pdf_json_path)} bytes, DOCX: {os.path.getsize(docx_json_path)} bytes")
+        else:
+            logger.info(f"Files exist - DOCX only: {os.path.getsize(docx_json_path)} bytes")
 
         # merge_json.py import
         try:
@@ -3060,7 +3057,10 @@ async def merge_json_files(
             raise HTTPException(status_code=400, detail="JSON 파일 로드 실패")
 
         logger.info("JSON files loaded successfully")
-        logger.info(f"PDF articles count: {len(merger.pdf_data.get('조문내용', []))}")
+        if merger.pdf_data:
+            logger.info(f"PDF articles count: {len(merger.pdf_data.get('조문내용', []))}")
+        else:
+            logger.info("PDF data: None (DOCX only mode)")
         logger.info(f"DOCX articles count: {len(merger.docx_data.get('조문내용', []))}")
 
         # 병합 수행

@@ -3491,6 +3491,9 @@ ${mergeResult.text_content || ''}
             // 부서 목록 초기화
             this.departments = [];
 
+            // 분류 선택 드롭다운 로드
+            await this.loadClassificationsForNew();
+
             // 부서 목록 로드
             await this.loadDepartmentsForNew();
 
@@ -3500,6 +3503,62 @@ ${mergeResult.text_content || ''}
                 this.initDepartmentSearch();
                 searchInput.setAttribute('data-initialized', 'true');
             }
+        }
+    },
+
+    // 분류 목록 로드 (제정 모달용)
+    async loadClassificationsForNew() {
+        try {
+            const response = await fetch('/api/v1/classification/list', {
+                method: 'GET',
+                credentials: 'include'
+            });
+            if (response.ok) {
+                const result = await response.json();
+                const select = document.getElementById('newClassification');
+                if (select && result.success && result.classifications) {
+                    while (select.options.length > 1) select.remove(1);
+                    result.classifications.forEach(c => {
+                        const option = document.createElement('option');
+                        option.value = c.id;
+                        option.textContent = `${c.id}. ${c.name}`;
+                        select.appendChild(option);
+                    });
+                }
+            }
+        } catch (error) {
+            console.error('[RuleEditor] Error loading classifications for new:', error);
+        }
+    },
+
+    // 분류 선택 시 분류번호 자동 생성
+    async autoGeneratePublicationNo() {
+        const select = document.getElementById('newClassification');
+        const pubNoInput = document.getElementById('newPublicationNo');
+        if (!select || !pubNoInput) return;
+
+        const cateId = select.value;
+        if (!cateId) {
+            pubNoInput.value = '';
+            return;
+        }
+
+        // 해당 분류의 기존 내규 번호 중 최대값을 찾아 +1
+        try {
+            const response = await fetch('/api/v1/classification/list', {
+                method: 'GET',
+                credentials: 'include'
+            });
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success && result.classifications) {
+                    const cate = result.classifications.find(c => String(c.id) === String(cateId));
+                    const nextNum = cate ? (cate.count || 0) + 1 : 1;
+                    pubNoInput.value = `${cateId}-${nextNum}`;
+                }
+            }
+        } catch (error) {
+            pubNoInput.value = `${cateId}-1`;
         }
     },
 
@@ -3923,9 +3982,6 @@ ${mergeResult.text_content || ''}
                         const option = document.createElement('option');
                         option.value = classification.id;
                         option.textContent = `${classification.id}. ${classification.name}`;
-                        if (classification.count > 0) {
-                            option.textContent += ` (${classification.count})`;
-                        }
                         classificationFilter.appendChild(option);
                     });
                 }

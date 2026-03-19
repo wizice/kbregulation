@@ -132,6 +132,36 @@ app.add_middleware(
 # 접속 로그 미들웨어 (비동기 처리)
 app.add_middleware(AccessLoggerMiddleware)
 
+# --- IP 기반 접근 제어 미들웨어 (편집기 도메인) ---
+from api.router_ip_management import get_allowed_ips, get_client_ip
+
+@app.middleware("http")
+async def editor_ip_check_middleware(request: Request, call_next):
+    """편집기 도메인 접속 시 허용 IP만 통과, 나머지는 공개 도메인으로 리다이렉트"""
+    host = request.headers.get("host", "").split(":")[0].lower()
+
+    if host != settings.EDITOR_DOMAIN.lower():
+        return await call_next(request)
+
+    # 로그인, 인증 API, 정적 파일, IP 관리 API는 통과
+    path = request.url.path
+    if path.startswith(("/login", "/api/v1/auth/login", "/static",
+                        "/admin/ip-management", "/api/v1/admin/allowed-ips")):
+        return await call_next(request)
+
+    client_ip = get_client_ip(request)
+    allowed_ips = get_allowed_ips()
+
+    # IP가 하나도 등록되어 있지 않으면 모든 접근 허용 (최초 설치 시)
+    if not allowed_ips:
+        return await call_next(request)
+
+    if client_ip in allowed_ips:
+        return await call_next(request)
+
+    logger.warning(f"편집기 접근 차단: IP={client_ip}, path={path}")
+    return RedirectResponse(url=settings.PUBLIC_URL, status_code=302)
+
 # Static files mounting
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -288,6 +318,18 @@ app.include_router(synonyms_router,
     dependencies=[Depends(get_current_user)]
 )
 
+# IP 관리 API (관리자 전용)
+from api.router_ip_management import router as ip_management_router
+app.include_router(ip_management_router,
+    dependencies=[Depends(get_current_user)]
+)
+
+# 신구대비표 생성 API
+from api.router_compare import router as compare_router
+app.include_router(compare_router,
+    dependencies=[Depends(get_current_user)]
+)
+
 # 공지사항 관리자 페이지
 @app.get("/admin/notices", response_class=HTMLResponse)
 @login_required(redirect_to="/login")
@@ -324,6 +366,19 @@ async def admin_synonyms_page(
     """유사어 관리 페이지"""
     return templates.TemplateResponse(
         "admin_synonyms.html",
+        {"request": request, "user": user}
+    )
+
+# 접근 IP 관리 페이지
+@app.get("/admin/ip-management", response_class=HTMLResponse)
+@login_required(redirect_to="/login")
+async def admin_ip_management_page(
+    request: Request,
+    user: Dict[str, Any] = Depends(require_role("admin"))
+):
+    """접근 IP 관리 페이지 (관리자 전용)"""
+    return templates.TemplateResponse(
+        "admin_ip_management.html",
         {"request": request, "user": user}
     )
 
@@ -424,6 +479,19 @@ async def regulations_compare_page(
     return templates.TemplateResponse(
         "regulations/compare_full.html",
         {"request": request, "user": user, "page_title": "규정 비교"}
+    )
+
+# 신구대비표 생성 페이지
+@app.get("/regulations/comparison-generator", response_class=HTMLResponse)
+@login_required(redirect_to="/login")
+async def regulations_comparison_generator_page(
+    request: Request,
+    user: Dict[str, Any] = Depends(get_current_user)
+):
+    """신구대비표 생성 페이지"""
+    return templates.TemplateResponse(
+        "regulations/comparison_generator.html",
+        {"request": request, "user": user, "page_title": "신구대비표 생성"}
     )
 
 

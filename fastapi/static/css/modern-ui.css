@@ -1,7 +1,7 @@
 /* Modern UI Design System for KB Credit Information Regulation System */
 
 /* ==================== Fonts & Variables ==================== */
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+/* KB금융체는 common.css에서 @font-face로 로드됨 */
 
 :root {
     /* Primary Colors - KB Brand */
@@ -53,7 +53,7 @@
 }
 
 body {
-    font-family: 'Noto Sans KR', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: 'KB금융체Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     background: var(--gray-50);
     color: var(--gray-700);
     line-height: 1.6;

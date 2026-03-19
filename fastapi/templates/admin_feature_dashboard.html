@@ -11,21 +11,23 @@
     }
 
     .dashboard-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: #545045;
         color: white;
         padding: 30px;
         border-radius: 12px;
         margin-bottom: 30px;
+        border-left: 5px solid #FFBC00;
     }
 
     .dashboard-header h1 {
         margin: 0;
         font-size: 28px;
+        color: #FFBC00;
     }
 
     .dashboard-header p {
         margin: 10px 0 0;
-        opacity: 0.9;
+        opacity: 0.85;
     }
 
     .feature-grid {
@@ -121,12 +123,12 @@
     }
 
     .btn-primary {
-        background: #4f46e5;
-        color: white;
+        background: #FFBC00;
+        color: #545045;
     }
 
     .btn-primary:hover {
-        background: #4338ca;
+        background: #d4a000;
     }
 
     .btn-secondary {
@@ -282,7 +284,7 @@
         width: 20px;
         height: 20px;
         border: 2px solid #ddd;
-        border-top-color: #4f46e5;
+        border-top-color: #60584C;
         border-radius: 50%;
         animation: spin 0.8s linear infinite;
         margin-left: 10px;
@@ -308,6 +310,205 @@
         font-size: 12px;
         word-break: break-all;
         margin: 10px 0;
+    }
+
+    /* 인라인 상세 패널 */
+    .detail-panel {
+        display: none;
+        margin-top: 24px;
+    }
+
+    .detail-panel.active {
+        display: block;
+    }
+
+    .detail-panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .detail-panel-close {
+        background: none;
+        border: none;
+        font-size: 22px;
+        cursor: pointer;
+        color: #666;
+        padding: 4px 8px;
+        border-radius: 4px;
+    }
+
+    .detail-panel-close:hover {
+        background: #f3f4f6;
+        color: #333;
+    }
+
+    .dl-controls {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        align-items: center;
+        padding: 16px 0;
+        border-bottom: 1px solid #eee;
+        margin-bottom: 20px;
+    }
+
+    .dl-controls label {
+        font-size: 13px;
+        font-weight: 500;
+        color: #555;
+    }
+
+    .dl-controls select, .dl-controls button {
+        padding: 6px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 13px;
+    }
+
+    .dl-controls button {
+        background: #FFBC00;
+        color: #545045;
+        border: none;
+        cursor: pointer;
+        font-weight: 500;
+    }
+
+    .dl-controls button:hover {
+        background: #d4a000;
+    }
+
+    .dl-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .dl-stat-card {
+        background: #f8f9fa;
+        padding: 16px;
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    .dl-stat-card h4 {
+        font-size: 12px;
+        color: #888;
+        font-weight: 500;
+        margin-bottom: 6px;
+    }
+
+    .dl-stat-card .dl-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: #60584C;
+    }
+
+    .dl-chart-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
+    .dl-chart-box {
+        background: #f8f9fa;
+        padding: 16px;
+        border-radius: 8px;
+    }
+
+    .dl-chart-box h3 {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 12px;
+        color: #333;
+    }
+
+    .dl-chart-box canvas {
+        max-height: 250px;
+    }
+
+    .dl-chart-full {
+        background: #f8f9fa;
+        padding: 16px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+    }
+
+    .dl-chart-full h3 {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 12px;
+        color: #333;
+    }
+
+    .dl-chart-full canvas {
+        max-height: 280px;
+    }
+
+    .dl-table-section {
+        margin-top: 16px;
+    }
+
+    .dl-table-section h3 {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 12px;
+        color: #333;
+    }
+
+    .dl-badge {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 10px;
+        font-size: 11px;
+        font-weight: 500;
+    }
+
+    .dl-badge-pdf { background: #ffebee; color: #c62828; }
+    .dl-badge-docx { background: #e3f2fd; color: #1565c0; }
+    .dl-badge-appendix { background: #e8f5e9; color: #2e7d32; }
+    .dl-badge-comparison { background: #fff3e0; color: #ef6c00; }
+    .dl-badge-history { background: #f3e5f5; color: #7b1fa2; }
+    .dl-badge-pc { background: #e3f2fd; color: #1976d2; }
+    .dl-badge-mobile { background: #f3e5f5; color: #7b1fa2; }
+    .dl-badge-tablet { background: #fff3e0; color: #f57c00; }
+
+    .dl-pagination {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 16px;
+    }
+
+    .dl-pagination button {
+        padding: 6px 14px;
+        background: #f8f9fa;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 13px;
+    }
+
+    .dl-pagination button:hover {
+        background: #e9ecef;
+    }
+
+    .dl-pagination button.active {
+        background: #FFBC00;
+        color: #545045;
+        border-color: #FFBC00;
+    }
+
+    .dl-pagination button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    @media (max-width: 768px) {
+        .dl-stats-grid { grid-template-columns: repeat(2, 1fr); }
+        .dl-chart-row { grid-template-columns: 1fr; }
     }
 </style>
 {% endblock %}
@@ -372,9 +573,9 @@
                     </div>
                 </div>
                 <div class="feature-actions">
-                    <a href="/admin/download-logs" class="btn btn-primary">
+                    <button class="btn btn-primary" onclick="toggleDownloadPanel()">
                         &#128202; 상세 대시보드
-                    </a>
+                    </button>
                     <button class="btn btn-secondary" onclick="loadDownloadStats()">
                         &#128260; 새로고침
                     </button>
@@ -462,6 +663,129 @@
         </div>
         <div class="feature-card-body">
             <div id="recent-activity" class="loading">활동 내역 로딩중</div>
+        </div>
+    </div>
+
+    <!-- 인라인 다운로드 상세 패널 -->
+    <div id="download-detail-panel" class="detail-panel">
+        <div class="feature-card">
+            <div class="feature-card-header">
+                <div class="icon download-icon">&#128202;</div>
+                <div class="detail-panel-header" style="flex:1;">
+                    <div>
+                        <h2>다운로드 이력 대시보드</h2>
+                        <p>규정 파일 다운로드 현황 모니터링</p>
+                    </div>
+                    <button class="detail-panel-close" onclick="toggleDownloadPanel()" title="닫기">&times;</button>
+                </div>
+            </div>
+            <div class="feature-card-body">
+                <!-- 조회 조건 -->
+                <div class="dl-controls">
+                    <div>
+                        <label>조회 기간:</label>
+                        <select id="dl-period" onchange="loadDownloadDashboard()">
+                            <option value="1">최근 1일</option>
+                            <option value="7" selected>최근 7일</option>
+                            <option value="30">최근 30일</option>
+                            <option value="90">최근 90일</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>파일 종류:</label>
+                        <select id="dl-fileType" onchange="loadDetailLogs()">
+                            <option value="">전체</option>
+                            <option value="pdf">PDF</option>
+                            <option value="docx">DOCX</option>
+                            <option value="appendix">부록</option>
+                            <option value="comparison">신구대비표</option>
+                            <option value="history">수정이력</option>
+                        </select>
+                    </div>
+                    <button onclick="loadDownloadDashboard()">새로고침</button>
+                    <button onclick="exportDlCSV()">CSV 다운로드</button>
+                </div>
+
+                <!-- 요약 통계 -->
+                <div class="dl-stats-grid">
+                    <div class="dl-stat-card">
+                        <h4>총 다운로드 수</h4>
+                        <div class="dl-value" id="dl-totalDownloads">-</div>
+                    </div>
+                    <div class="dl-stat-card">
+                        <h4>순 방문자 (IP)</h4>
+                        <div class="dl-value" id="dl-uniqueVisitors">-</div>
+                    </div>
+                    <div class="dl-stat-card">
+                        <h4>평균 일일 다운로드</h4>
+                        <div class="dl-value" id="dl-avgDaily">-</div>
+                    </div>
+                    <div class="dl-stat-card">
+                        <h4>조회 기간</h4>
+                        <div class="dl-value" id="dl-periodDays" style="font-size:20px;">7일</div>
+                    </div>
+                </div>
+
+                <!-- 일별 다운로드 추이 -->
+                <div class="dl-chart-full">
+                    <h3>일별 다운로드 추이</h3>
+                    <canvas id="dl-dailyChart"></canvas>
+                </div>
+
+                <!-- 파일종류 / 디바이스 차트 -->
+                <div class="dl-chart-row">
+                    <div class="dl-chart-box">
+                        <h3>파일 종류별 다운로드</h3>
+                        <canvas id="dl-typeChart"></canvas>
+                    </div>
+                    <div class="dl-chart-box">
+                        <h3>디바이스별 다운로드</h3>
+                        <canvas id="dl-deviceChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- 인기 규정 TOP 10 -->
+                <div class="dl-table-section">
+                    <h3>인기 다운로드 규정 TOP 10</h3>
+                    <table class="activity-table" id="dl-topRulesTable">
+                        <thead>
+                            <tr>
+                                <th>순위</th>
+                                <th>공포번호</th>
+                                <th>규정명</th>
+                                <th>다운로드 수</th>
+                                <th>순 방문자</th>
+                                <th>마지막 다운로드</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+                <!-- 최근 다운로드 이력 -->
+                <div class="dl-table-section" style="margin-top:20px;">
+                    <h3>최근 다운로드 이력</h3>
+                    <table class="activity-table" id="dl-recentLogsTable">
+                        <thead>
+                            <tr>
+                                <th>시간</th>
+                                <th>규정명</th>
+                                <th>파일 종류</th>
+                                <th>파일명</th>
+                                <th>IP</th>
+                                <th>디바이스</th>
+                                <th>브라우저</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                    <div class="dl-pagination">
+                        <button id="dl-prevBtn" onclick="changeDlPage(-1)">이전</button>
+                        <span id="dl-pageInfo">1 / 1</span>
+                        <button id="dl-nextBtn" onclick="changeDlPage(1)">다음</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -592,6 +916,7 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
     let currentApprovalId = null;
 
@@ -655,6 +980,7 @@
                     document.getElementById('approval-pending').textContent = data.data.length;
 
                     if (data.data.length === 0) {
+                        container.className = '';
                         container.innerHTML = '<div class="empty-state">대기 중인 결재가 없습니다</div>';
                     } else {
                         let html = '<table class="activity-table"><thead><tr><th>규정명</th><th>요청자</th><th>단계</th><th>요청일</th><th>작업</th></tr></thead><tbody>';
@@ -668,10 +994,12 @@
                             </tr>`;
                         });
                         html += '</tbody></table>';
+                        container.className = '';
                         container.innerHTML = html;
                     }
                 }
             } else {
+                container.className = '';
                 container.innerHTML = '<div class="empty-state">결재 목록을 불러올 수 없습니다</div>';
             }
 
@@ -686,8 +1014,9 @@
             }
         } catch (e) {
             console.error('결재 목록 조회 실패:', e);
-            document.getElementById('pending-approvals').innerHTML =
-                '<div class="empty-state">결재 목록 조회 실패</div>';
+            const errContainer = document.getElementById('pending-approvals');
+            errContainer.className = '';
+            errContainer.innerHTML = '<div class="empty-state">결재 목록 조회 실패</div>';
         }
     }
 
@@ -735,6 +1064,7 @@
 
             const container = document.getElementById('recent-activity');
 
+            container.className = '';
             if (response.ok) {
                 const data = await response.json();
                 if (data.success && data.data && data.data.length > 0) {
@@ -762,6 +1092,7 @@
             }
         } catch (e) {
             console.error('최근 활동 조회 실패:', e);
+            container.className = '';
             container.innerHTML = '<div class="empty-state">활동 내역 조회 실패</div>';
         }
     }
@@ -851,7 +1182,7 @@
 
     // 워터마크 로그 보기
     function showWatermarkLogs() {
-        window.location.href = '/admin/download-logs';
+        toggleDownloadPanel();
     }
 
     // 다단계 결재 모달
@@ -1007,5 +1338,224 @@
             }
         });
     });
+
+    // ========== 인라인 다운로드 상세 패널 ==========
+    let dlDailyChart = null, dlTypeChart = null, dlDeviceChart = null;
+    let dlCurrentPage = 1;
+    const dlPageSize = 20;
+    let dlTotalCount = 0;
+    let dlPanelLoaded = false;
+
+    function toggleDownloadPanel() {
+        const panel = document.getElementById('download-detail-panel');
+        const isVisible = panel.classList.contains('active');
+        if (isVisible) {
+            panel.classList.remove('active');
+        } else {
+            panel.classList.add('active');
+            if (!dlPanelLoaded) {
+                loadDownloadDashboard();
+                dlPanelLoaded = true;
+            }
+            panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+    async function loadDownloadDashboard() {
+        const days = document.getElementById('dl-period').value;
+        document.getElementById('dl-periodDays').textContent = `${days}일`;
+
+        try {
+            const response = await fetch(`/api/v1/download-logs/stats/summary?days=${days}`, {
+                credentials: 'include'
+            });
+            const result = await response.json();
+
+            if (!result.success) {
+                throw new Error('통계 조회 실패');
+            }
+
+            const data = result.data;
+
+            document.getElementById('dl-totalDownloads').textContent = data.summary.total_downloads.toLocaleString();
+            document.getElementById('dl-uniqueVisitors').textContent = data.summary.total_unique_visitors.toLocaleString();
+            document.getElementById('dl-avgDaily').textContent = data.summary.avg_daily_downloads.toLocaleString();
+
+            updateDlDailyChart(data.daily_stats);
+            updateDlTypeChart(data.type_stats);
+            updateDlDeviceChart(data.device_stats);
+            updateDlTopRulesTable(data.top_rules);
+
+            dlCurrentPage = 1;
+            await loadDetailLogs();
+        } catch (error) {
+            console.error('Download dashboard load error:', error);
+        }
+    }
+
+    function updateDlDailyChart(dailyStats) {
+        const ctx = document.getElementById('dl-dailyChart');
+        if (dlDailyChart) dlDailyChart.destroy();
+
+        const sorted = [...dailyStats].reverse();
+        dlDailyChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: sorted.map(d => d.day),
+                datasets: [
+                    {
+                        label: '총 다운로드 수',
+                        data: sorted.map(d => d.download_count),
+                        borderColor: '#60584C',
+                        backgroundColor: 'rgba(96,88,76,0.1)',
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
+                        label: '순 방문자',
+                        data: sorted.map(d => d.unique_visitors),
+                        borderColor: '#4caf50',
+                        backgroundColor: 'rgba(76,175,80,0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: { legend: { position: 'top' } }
+            }
+        });
+    }
+
+    function updateDlTypeChart(typeStats) {
+        const ctx = document.getElementById('dl-typeChart');
+        if (dlTypeChart) dlTypeChart.destroy();
+
+        const labels = { pdf: 'PDF', docx: 'DOCX', appendix: '부록', comparison: '신구대비표', history: '수정이력' };
+        dlTypeChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: typeStats.map(d => labels[d.file_type] || d.file_type),
+                datasets: [{ data: typeStats.map(d => d.download_count), backgroundColor: ['#c62828','#1565c0','#2e7d32','#ef6c00','#7b1fa2'] }]
+            },
+            options: { responsive: true, maintainAspectRatio: true }
+        });
+    }
+
+    function updateDlDeviceChart(deviceStats) {
+        const ctx = document.getElementById('dl-deviceChart');
+        if (dlDeviceChart) dlDeviceChart.destroy();
+
+        dlDeviceChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: deviceStats.map(d => d.device_type || 'Unknown'),
+                datasets: [{ data: deviceStats.map(d => d.download_count), backgroundColor: ['#FFBC00','#60584C','#545045'] }]
+            },
+            options: { responsive: true, maintainAspectRatio: true }
+        });
+    }
+
+    function updateDlTopRulesTable(topRules) {
+        const tbody = document.querySelector('#dl-topRulesTable tbody');
+        tbody.innerHTML = '';
+        topRules.forEach((rule, i) => {
+            const last = rule.last_downloaded_at ? new Date(rule.last_downloaded_at).toLocaleString('ko-KR') : '-';
+            tbody.insertRow().innerHTML = `
+                <td>${i + 1}</td>
+                <td>${rule.rule_pubno || '-'}</td>
+                <td>${rule.rule_name || '-'}</td>
+                <td>${rule.download_count.toLocaleString()}</td>
+                <td>${rule.unique_visitors.toLocaleString()}</td>
+                <td>${last}</td>
+            `;
+        });
+    }
+
+    async function loadDetailLogs() {
+        const fileType = document.getElementById('dl-fileType').value;
+        const offset = (dlCurrentPage - 1) * dlPageSize;
+
+        try {
+            let url = `/api/v1/download-logs/logs?limit=${dlPageSize}&offset=${offset}`;
+            if (fileType) url += `&file_type=${fileType}`;
+
+            const response = await fetch(url, { credentials: 'include' });
+            const result = await response.json();
+
+            if (!result.success) throw new Error('로그 조회 실패');
+
+            dlTotalCount = result.total_count;
+            const totalPages = Math.ceil(dlTotalCount / dlPageSize) || 1;
+
+            const tbody = document.querySelector('#dl-recentLogsTable tbody');
+            tbody.innerHTML = '';
+
+            const typeLabels = { pdf: 'PDF', docx: 'DOCX', appendix: '부록', comparison: '신구대비표', history: '수정이력' };
+            result.data.forEach(log => {
+                const typeClass = `dl-badge-${log.file_type}`;
+                const deviceClass = `dl-badge-${(log.device_type || 'pc').toLowerCase()}`;
+                const fileName = log.file_name && log.file_name.length > 40 ? log.file_name.substring(0, 40) + '...' : (log.file_name || '-');
+                tbody.insertRow().innerHTML = `
+                    <td>${new Date(log.downloaded_at).toLocaleString('ko-KR')}</td>
+                    <td>${log.rule_name || '-'}</td>
+                    <td><span class="dl-badge ${typeClass}">${typeLabels[log.file_type] || log.file_type}</span></td>
+                    <td>${fileName}</td>
+                    <td>${log.ip_address || '-'}</td>
+                    <td><span class="dl-badge ${deviceClass}">${log.device_type || '-'}</span></td>
+                    <td>${log.browser || '-'}</td>
+                `;
+            });
+
+            document.getElementById('dl-pageInfo').textContent = `${dlCurrentPage} / ${totalPages}`;
+            document.getElementById('dl-prevBtn').disabled = dlCurrentPage <= 1;
+            document.getElementById('dl-nextBtn').disabled = dlCurrentPage >= totalPages;
+        } catch (error) {
+            console.error('Detail logs load error:', error);
+        }
+    }
+
+    function changeDlPage(delta) {
+        dlCurrentPage += delta;
+        loadDetailLogs();
+    }
+
+    async function exportDlCSV() {
+        try {
+            const response = await fetch('/api/v1/download-logs/logs?limit=10000', { credentials: 'include' });
+            const result = await response.json();
+
+            if (!result.success) throw new Error('데이터 조회 실패');
+
+            const headers = ['시간','규정ID','규정명','공포번호','파일종류','파일명','IP','디바이스','브라우저','OS'];
+            let csv = '\uFEFF' + headers.join(',') + '\n';
+
+            result.data.forEach(log => {
+                csv += [
+                    log.downloaded_at,
+                    log.rule_id || '',
+                    (log.rule_name || '').replace(/,/g, ' '),
+                    log.rule_pubno || '',
+                    log.file_type,
+                    (log.file_name || '').replace(/,/g, ' '),
+                    log.ip_address || '',
+                    log.device_type || '',
+                    log.browser || '',
+                    log.os || ''
+                ].join(',') + '\n';
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `download_logs_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+        } catch (error) {
+            console.error('CSV export error:', error);
+            alert('CSV 내보내기 실패: ' + error.message);
+        }
+    }
 </script>
 {% endblock %}

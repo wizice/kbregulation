@@ -43,68 +43,10 @@ See https://github.com/adobe-type-tools/cmap-resources
   <!-- 중복 로깅 방지를 위해 비활성화: openAppendixPdf()에서 이미 로깅함 -->
   <!-- <script src="/static/js/pdf-view-logger.js"></script> -->
 
-  <!-- 워터마크 스타일 -->
-  <style>
-    /* 워터마크 오버레이 */
-    .watermark-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 9999;
-      overflow: hidden;
-    }
-
-    .watermark-pattern {
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      display: flex;
-      flex-wrap: wrap;
-      align-content: flex-start;
-      transform: rotate(-35deg);
-    }
-
-    .watermark-item {
-      width: 300px;
-      height: 120px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Malgun Gothic', Arial, sans-serif;
-      font-size: 14px;
-      color: rgba(150, 150, 150, 0.25);
-      white-space: nowrap;
-      user-select: none;
-      text-align: center;
-      line-height: 1.4;
-    }
-
-    /* 인쇄 시 워터마크 더 진하게 */
-    @media print {
-      .watermark-overlay {
-        position: fixed !important;
-        z-index: 999999 !important;
-      }
-      .watermark-item {
-        color: rgba(100, 100, 100, 0.35) !important;
-        font-size: 12px !important;
-      }
-    }
-  </style>
 
   </head>
 
   <body tabindex="1">
-    <!-- 워터마크 오버레이 -->
-    <div id="watermarkOverlay" class="watermark-overlay">
-      <div id="watermarkPattern" class="watermark-pattern"></div>
-    </div>
-
     <div id="outerContainer">
 
       <div id="sidebarContainer">
@@ -749,8 +691,6 @@ window.addEventListener('DOMContentLoaded', function() {
     // ========== 다운로드 이력 기록 ==========
     setupDownloadLogging();
 
-    // ========== 워터마크 생성 ==========
-    initWatermark();
 });
 
 // 다운로드 로깅 설정
@@ -837,204 +777,21 @@ function setupDownloadLogging() {
         }
     }
 
-    // 다운로드 버튼 클릭 이벤트 리스너 (워터마크 API 사용)
+    // 다운로드 버튼 - PDF.js 기본 다운로드 사용 (다운로드 로깅만 추가)
     const downloadButtons = ['#download', '#secondaryDownload'];
     downloadButtons.forEach(selector => {
         const btn = document.querySelector(selector);
         if (btn) {
-            // 기존 이벤트 제거를 위해 클론으로 교체
-            const newBtn = btn.cloneNode(true);
-            btn.parentNode.replaceChild(newBtn, btn);
-
-            newBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-
-                // 워터마크 다운로드 실행
-                downloadWithWatermark();
-            }, true);
-            console.log('[Download Log] 워터마크 다운로드 버튼 리스너 등록:', selector);
+            btn.addEventListener('click', function() {
+                const fileInfo = getFileInfoFromUrl();
+                if (fileInfo) {
+                    logDownload(fileInfo);
+                }
+            });
         }
     });
-
-    // PDF.js의 다운로드 이벤트 가로채기 (PDFViewerApplication 로드 후)
-    setTimeout(function() {
-        if (window.PDFViewerApplication && window.PDFViewerApplication.eventBus) {
-            // 기존 download 리스너 제거 시도
-            const originalDownload = window.PDFViewerApplication.download;
-            window.PDFViewerApplication.download = function() {
-                console.log('[Download Log] PDFViewerApplication.download() 가로채기');
-                downloadWithWatermark();
-            };
-
-            window.PDFViewerApplication.eventBus.on('download', function(e) {
-                if (e && e.preventDefault) e.preventDefault();
-                console.log('[Download Log] PDF.js download 이벤트 가로채기');
-                downloadWithWatermark();
-            });
-            console.log('[Download Log] PDF.js 다운로드 오버라이드 완료');
-        }
-    }, 1000);
 }
 
-// 워터마크 포함 다운로드
-async function downloadWithWatermark() {
-    try {
-        const urlParams = new URLSearchParams(window.location.search);
-        const fileParam = urlParams.get('file');
-
-        if (!fileParam) {
-            console.error('[Watermark Download] file 파라미터가 없습니다.');
-            alert('다운로드할 파일을 찾을 수 없습니다.');
-            return;
-        }
-
-        // 파일 경로 추출 (/static/pdf/xxx.pdf 형식)
-        let filePath = fileParam;
-        if (filePath.startsWith('/')) {
-            filePath = filePath.substring(1);
-        }
-
-        // 사용자 정보 가져오기
-        const userInfo = getWatermarkInfo();
-
-        console.log('[Watermark Download] 시작:', { filePath, userInfo });
-
-        // 워터마크 API 호출
-        const response = await fetch('/api/v1/watermark/download', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                file_path: filePath,
-                user_name: userInfo.name,
-                department: userInfo.department
-            })
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.detail || '다운로드 실패');
-        }
-
-        // Blob으로 변환 후 다운로드
-        const blob = await response.blob();
-        const fileName = decodeURIComponent(fileParam.split('/').pop());
-
-        // 다운로드 링크 생성
-        const downloadUrl = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(downloadUrl);
-
-        console.log('[Watermark Download] 완료:', fileName);
-
-    } catch (error) {
-        console.error('[Watermark Download] 실패:', error);
-        alert('다운로드에 실패했습니다: ' + error.message);
-    }
-}
-
-// ========== 워터마크 기능 ==========
-// 사용자 정보 저장 (전역)
-let watermarkUserInfo = null;
-
-// 워터마크 초기화
-async function initWatermark() {
-    try {
-        // 사용자 정보 가져오기
-        watermarkUserInfo = await fetchUserInfo();
-
-        // 워터마크 패턴 생성
-        generateWatermarkPattern(watermarkUserInfo);
-
-        console.log('[Watermark] 워터마크 초기화 완료:', watermarkUserInfo.name);
-    } catch (error) {
-        console.error('[Watermark] 초기화 실패:', error);
-        // 기본값으로 워터마크 생성
-        watermarkUserInfo = {
-            name: '사용자',
-            department: '',
-            timestamp: new Date().toLocaleString('ko-KR')
-        };
-        generateWatermarkPattern(watermarkUserInfo);
-    }
-}
-
-// 사용자 정보 API 호출
-async function fetchUserInfo() {
-    try {
-        const response = await fetch('/api/v1/auth/me');
-        if (response.ok) {
-            const data = await response.json();
-            return {
-                name: data.user?.name || data.user?.username || '사용자',
-                department: data.user?.department || data.user?.dept_name || '',
-                timestamp: new Date().toLocaleString('ko-KR')
-            };
-        }
-    } catch (error) {
-        console.warn('[Watermark] 사용자 정보 조회 실패, 기본값 사용');
-    }
-
-    // 쿠키에서 사용자 정보 시도
-    const cookies = document.cookie.split(';').reduce((acc, cookie) => {
-        const [key, value] = cookie.trim().split('=');
-        acc[key] = value;
-        return acc;
-    }, {});
-
-    return {
-        name: cookies.user_name ? decodeURIComponent(cookies.user_name) : '사용자',
-        department: cookies.user_dept ? decodeURIComponent(cookies.user_dept) : '',
-        timestamp: new Date().toLocaleString('ko-KR')
-    };
-}
-
-// 워터마크 패턴 생성
-function generateWatermarkPattern(userInfo) {
-    const container = document.getElementById('watermarkPattern');
-    if (!container) return;
-
-    // 기존 내용 초기화
-    container.innerHTML = '';
-
-    // 워터마크 텍스트 생성
-    const watermarkText = userInfo.department
-        ? `${userInfo.name}\n${userInfo.department}\n${userInfo.timestamp}`
-        : `${userInfo.name}\n${userInfo.timestamp}`;
-
-    // 화면 크기에 맞게 워터마크 개수 계산
-    const itemWidth = 300;
-    const itemHeight = 120;
-    const cols = Math.ceil((window.innerWidth * 3) / itemWidth);
-    const rows = Math.ceil((window.innerHeight * 3) / itemHeight);
-    const totalItems = cols * rows;
-
-    // 워터마크 아이템 생성
-    for (let i = 0; i < totalItems; i++) {
-        const item = document.createElement('div');
-        item.className = 'watermark-item';
-        item.innerHTML = watermarkText.replace(/\n/g, '<br>');
-        container.appendChild(item);
-    }
-
-    console.log(`[Watermark] 패턴 생성 완료: ${totalItems}개 아이템`);
-}
-
-// 워터마크 정보 가져오기 (다운로드용)
-function getWatermarkInfo() {
-    return watermarkUserInfo || {
-        name: '사용자',
-        department: '',
-        timestamp: new Date().toLocaleString('ko-KR')
-    };
-}
 </script>
 
 <!-- Global site tag (gtag.js) - Google Analytics -->

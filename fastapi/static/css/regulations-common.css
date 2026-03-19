@@ -2,7 +2,7 @@
 
 /* 배경 및 기본 레이아웃 */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'KB금융체Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
     padding: 20px;
@@ -59,16 +59,17 @@ body {
 /* 검색 바 */
 .search-bar {
     background: #f8f9fa;
-    padding: 15px 20px;
+    padding: 10px 15px;
     border-bottom: 1px solid #dee2e6;
     display: flex;
-    gap: 10px;
+    gap: 8px;
     align-items: center;
+    flex-wrap: wrap;
 }
 
 /* 컨텐츠 영역 */
 .content-area {
-    padding: 20px;
+    padding: 15px;
     background: #f8f9fa;
     min-height: 500px;
 }
@@ -76,7 +77,7 @@ body {
 .tab-content {
     background: white;
     border-radius: 8px;
-    padding: 20px;
+    padding: 15px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
@@ -223,8 +224,10 @@ body {
 }
 
 .btn-sm {
-    padding: 5px 10px;
+    padding: 6px 12px;
     font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
 }
 
 /* 정렬 가능한 헤더 */

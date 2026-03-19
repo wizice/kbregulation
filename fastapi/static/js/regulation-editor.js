@@ -464,7 +464,7 @@ const RegulationEditor = {
                     <td>
                         <a href="javascript:void(0)" onclick="RegulationEditor.openEditWindow(${reg.id})"
                            style="text-decoration: none; color: #333; cursor: pointer;"
-                           onmouseover="this.style.color='#667eea'; this.style.textDecoration='underline'"
+                           onmouseover="this.style.color='#60584C'; this.style.textDecoration='underline'"
                            onmouseout="this.style.color='#333'; this.style.textDecoration='none'">
                             <strong>${reg.title}</strong>
                         </a>
@@ -493,7 +493,7 @@ const RegulationEditor = {
                     <td>
                         <a href="javascript:void(0)" onclick="RegulationEditor.openEditWindow(${reg.id})"
                            style="text-decoration: none; color: #333; cursor: pointer;"
-                           onmouseover="this.style.color='#667eea'; this.style.textDecoration='underline'"
+                           onmouseover="this.style.color='#60584C'; this.style.textDecoration='underline'"
                            onmouseout="this.style.color='#333'; this.style.textDecoration='none'">
                             <strong>${reg.title}</strong>
                         </a>
@@ -848,7 +848,7 @@ const RegulationEditor = {
     // 필터 배지 추가
     addFilterBadge(container, label, value, filterType, filterValue) {
         const badgeWrapper = document.createElement('span');
-        badgeWrapper.style.cssText = 'display: inline-flex; align-items: center; padding: 5px 10px; background: #667eea; color: white; border-radius: 15px; font-size: 13px; margin-right: 5px;';
+        badgeWrapper.style.cssText = 'display: inline-flex; align-items: center; padding: 5px 10px; background: #FFBC00; color: white; border-radius: 15px; font-size: 13px; margin-right: 5px;';
 
         const badgeText = document.createElement('span');
         badgeText.innerHTML = `<strong>${label}:</strong> ${value}`;
@@ -1617,7 +1617,7 @@ const RegulationEditor = {
         html = html.replace(/(<br>){3,}/g, '<br><br>');
 
         // 미리보기 영역에 스타일 추가
-        preview.style.cssText = 'padding: 20px; background: white; border-radius: 8px; font-family: "Malgun Gothic", sans-serif; font-size: 14px;';
+        preview.style.cssText = 'padding: 20px; background: white; border-radius: 8px; font-family: "KB금융체Text", sans-serif; font-size: 14px;';
         preview.innerHTML = html || '<p>내용이 없습니다.</p>';
     },
 
@@ -1778,7 +1778,7 @@ const RegulationEditor = {
                 <title>편집 - ${regulation.title}</title>
                 <style>
                     body { font-family: sans-serif; padding: 20px; }
-                    h1 { color: #667eea; }
+                    h1 { color: #60584C; }
                 </style>
             </head>
             <body>
@@ -2047,7 +2047,7 @@ const RegulationEditor = {
         // 문서정보 표시
         if (data.문서정보) {
             html += '<div style="margin-bottom: 20px; padding: 10px; background: #f0f7ff; border-radius: 4px;">';
-            html += '<h5 style="color: #667eea; margin-bottom: 10px;">📋 문서정보</h5>';
+            html += '<h5 style="color: #60584C; margin-bottom: 10px;">📋 문서정보</h5>';
             for (const [key, value] of Object.entries(data.문서정보)) {
                 if (Array.isArray(value)) {
                     html += `<div><strong>${key}:</strong> ${value.join(', ')}</div>`;
@@ -2061,7 +2061,7 @@ const RegulationEditor = {
         // 조문내용 표시
         if (data.조문내용 && Array.isArray(data.조문내용)) {
             html += '<div style="margin-top: 20px;">';
-            html += '<h5 style="color: #667eea; margin-bottom: 10px;">📝 조문내용</h5>';
+            html += '<h5 style="color: #60584C; margin-bottom: 10px;">📝 조문내용</h5>';
             data.조문내용.forEach(item => {
                 const level = item.레벨 || 0;
                 const indent = level * 20;
@@ -2792,7 +2792,7 @@ const RegulationEditor = {
                     width: 60px;
                     height: 60px;
                     border: 5px solid #e0e0e0;
-                    border-top-color: #667eea;
+                    border-top-color: #60584C;
                     border-radius: 50%;
                     animation: spinLarge 1s linear infinite;
                     margin: 0 auto 24px;
@@ -2820,7 +2820,7 @@ const RegulationEditor = {
                 }
                 .upload-progress-bar {
                     height: 100%;
-                    background: linear-gradient(90deg, #667eea, #764ba2);
+                    background: linear-gradient(90deg, #FFBC00, #60584C);
                     border-radius: 10px;
                     transition: width 0.3s ease;
                     width: 0%;
@@ -2828,7 +2828,7 @@ const RegulationEditor = {
                 .upload-percent {
                     font-size: 28px;
                     font-weight: 700;
-                    color: #667eea;
+                    color: #60584C;
                 }
             </style>
             <div class="upload-modal">

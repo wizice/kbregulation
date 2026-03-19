@@ -165,6 +165,16 @@ async def download_appendix_with_logging(rule_seq: int, file_name: str, request:
         if candidate.exists():
             pdf_file_path = candidate
         else:
+            # 1-1. .docx/.xlsx 확장자로 요청된 경우 .pdf로 변환 시도
+            if clean_file_name.endswith(('.docx', '.xlsx')):
+                pdf_name = clean_file_name.rsplit('.', 1)[0] + '.pdf'
+                candidate_pdf = pdf_dir / pdf_name
+                if candidate_pdf.exists():
+                    pdf_file_path = candidate_pdf
+                    clean_file_name = pdf_name
+                    logger.info(f"Fallback: {clean_file_name} → {pdf_name}")
+
+        if not pdf_file_path:
             # 2. 언더스코어를 공백으로 변환하여 시도
             candidate_space = pdf_dir / clean_file_name.replace('_', ' ')
             if candidate_space.exists():

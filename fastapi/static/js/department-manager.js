@@ -161,8 +161,8 @@ const DepartmentManager = {
         if (sortedDepts.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="5" style="text-align: center; padding: 40px; color: #999;">
-                        ${this.searchQuery ? '검색 결과가 없습니다.' : '부서 데이터가 없습니다.'}
+                    <td colspan="4" style="text-align: center; padding: 40px; color: #999;">
+                        부서 데이터가 없습니다.
                     </td>
                 </tr>
             `;
@@ -183,8 +183,6 @@ const DepartmentManager = {
             row.innerHTML = `
                 <td class="clickable-dept" onclick="DepartmentManager.selectDepartment('${dept.name}')" style="display: none;">${dept.code}</td>
                 <td class="clickable-dept" onclick="DepartmentManager.selectDepartment('${dept.name}')">${dept.name}</td>
-                <td>${dept.parent}</td>
-                <!--<td><span class="status-badge status-active">${dept.category || '-'}</span></td>-->
                 <td>${dept.count}</td>
                 <td>
                     <button class="action-btn btn-primary" onclick="DepartmentManager.editDepartment('${dept.code}')">편집</button>
@@ -226,21 +224,8 @@ const DepartmentManager = {
                             <label class="form-label">부서명 <span class="required" style="color: #dc3545; font-size: 0.75em; vertical-align: super;">*필수</span></label>
                             <input type="text" class="form-input" id="deptName" placeholder="부서명 입력">
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">상위부서 <span class="required" style="color: #dc3545; font-size: 0.75em; vertical-align: super;">*필수</span></label>
-                            <select class="form-select" id="deptParent">
-                                <option value="">선택하세요</option>
-                                ${this.parentDepartments.map(parent =>
-                                    `<option value="${parent}">${parent}</option>`
-                                ).join('')}
-                            </select>
-                        </div>
-                        <!--<div class="form-group">
-                            <label class="form-label">카테고리 <span class="required" style="color: #dc3545; font-size: 0.75em; vertical-align: super;">*필수</span></label>
-                            <select class="form-select" id="deptCategory">
-                                <option value="">선택하세요</option>
-                            </select>
-                        </div>-->
+                        <!-- 상위부서 필드 삭제 -->
+                        <input type="hidden" id="deptParent" value="기타">
                     </div>
                     <div class="modal-footer">
                         <button class="btn btn-secondary" onclick="DepartmentManager.closeModal()">취소</button>
@@ -281,19 +266,8 @@ const DepartmentManager = {
                             <label class="form-label">부서명 <span class="required" style="color: #dc3545; font-size: 0.75em; vertical-align: super;">*필수</span></label>
                             <input type="text" class="form-input" id="deptName" value="${dept.name}">
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">상위부서 <span class="required" style="color: #dc3545; font-size: 0.75em; vertical-align: super;">*필수</span></label>
-                            <select class="form-select" id="deptParent">
-                                ${this.parentDepartments.map(parent =>
-                                    `<option value="${parent}" ${dept.parent === parent ? 'selected' : ''}>${parent}</option>`
-                                ).join('')}
-                            </select>
-                        </div>
-                        <!--<div class="form-group">
-                            <label class="form-label">카테고리 <span class="required" style="color: #dc3545; font-size: 0.75em; vertical-align: super;">*필수</span></label>
-                            <select class="form-select" id="deptCategory">
-                            </select>
-                        </div>-->
+                        <!-- 상위부서 필드 삭제 -->
+                        <input type="hidden" id="deptParent" value="${dept.parent || '기타'}">
                     </div>
                     <div class="modal-footer">
                         <button class="btn btn-secondary" onclick="DepartmentManager.closeModal()">취소</button>

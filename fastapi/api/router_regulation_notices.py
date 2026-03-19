@@ -23,7 +23,7 @@ def get_db_connection():
 
 
 def ensure_table():
-    """테이블이 없으면 생성"""
+    """테이블이 없으면 생성, title 컬럼 없으면 추가"""
     conn = get_db_connection()
     try:
         cur = conn.cursor()
@@ -31,6 +31,7 @@ def ensure_table():
             CREATE TABLE IF NOT EXISTS wz_regulation_notices (
                 id SERIAL PRIMARY KEY,
                 regulation_code VARCHAR(50) NOT NULL,
+                title VARCHAR(200) DEFAULT '',
                 content TEXT NOT NULL,
                 created_by VARCHAR(100),
                 created_at TIMESTAMP DEFAULT NOW(),
@@ -40,6 +41,11 @@ def ensure_table():
         cur.execute("""
             CREATE INDEX IF NOT EXISTS idx_reg_notices_code
             ON wz_regulation_notices(regulation_code)
+        """)
+        # 기존 테이블에 title 컬럼이 없으면 추가
+        cur.execute("""
+            ALTER TABLE wz_regulation_notices
+            ADD COLUMN IF NOT EXISTS title VARCHAR(200) DEFAULT ''
         """)
         conn.commit()
     finally:
@@ -54,17 +60,20 @@ except Exception:
 
 
 class RegulationNoticeCreate(BaseModel):
+    title: str = ""
     content: str
     created_by: Optional[str] = None
 
 
 class RegulationNoticeUpdate(BaseModel):
-    content: str
+    title: Optional[str] = None
+    content: Optional[str] = None
 
 
 class RegulationNoticeResponse(BaseModel):
     id: int
     regulation_code: str
+    title: str = ""
     content: str
     created_by: Optional[str]
     created_at: datetime
@@ -78,7 +87,7 @@ async def get_notices(regulation_code: str):
     try:
         cur = conn.cursor(cursor_factory=RealDictCursor)
         cur.execute(
-            """SELECT id, regulation_code, content, created_by, created_at, updated_at
+            """SELECT id, regulation_code, title, content, created_by, created_at, updated_at
                FROM wz_regulation_notices
                WHERE regulation_code = %s
                ORDER BY created_at DESC""",
@@ -96,10 +105,10 @@ async def create_notice(regulation_code: str, body: RegulationNoticeCreate):
     try:
         cur = conn.cursor(cursor_factory=RealDictCursor)
         cur.execute(
-            """INSERT INTO wz_regulation_notices (regulation_code, content, created_by)
-               VALUES (%s, %s, %s)
-               RETURNING id, regulation_code, content, created_by, created_at, updated_at""",
-            (regulation_code, body.content, body.created_by)
+            """INSERT INTO wz_regulation_notices (regulation_code, title, content, created_by)
+               VALUES (%s, %s, %s, %s)
+               RETURNING id, regulation_code, title, content, created_by, created_at, updated_at""",
+            (regulation_code, body.title, body.content, body.created_by)
         )
         conn.commit()
         return cur.fetchone()
@@ -113,12 +122,24 @@ async def update_notice(regulation_code: str, notice_id: int, body: RegulationNo
     conn = get_db_connection()
     try:
         cur = conn.cursor(cursor_factory=RealDictCursor)
+        # 동적으로 업데이트할 필드 구성
+        updates = []
+        params = []
+        if body.title is not None:
+            updates.append("title = %s")
+            params.append(body.title)
+        if body.content is not None:
+            updates.append("content = %s")
+            params.append(body.content)
+        updates.append("updated_at = NOW()")
+        params.extend([notice_id, regulation_code])
+
         cur.execute(
-            """UPDATE wz_regulation_notices
-               SET content = %s, updated_at = NOW()
+            f"""UPDATE wz_regulation_notices
+               SET {', '.join(updates)}
                WHERE id = %s AND regulation_code = %s
-               RETURNING id, regulation_code, content, created_by, created_at, updated_at""",
-            (body.content, notice_id, regulation_code)
+               RETURNING id, regulation_code, title, content, created_by, created_at, updated_at""",
+            params
         )
         conn.commit()
         result = cur.fetchone()

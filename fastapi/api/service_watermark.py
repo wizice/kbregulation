@@ -37,19 +37,21 @@ router = APIRouter(
 FONT_REGISTERED = False
 
 def register_korean_font():
-    """한글 폰트 등록"""
+    """한글 폰트 등록 (KB금융체 우선)"""
     global FONT_REGISTERED
     if FONT_REGISTERED:
         return True
 
-    # 시스템 폰트 경로 목록
+    import pathlib
+    home = str(pathlib.Path.home())
+
+    # KB금융체 우선, 기존 폰트 fallback
     font_paths = [
+        f"{home}/.local/share/fonts/kb-finance/KBfgTextM.ttf",
+        f"{home}/.local/share/fonts/kb-finance/KBfgTextB.ttf",
         "/usr/share/fonts/truetype/nanum/NanumGothic.ttf",
         "/usr/share/fonts/nanum/NanumGothic.ttf",
         "/usr/share/fonts/truetype/malgun/malgun.ttf",
-        "/usr/share/fonts/korean/TrueType/NanumGothic.ttf",
-        "/home/wizice/kbregulation/www/static/fonts/NanumGothic.ttf",
-        "/home/wizice/kbregulation/fastapi/static/fonts/NanumGothic.ttf",
     ]
 
     for font_path in font_paths:

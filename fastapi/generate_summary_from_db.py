@@ -85,6 +85,28 @@ def generate_summary_from_db(output_file):
         regulations = db.query(query)
         logger.info(f"DB에서 {len(regulations)}개 규정 조회 완료")
 
+        # 부록 목록 조회 (wz_appendix)
+        appendix_query = """
+        SELECT wzruleseq, wzappendixno, wzappendixname
+        FROM wz_appendix
+        ORDER BY wzruleseq, wzappendixno::integer
+        """
+        try:
+            appendix_list = db.query(appendix_query)
+            logger.info(f"부록 {len(appendix_list)}개 조회")
+        except Exception as e:
+            logger.warning(f"부록 조회 실패 (무시): {e}")
+            appendix_list = []
+
+        # 규정별 부록 매핑 {wzruleseq: ["별표 제1호 ...", ...]}
+        appendix_map = {}
+        for ap in appendix_list:
+            rseq = ap['wzruleseq']
+            name = ap['wzappendixname'] or f"부록 {ap['wzappendixno']}"
+            if rseq not in appendix_map:
+                appendix_map[rseq] = []
+            appendix_map[rseq].append(name)
+
         # 카테고리별로 분류
         cate_map = {c['wzcateseq']: c['wzcatename'].strip() for c in categories_list}
         cate_regulations = {}
@@ -100,7 +122,7 @@ def generate_summary_from_db(output_file):
                 'code': reg['wzpubno'] or '',
                 'name': rule_name,
                 'wzRuleSeq': reg['wzruleseq'],
-                'appendix': [],
+                'appendix': appendix_map.get(reg['wzruleseq'], []),
                 'detail': {
                     'documentInfo': {
                         '규정명': rule_name,

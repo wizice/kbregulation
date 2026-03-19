@@ -113,35 +113,55 @@ def convert_xlsx_to_pdf(xlsx_path, output_pdf_path):
     from reportlab.pdfbase import pdfmetrics
     from reportlab.pdfbase.ttfonts import TTFont
 
-    # 한글 폰트 등록
+    # 한글 폰트 등록 (KB금융체 우선)
+    import pathlib
+    home = str(pathlib.Path.home())
     font_registered = False
-    font_paths = [
-        "/usr/share/fonts/google-noto-sans-cjk-ttc/NotoSansCJK-Regular.ttc",
-        "/usr/share/fonts/google-noto/NotoSansCJK-Regular.ttc",
-        "/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc",
-        "/usr/share/fonts/NotoSansCJK-Regular.ttc",
+    font_name = "Helvetica"
+
+    # KB금융체 TTF 우선 시도
+    kb_font_paths = [
+        f"{home}/.local/share/fonts/kb-finance/KBfgTextM.ttf",
+        f"{home}/.local/share/fonts/kb-finance/KBfgTextB.ttf",
     ]
-    for fp in font_paths:
+    for fp in kb_font_paths:
         if os.path.exists(fp):
             try:
-                pdfmetrics.registerFont(TTFont("NotoSansCJK", fp, subfontIndex=0))
+                pdfmetrics.registerFont(TTFont("KBFont", fp))
                 font_registered = True
+                font_name = "KBFont"
                 break
             except Exception:
                 continue
 
+    # Fallback: NotoSansCJK
     if not font_registered:
-        # 시스템에서 한글 폰트 찾기
+        noto_paths = [
+            "/usr/share/fonts/google-noto-sans-cjk-ttc/NotoSansCJK-Regular.ttc",
+            "/usr/share/fonts/google-noto/NotoSansCJK-Regular.ttc",
+            "/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc",
+            "/usr/share/fonts/NotoSansCJK-Regular.ttc",
+        ]
+        for fp in noto_paths:
+            if os.path.exists(fp):
+                try:
+                    pdfmetrics.registerFont(TTFont("NotoSansCJK", fp, subfontIndex=0))
+                    font_registered = True
+                    font_name = "NotoSansCJK"
+                    break
+                except Exception:
+                    continue
+
+    if not font_registered:
         import glob
         noto_fonts = glob.glob("/usr/share/fonts/**/NotoSans*CJK*.tt[cf]", recursive=True)
         if noto_fonts:
             try:
                 pdfmetrics.registerFont(TTFont("NotoSansCJK", noto_fonts[0], subfontIndex=0))
                 font_registered = True
+                font_name = "NotoSansCJK"
             except Exception:
                 pass
-
-    font_name = "NotoSansCJK" if font_registered else "Helvetica"
 
     wb = openpyxl.load_workbook(xlsx_path, data_only=True)
     ws = wb.active

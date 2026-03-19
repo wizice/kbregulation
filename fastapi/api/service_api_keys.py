@@ -476,14 +476,14 @@ async def get_usage_guide():
         "data": {
             "key_format": "kbr_live_<32자 랜덤 문자열>",
             "header_format": "Authorization: Bearer <API_KEY>",
-            "example_curl": 'curl -H "Authorization: Bearer kbr_live_abc123..." https://kbregulationeditor.wizice.com/api/v1/...',
-            "example_python": """
+            "example_curl": f'curl -H "Authorization: Bearer kbr_live_abc123..." https://{settings.EDITOR_DOMAIN}/api/v1/...',
+            "example_python": f"""
 import requests
 
 API_KEY = "kbr_live_abc123..."
-headers = {"Authorization": f"Bearer {API_KEY}"}
+headers = {{"Authorization": f"Bearer {{API_KEY}}"}}
 
-response = requests.get("https://kbregulationeditor.wizice.com/api/v1/...", headers=headers)
+response = requests.get("https://{settings.EDITOR_DOMAIN}/api/v1/...", headers=headers)
 print(response.json())
 """,
             "security_tips": [

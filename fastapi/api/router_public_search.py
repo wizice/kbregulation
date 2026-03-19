@@ -14,6 +14,7 @@ from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import FileResponse
 from typing import Dict, Any, List
 import logging
+import os
 import re
 from pathlib import Path
 from datetime import datetime
@@ -336,16 +337,25 @@ async def public_list_appendix_files(rule_id: int):
                 cur.execute(query, (rule_id,))
                 rows = cur.fetchall()
 
-                # 결과를 딕셔너리 배열로 변환
+                # 결과를 딕셔너리 배열로 변환 (파일 크기/수정일 포함)
                 appendix_list = []
+                base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
                 for row in rows:
-                    appendix_list.append({
+                    item = {
                         'wzappendixseq': row[0],
                         'wzappendixno': row[1],
                         'wzappendixfilename': row[2],
                         'wzfiletype': row[3],
                         'wzfilepath': row[4]
-                    })
+                    }
+                    # 실제 파일에서 크기/수정일 읽기
+                    if row[4]:
+                        full_path = os.path.join(base_dir, row[4])
+                        if os.path.exists(full_path):
+                            stat = os.stat(full_path)
+                            item['size'] = stat.st_size
+                            item['modified'] = datetime.fromtimestamp(stat.st_mtime).isoformat()
+                    appendix_list.append(item)
 
                 logger.info(f"[Public API] Found {len(appendix_list)} appendix files for rule_id {rule_id}")
                 return appendix_list

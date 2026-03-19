@@ -32,6 +32,7 @@ import os
 
 from settings import settings
 from app_logger import get_logger
+from .service_synonym import reload_synonym_cache
 
 logger = get_logger(__name__)
 
@@ -39,6 +40,24 @@ logger = get_logger(__name__)
 SYNONYMS_EXPORT_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "applib", "synonyms")
 
 router = APIRouter(prefix="/api/synonyms", tags=["synonyms"])
+
+
+def _reload_search_cache():
+    """검색 서비스의 유사어 캐시 갱신"""
+    try:
+        from .timescaledb_manager_v2 import DatabaseConnectionManager
+        db_config = {
+            'database': settings.DB_NAME,
+            'user': settings.DB_USER,
+            'password': settings.DB_PASSWORD,
+            'host': settings.DB_HOST,
+            'port': settings.DB_PORT
+        }
+        db_manager = DatabaseConnectionManager(**db_config)
+        reload_synonym_cache(db_manager)
+        logger.info("유사어 캐시 갱신 완료")
+    except Exception as e:
+        logger.error(f"유사어 캐시 갱신 실패: {e}")
 
 
 def get_db_connection():
@@ -476,6 +495,7 @@ async def create_synonym(data: SynonymCreate, created_by: str = Query("admin", d
         conn.close()
 
         logger.info(f"유사어 생성: {data.group_name} (ID: {row['synonym_id']})")
+        _reload_search_cache()
 
         return dict(row)
 
@@ -564,6 +584,7 @@ async def update_synonym(
         conn.close()
 
         logger.info(f"유사어 수정: ID {synonym_id}")
+        _reload_search_cache()
 
         return dict(row)
 
@@ -616,6 +637,7 @@ async def delete_synonym(
 
         action = "삭제" if permanent else "비활성화"
         logger.info(f"유사어 {action}: ID {synonym_id}")
+        _reload_search_cache()
 
         return {
             "success": True,
@@ -786,6 +808,8 @@ async def import_synonyms_json(
         conn.close()
 
         logger.info(f"유사어 일괄 가져오기: {len(imported)}개 성공, {len(skipped)}개 건너뜀")
+        if imported:
+            _reload_search_cache()
 
         return {
             "success": True,
@@ -801,3 +825,13 @@ async def import_synonyms_json(
     except Exception as e:
         logger.error(f"유사어 가져오기 실패: {e}")
         raise HTTPException(status_code=500, detail=f"유사어 가져오기 실패: {str(e)}")
+
+
+@router.post("/reload-cache")
+async def reload_cache():
+    """검색 서비스 유사어 캐시 수동 갱신"""
+    try:
+        _reload_search_cache()
+        return {"success": True, "message": "유사어 캐시가 갱신되었습니다"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"캐시 갱신 실패: {str(e)}")

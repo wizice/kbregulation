@@ -39,6 +39,26 @@ from hanparse import HanParse
 from app_logger import get_logger
 from settings import settings
 
+
+def create_es_client(**kwargs) -> Elasticsearch:
+    """settings 기반으로 Elasticsearch 클라이언트 생성"""
+    conn = {
+        'host': ES_IP,
+        'port': int(ES_PORT),
+        'scheme': 'https' if settings.ES_USE_SSL else 'http'
+    }
+    extra = {}
+    if settings.ES_USE_SSL:
+        if settings.ES_USER and settings.ES_PASSWORD:
+            extra['http_auth'] = (settings.ES_USER, settings.ES_PASSWORD)
+        if settings.ES_CA_CERT:
+            extra['ca_certs'] = settings.ES_CA_CERT
+            extra['verify_certs'] = settings.ES_VERIFY_CERTS
+        else:
+            extra['verify_certs'] = False
+    extra.update(kwargs)
+    return Elasticsearch([conn], **extra)
+
 # =============================================================================
 # 로거 초기화
 # =============================================================================
@@ -112,6 +132,7 @@ class JsonFileProcessor:
         """
         파일명에서 정보 추출
         지원 패턴:
+        0. (숫자-숫자)_규정명_날짜_merged.json (예: (6-8)_여비규정_250305_merged.json)
         1. {seq}.json (예: 1003.json)
         2. merged_{pubno}. {규정명}_{날짜}.json (예: merged_1.1.1. 정확한 환자 확인_202503개정_20251013_114427.json)
         3. {seq}_{규정명}_{개정일시}.json (기존 패턴)
@@ -120,6 +141,27 @@ class JsonFileProcessor:
             # summary 파일 건너뛰기
             if filename.startswith('summary_'):
                 return None
+
+            # _merged가 아닌 원본이 있으면 _merged 버전만 사용
+            if not filename.endswith('_merged.json'):
+                merged_name = filename.replace('.json', '_merged.json')
+                if (self.json_path / merged_name).exists():
+                    return None
+
+            # 패턴 0: (숫자-숫자)_규정명_날짜_merged.json 또는 (숫자-숫자)_규정명_날짜.json
+            match = re.match(r'^\((\d+-\d+)\)_(.+?)_(\d{6})(?:_merged)?\.json$', filename)
+            if match:
+                pubno = match.group(1)  # "6-8"
+                name = match.group(2)   # "여비규정"
+                date_str = match.group(3)  # "250305"
+                seq = pubno.replace('-', '_')  # "6_8"
+                return {
+                    "seq": seq,
+                    "pubno": pubno,
+                    "name": name,
+                    "filename": filename,
+                    "indexed_at": date_str
+                }
 
             # 패턴 1: 숫자만 (예: 1003.json)
             match = re.match(r'^(\d+)\.json$', filename)
@@ -190,8 +232,8 @@ class JsonFileProcessor:
         """
         doc_info = json_data.get('문서정보', {})
 
-        # 규정명 + 조문 내용 태그 생성
-        rule_name = doc_info.get('규정명', '')
+        # 규정명: JSON에 없으면 파일명에서 가져오기
+        rule_name = doc_info.get('규정명', '') or file_info.get('name', '')
         tags_list = [rule_name]
 
         # 조문 내용 추가 (본문 검색을 위해)
@@ -227,7 +269,7 @@ class JsonFileProcessor:
             "제정일": convert_date(doc_info.get('제정일', '')),
             "최종개정일": convert_date(doc_info.get('최종개정일', '')),
             "최종검토일": convert_date(doc_info.get('최종검토일', '')),
-            "담당부서": doc_info.get('담당부서', ''),
+            "담당부서": doc_info.get('담당부서', '') or doc_info.get('소관부서', ''),
             "유관부서": doc_info.get('유관부서', ''),
             "관련기준": ' '.join(doc_info.get('관련기준', [])),
             "조문갯수": doc_info.get('조문갯수', 0),
@@ -245,9 +287,9 @@ class JsonFileProcessor:
         """
         articles = []
         doc_info = json_data.get('문서정보', {})
-        rule_name = doc_info.get('규정명', '')
+        rule_name = doc_info.get('규정명', '') or file_info.get('name', '')
         rule_seq = file_info.get('seq')
-        dept = doc_info.get('담당부서', '')
+        dept = doc_info.get('담당부서', '') or doc_info.get('소관부서', '')
 
         article_list = json_data.get('조문내용', [])
 
@@ -278,11 +320,7 @@ class JsonFileProcessor:
 def elasticsearch_health(restart=False) -> bool:
     """Elasticsearch 서버 상태 확인"""
     try:
-        es = Elasticsearch([{
-            'host': ES_IP,
-            'port': int(ES_PORT),
-            'scheme': 'http'
-        }], request_timeout=30)
+        es = create_es_client(request_timeout=30)
 
         health = es.cluster.health()
         logger.info(f"Elasticsearch status: {health['status']}")
@@ -297,11 +335,7 @@ def elasticsearch_health(restart=False) -> bool:
 
 def fn_create_rule_mapping(index: str) -> bool:
     """규정 목록 인덱스 매핑 생성"""
-    es = Elasticsearch([{
-        'host': ES_IP,
-        'port': int(ES_PORT),
-        'scheme': 'http'
-    }])
+    es = create_es_client()
 
     mapping = {
         "mappings": {
@@ -358,11 +392,7 @@ def fn_create_rule_mapping(index: str) -> bool:
 
 def fn_create_article_mapping(index: str) -> bool:
     """조문 인덱스 매핑 생성"""
-    es = Elasticsearch([{
-        'host': ES_IP,
-        'port': int(ES_PORT),
-        'scheme': 'http'
-    }])
+    es = create_es_client()
 
     mapping = {
         "mappings": {
@@ -411,11 +441,7 @@ def fn_create_article_mapping(index: str) -> bool:
 
 def fn_create_appendix_mapping(index: str) -> bool:
     """부록 인덱스 매핑 생성"""
-    es = Elasticsearch([{
-        'host': ES_IP,
-        'port': int(ES_PORT),
-        'scheme': 'http'
-    }])
+    es = create_es_client()
 
     mapping = {
         "mappings": {
@@ -474,11 +500,7 @@ def fn_create_appendix_mapping(index: str) -> bool:
 def fn_index_rulebulk(index: str, doc_type: str) -> bool:
     """규정 목록 전체 색인 (PostgreSQL에서 부록명 포함)"""
     processor = JsonFileProcessor(args.json_path)
-    es = Elasticsearch([{
-        'host': ES_IP,
-        'port': int(ES_PORT),
-        'scheme': 'http'
-    }])
+    es = create_es_client()
 
     # PostgreSQL 연결하여 부록명 가져오기 (규정명으로 매칭)
     appendix_map_by_name = {}
@@ -601,11 +623,7 @@ def fn_index_rulebulk(index: str, doc_type: str) -> bool:
 def fn_index_articlebulk(rule_seq: str, index: str, doc_type: str, reindex: bool = False) -> bool:
     """단일 규정의 조문 색인"""
     processor = JsonFileProcessor(args.json_path)
-    es = Elasticsearch([{
-        'host': ES_IP,
-        'port': int(ES_PORT),
-        'scheme': 'http'
-    }])
+    es = create_es_client()
 
     try:
         # 파일 패턴: {seq}.json 또는 {seq}_*.json
@@ -660,36 +678,61 @@ def fn_index_articlebulk(rule_seq: str, index: str, doc_type: str, reindex: bool
         return False
 
 def fn_index_articlebulk_all(index: str, doc_type: str) -> bool:
-    """전체 규정의 조문 색인"""
+    """전체 규정의 조문 색인 (파일 직접 순회 방식)"""
     processor = JsonFileProcessor(args.json_path)
+    es = create_es_client()
 
     try:
         json_files = list(Path(args.json_path).glob('*.json'))
         logger.info(f"Found {len(json_files)} JSON files")
 
-        rule_seqs = set()
-        for json_file in json_files:
-            file_info = processor.parse_filename(json_file.name)
-            if file_info:
-                rule_seqs.add(file_info['seq'])
-
-        logger.info(f"Found {len(rule_seqs)} unique regulations")
+        from elasticsearch.helpers import bulk
 
         success_count = 0
         error_count = 0
+        total_articles = 0
 
-        for rule_seq in sorted(rule_seqs):
-            logger.info(f"Processing rule_seq: {rule_seq}")
+        for json_file in sorted(json_files):
+            file_info = processor.parse_filename(json_file.name)
+            if not file_info:
+                continue
 
-            if fn_index_articlebulk(rule_seq, index, doc_type, reindex=True):
-                success_count += 1
-            else:
+            json_data = processor.load_json_file(json_file)
+            if not json_data:
                 error_count += 1
+                continue
 
-            if (success_count + error_count) % 10 == 0:
-                logger.info(f"Progress: {success_count} success, {error_count} errors")
+            rule_seq = file_info['seq']
+            articles = processor.extract_articles(json_data, file_info)
+            if not articles:
+                logger.warning(f"No articles in {json_file.name}")
+                continue
 
-        logger.info(f"Completed: {success_count} success, {error_count} errors")
+            # 기존 조문 삭제 후 재색인
+            try:
+                es.delete_by_query(
+                    index=index,
+                    body={"query": {"match": {"규정seq": rule_seq}}},
+                    ignore=[404]
+                )
+            except Exception:
+                pass
+
+            actions = []
+            for article in articles:
+                actions.append({
+                    '_op_type': 'index',
+                    '_index': index,
+                    '_id': f"{rule_seq}_{article['조문seq']}",
+                    '_source': article
+                })
+
+            bulk(es, actions)
+            total_articles += len(articles)
+            success_count += 1
+            logger.info(f"Indexed {len(articles)} articles for {json_file.name}")
+
+        logger.info(f"Completed: {success_count} files, {total_articles} articles, {error_count} errors")
         return error_count == 0
 
     except Exception as e:
@@ -711,11 +754,7 @@ def fn_index_appendix_all(index: str, doc_type: str) -> bool:
         }
 
         db = DatabaseConnectionManager(**db_config)
-        es = Elasticsearch([{
-            'host': ES_IP,
-            'port': int(ES_PORT),
-            'scheme': 'http'
-        }])
+        es = create_es_client()
 
         # PostgreSQL에서 부록 데이터 가져오기
         with db.get_connection() as conn:
@@ -833,7 +872,8 @@ def main():
     # Elasticsearch 상태 확인
     if not elasticsearch_health():
         logger.warning("Elasticsearch is not running. Please start it first.")
-        logger.info(f"Expected: http://{ES_IP}:{ES_PORT}/")
+        scheme = 'https' if settings.ES_USE_SSL else 'http'
+        logger.info(f"Expected: {scheme}://{ES_IP}:{ES_PORT}/")
 
     # 기본값 설정
     index = args.index or "severance_rule"

@@ -46,7 +46,7 @@ function renderNotices(notices) {
 
     tbody.innerHTML = notices.map(notice => {
         const attachmentIcon = notice.attachment_name ?
-            `<i class="fas fa-paperclip" style="color: #667eea; margin-left: 5px;" title="첨부파일: ${notice.attachment_name}"></i>` : '';
+            `<i class="fas fa-paperclip" style="color: #60584C; margin-left: 5px;" title="첨부파일: ${notice.attachment_name}"></i>` : '';
 
         return `
         <tr>
@@ -139,7 +139,7 @@ function handleFileSelect(event) {
 
     const fileInfo = document.getElementById('fileInfo');
     fileInfo.innerHTML = `
-        <i class="fas fa-file" style="color: #667eea;"></i>
+        <i class="fas fa-file" style="color: #60584C;"></i>
         <strong>${file.name}</strong> (${formatFileSize(file.size)})
         <button type="button" onclick="clearFile()" style="float: right; background: none; border: none; color: #f56565; cursor: pointer;">
             <i class="fas fa-times"></i>

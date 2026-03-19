@@ -329,7 +329,7 @@ async def select_data_get(
 @router.post("/insert")
 async def insert_data(
     # request: Request,  # 원본 요청 데이터 확인용
-    data: UserBase,
+    data: UserCreate,
     users: UsersTable = Depends(get_users_table)
 ):
     """데이터 삽입"""
@@ -422,23 +422,29 @@ async def update_data(
         
         # 업데이트 실행
         update_dict = data.dict(exclude_unset=True)
-        
+
+        # 비밀번호 처리: password가 있으면 해시 후 password_hash/salt로 교체
+        if 'password' in update_dict:
+            raw_password = update_dict.pop('password')
+            if raw_password:  # 비어있지 않은 경우에만 변경
+                users.change_password(id, raw_password, 'admin')
+
         # 중복 체크 (username 변경 시)
         if 'username' in update_dict and update_dict['username'] != existing.get('username'):
             duplicate = users.get_by_username(update_dict['username'])
             if duplicate:
                 users.close()
                 raise HTTPException(status_code=400, detail="Username already exists")
-        
+
         # 중복 체크 (email 변경 시)
         if 'email' in update_dict and update_dict['email'] != existing.get('email'):
             duplicate = users.get_by_email(update_dict['email'])
             if duplicate:
                 users.close()
                 raise HTTPException(status_code=400, detail="Email already exists")
-        
+
         if update_dict:
-            update_dict['id'] = id
+            update_dict['users_id'] = id
             result = users.save(update_dict)
         else:
             result = False
@@ -477,7 +483,7 @@ async def delete_data(
             raise HTTPException(status_code=404, detail="User not found")
         
         # 삭제 실행
-        result = users.delete(users.TABLE_NAME, {"id": id} )
+        result = users.delete(users.TABLE_NAME, {"users_id": id} )
         
         users.close()
         

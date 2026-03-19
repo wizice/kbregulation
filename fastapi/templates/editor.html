@@ -213,7 +213,7 @@
 
         <!-- 검색 바 -->
         <div class="search-bar">
-            <input type="text" class="search-input" placeholder="제목, 내용, 공포번호로 검색..." id="searchInput">
+            <input type="text" class="search-input" placeholder="제목, 내용, 공포번호로 검색..." id="searchInput" onkeyup="if(event.key==='Enter') RuleEditor.searchRegulations()">
             <select class="filter-select" id="classificationFilter">
                 <option value="">모든 분류</option>
                 <!-- 동적으로 생성됨 -->
@@ -389,23 +389,8 @@
                 <h3>부서 체계 관리</h3>
                 <div class="panel">
                     <h4>부서 목록</h4>
-                    <!-- 부서 검색 영역 추가 -->
-                    <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
-                        <div style="display: flex; gap: 10px; align-items: center;">
-                            <input type="text"
-                                   id="departmentSearchInput"
-                                   class="form-input"
-                                   placeholder="부서코드, 부서명, 상위부서로 검색..."
-                                   style="flex: 1;"
-                                   onkeyup="if(event.key === 'Enter') DepartmentManager.searchDepartments()">
-                            <button class="btn btn-primary btn-sm" onclick="DepartmentManager.searchDepartments()">
-                                🔍 검색
-                            </button>
-                            <button class="btn btn-secondary btn-sm" onclick="DepartmentManager.clearSearch()">
-                                초기화
-                            </button>
-                        </div>
-                    </div>
+                    <!-- 부서 검색 영역 (부서 수 적어 삭제) -->
+                    <input type="hidden" id="departmentSearchInput" value="">
                     <div id="departmentStats" style="margin-bottom: 20px; display: flex; gap: 20px; font-size: 14px;">
                         <!-- 통계 정보가 여기에 표시됩니다 -->
                     </div>
@@ -419,9 +404,7 @@
                                     <th class="sortable" onclick="DepartmentManager.sortBy('name')">
                                         부서명 <span class="sort-indicator" data-column="name"></span>
                                     </th>
-                                    <th class="sortable" onclick="DepartmentManager.sortBy('parent')">
-                                        상위부서 <span class="sort-indicator" data-column="parent"></span>
-                                    </th>
+                                    <!-- 상위부서 칼럼 삭제 -->
                                     <!--<th>카테고리</th>-->
                                     <th class="sortable" onclick="DepartmentManager.sortBy('count')">
                                         내규 수 <span class="sort-indicator" data-column="count"></span>
@@ -1045,16 +1028,26 @@
 
                 <div class="form-group">
                     <label class="form-label">
-                        규정명 <span class="required">*</span>
+                        분류 선택 <span class="required">*</span>
                     </label>
-                    <input type="text" class="form-input" id="newRegulationName" placeholder="규정명을 입력하세요">
+                    <select class="form-select" id="newClassification" onchange="RuleEditor.autoGeneratePublicationNo()">
+                        <option value="">선택하세요</option>
+                        <!-- 동적으로 생성됨 -->
+                    </select>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">
-                        분류번호 <span class="required">*</span>
+                        분류번호 <small style="color:#999; font-weight:normal;">(자동 생성)</small>
                     </label>
-                    <input type="text" class="form-input" id="newPublicationNo" placeholder="예: 1.6.1.">
+                    <input type="text" class="form-input" id="newPublicationNo" placeholder="분류 선택 시 자동 생성" readonly style="background: #f5f5f5;">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        사규명 <span class="required">*</span>
+                    </label>
+                    <input type="text" class="form-input" id="newRegulationName" placeholder="사규명을 입력하세요">
                 </div>
 
                 <div class="form-group">
@@ -1073,21 +1066,16 @@
 
                 <div style="display: flex; gap: 16px;">
                     <div class="form-group" style="flex: 1;">
-                        <label class="form-label">제정일</label>
+                        <label class="form-label">제정일 <span class="required">*</span></label>
                         <input type="date" class="form-input" id="newEstablishedDate">
                     </div>
                     <div class="form-group" style="flex: 1;">
-                        <label class="form-label">시행일</label>
+                        <label class="form-label">시행일 <span class="required">*</span></label>
                         <input type="date" class="form-input" id="newExecutionDate">
                     </div>
                 </div>
 
                 <input type="hidden" id="newStatus" value="현행">
-
-                <div class="form-group">
-                    <label class="form-label">수정이력 파일 (선택)</label>
-                    <input type="file" class="form-input" id="newHistoryFile" accept=".pdf,.docx">
-                </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="RuleEditor.closeNewModal()">취소</button>
@@ -1139,15 +1127,12 @@
         <div class="modal-content" style="max-width: 1200px; width: 90%; height: 90vh; overflow: hidden;">
             <div class="modal-header" style="position: relative;">
                 <h2 id="editModalTitle">내규 편집</h2>
-                <div style="position: absolute; right: 50px; top: 15px;">
-                    <button class="btn-dots" onclick="RuleEditor.toggleEditMenu()" style="background: none; border: none; font-size: 20px; cursor: pointer;">⋮</button>
-                    <div id="editMenu" style="display: none; position: absolute; right: 0; top: 30px; background: white; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 1000;">
-                        <button onclick="RuleEditor.deleteRegulation()" style="display: block; width: 100%; padding: 10px 20px; border: none; background: none; color: red; cursor: pointer; text-align: left;">
-                            🗑️ 삭제
-                        </button>
-                    </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button class="btn btn-danger btn-sm" onclick="RuleEditor.deleteRegulation()" style="font-size: 13px; padding: 6px 14px;">
+                        내규 삭제
+                    </button>
+                    <button class="modal-close" onclick="RuleEditor.closeEditModal()">✕</button>
                 </div>
-                <button class="modal-close" onclick="RuleEditor.closeEditModal()">✕</button>
             </div>
             <div class="modal-body" style="padding: 0; height: calc(100% - 120px); overflow: hidden;">
                 <!-- 탭 메뉴 -->

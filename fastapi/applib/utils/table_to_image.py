@@ -87,30 +87,22 @@ class TableToImageConverter:
         """
         try:
             # 한글 지원 폰트 경로 (우선순위순)
+            import pathlib
+            home = str(pathlib.Path.home())
             font_paths = [
-                # 다운로드한 한글 폰트 (최우선)
+                # KB금융체 (최우선)
+                f"{home}/.local/share/fonts/kb-finance/KBfgTextM.ttf",
+                f"{home}/.local/share/fonts/kb-finance/KBfgTextB.ttf",
+                f"{home}/.local/share/fonts/kb-finance/KBfgTextL.ttf",
+                # 기존 fallback
                 "/tmp/NotoSansKR.ttf",
-                # Ubuntu/Linux 한글 폰트
                 "/usr/share/fonts/truetype/nanum/NanumGothic.ttf",
                 "/usr/share/fonts/truetype/nanum/NanumBarunGothic.ttf",
                 "/usr/share/fonts/truetype/nanum/NanumMyeongjo.ttf",
                 "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
                 "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-                # CentOS/RHEL
                 "/usr/share/fonts/nanum/NanumGothic.ttf",
                 "/usr/share/fonts/liberation/LiberationSans-Regular.ttf",
-                # Windows 한글 폰트
-                "C:/Windows/Fonts/malgun.ttf",
-                "C:/Windows/Fonts/malgunbd.ttf",
-                "C:/Windows/Fonts/gulim.ttf",
-                "C:/Windows/Fonts/batang.ttf",
-                # macOS 한글 폰트
-                "/Library/Fonts/AppleGothic.ttf",
-                "/System/Library/Fonts/AppleSDGothicNeo.ttc",
-                "/System/Library/Fonts/Arial.ttf",
-                # 기타 공통 경로
-                "/usr/share/fonts/TTF/DejaVuSans.ttf",
-                "/System/Library/Fonts/Helvetica.ttc"
             ]
 
             print(f"폰트 검색 시작... (폰트 크기: {self.font_size})")

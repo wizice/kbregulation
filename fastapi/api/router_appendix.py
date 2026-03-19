@@ -434,6 +434,16 @@ async def upload_appendix_files(
         # wzpubno에서 마지막 점 제거
         clean_pubno = wzpubno.rstrip('.') if wzpubno else str(rule_id)
 
+        # 파일 확장자 검증: DOCX, XLSX만 허용 (PDF 직접 업로드 거부)
+        allowed_extensions = {'.docx', '.xlsx'}
+        for file in files:
+            ext = Path(file.filename).suffix.lower()
+            if ext not in allowed_extensions:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"허용되지 않는 파일 형식입니다: {ext} (허용: DOCX, XLSX). 서버에서 PDF로 자동 변환됩니다."
+                )
+
         for file in files:
             try:
                 # 1. 다음 부록 번호 생성
@@ -477,14 +487,14 @@ async def upload_appendix_files(
                 if appendix_no_from_filename:
                     appendix_no = appendix_no_from_filename
 
-                # 새 파일명 생성
+                # 새 파일명 생성 (최종 저장은 항상 PDF)
                 if kb_appendix_type:
                     # KB 형식: {pubno}._별표제N호._{제목}.pdf
                     title_part = f"._{cleaned_stem.replace(' ', '_')}" if cleaned_stem else ""
-                    new_filename = f"{clean_pubno}._{kb_appendix_type}제{appendix_no}호{title_part}{file_extension}"
+                    new_filename = f"{clean_pubno}._{kb_appendix_type}제{appendix_no}호{title_part}.pdf"
                 else:
                     # 기존 형식: {pubno}._부록N._{제목}.pdf
-                    new_filename = f"{clean_pubno}._부록{appendix_no}._{cleaned_stem}{file_extension}"
+                    new_filename = f"{clean_pubno}._부록{appendix_no}._{cleaned_stem}.pdf"
                 file_path = upload_dir / new_filename
 
                 # 부록 제목 추출 (깔끔하게 정리)
@@ -501,17 +511,49 @@ async def upload_appendix_files(
                     appendix_title = re.sub(r'[_\s]*\([\d._\s]*부록\d+[_\s]*동일\)', '', appendix_title)
                     appendix_title = appendix_title.rstrip('_ ').replace('_', ' ')
 
+                # 4. 파일 변환 먼저 수행 (DOCX/XLSX → PDF)
+                import tempfile
+                import subprocess
+
+                if file_path.exists():
+                    file_path.unlink()
+                    logger.info(f"[Appendix] Deleted existing file for cache refresh: {file_path}")
+
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    tmp_src = Path(tmpdir) / f"input{file_extension}"
+                    with tmp_src.open("wb") as buffer:
+                        shutil.copyfileobj(file.file, buffer)
+
+                    if file_extension == '.docx':
+                        cmd = ["/usr/bin/libreoffice", "--headless", "--convert-to", "pdf",
+                               "--outdir", tmpdir, str(tmp_src)]
+                        env = os.environ.copy()
+                        env["PATH"] = "/usr/local/bin:/usr/bin:/bin:" + env.get("PATH", "")
+                        result = subprocess.run(cmd, capture_output=True, text=True, timeout=120, env=env)
+                        tmp_pdf = Path(tmpdir) / "input.pdf"
+                        if tmp_pdf.exists():
+                            shutil.move(str(tmp_pdf), str(file_path))
+                            logger.info(f"[Appendix] DOCX→PDF converted: {new_filename}")
+                        else:
+                            raise RuntimeError(f"LibreOffice 변환 실패: {result.stderr}")
+                    elif file_extension == '.xlsx':
+                        from applib.utils._xlsx_to_pdf import xlsx_to_pdf
+                        xlsx_to_pdf(tmp_src, file_path)
+                        logger.info(f"[Appendix] XLSX→PDF converted: {new_filename}")
+
+                logger.info(f"[Appendix] File saved to: {file_path}")
+
+                # 5. DB 저장 (변환 성공 후)
                 appendix_data = {
                     'wzruleseq': rule_id,
                     'wzappendixno': appendix_no,
                     'wzappendixname': appendix_title,
-                    'wzfiletype': file_extension,
+                    'wzfiletype': '.pdf',
                     'wzcreatedby': username,
                     'wzmodifiedby': username,
                     'wzfilepath': f'www/static/pdf/{new_filename}'
                 }
 
-                # 4. DB에 같은 부록 번호가 있는지 확인 (중복 체크)
                 wzappendixseq = None
                 existing_record = None
 
@@ -547,7 +589,7 @@ async def upload_appendix_files(
                                 WHERE wzappendixseq = %s
                             """, (
                                 appendix_title,
-                                file_extension,
+                                '.pdf',
                                 username,
                                 f'www/static/pdf/{new_filename}',
                                 wzappendixseq
@@ -571,51 +613,6 @@ async def upload_appendix_files(
                     # 새 부록 → INSERT
                     wzappendixseq = await insert_appendix_record(appendix_data)
                     logger.info(f"[Appendix] Created new appendix record: wzappendixseq={wzappendixseq}")
-
-                # 5. 파일 저장 (DOCX/XLSX는 PDF로 변환)
-                if file_path.exists():
-                    file_path.unlink()
-                    logger.info(f"[Appendix] Deleted existing file for cache refresh: {file_path}")
-
-                if file_extension in ('.docx', '.xlsx'):
-                    # DOCX/XLSX → PDF 자동 변환
-                    import tempfile
-                    import subprocess
-                    with tempfile.TemporaryDirectory() as tmpdir:
-                        tmp_src = Path(tmpdir) / f"input{file_extension}"
-                        with tmp_src.open("wb") as buffer:
-                            shutil.copyfileobj(file.file, buffer)
-
-                        # PDF 파일명으로 변경
-                        pdf_filename = new_filename.rsplit('.', 1)[0] + '.pdf'
-                        pdf_path = upload_dir / pdf_filename
-
-                        if file_extension == '.docx':
-                            cmd = ["libreoffice", "--headless", "--convert-to", "pdf",
-                                   "--outdir", tmpdir, str(tmp_src)]
-                            result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
-                            tmp_pdf = Path(tmpdir) / "input.pdf"
-                            if tmp_pdf.exists():
-                                shutil.move(str(tmp_pdf), str(pdf_path))
-                                logger.info(f"[Appendix] DOCX→PDF converted: {pdf_filename}")
-                            else:
-                                raise RuntimeError(f"LibreOffice 변환 실패: {result.stderr}")
-                        else:
-                            # XLSX → PDF (openpyxl + reportlab)
-                            from applib.utils._xlsx_to_pdf import xlsx_to_pdf
-                            xlsx_to_pdf(tmp_src, pdf_path)
-                            logger.info(f"[Appendix] XLSX→PDF converted: {pdf_filename}")
-
-                        # DB 경로도 PDF로 업데이트
-                        new_filename = pdf_filename
-                        file_path = pdf_path
-                        appendix_data['wzfiletype'] = '.pdf'
-                        appendix_data['wzfilepath'] = f'www/static/pdf/{pdf_filename}'
-                else:
-                    with file_path.open("wb") as buffer:
-                        shutil.copyfileobj(file.file, buffer)
-
-                logger.info(f"[Appendix] File saved to: {file_path}")
 
                 uploaded_files.append({
                     "wzappendixseq": wzappendixseq,

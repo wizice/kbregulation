@@ -149,14 +149,40 @@ cd /home/wizice/kbregulation/fastapi
 - 프론트엔드: 바닐라 JS + jQuery + Bootstrap
 - wzpubno 형식: `N-M` (하이픈 기반, 예: 6-8, 11-16)
 
+## 폰트 표준 (KB금융체)
+
+**프로젝트 전체에서 KB금융체를 표준 폰트로 사용한다.** 새 코드 작성 시 다른 폰트(Noto Sans KR, NanumGothic, Malgun Gothic 등)를 사용하지 않는다.
+
+### 폰트 종류
+
+| 폰트 패밀리 | 용도 | 굵기 |
+|---|---|---|
+| KB금융체Text (KBFG Text) | 본문, 일반 텍스트 | Light(300), Medium(400), Bold(700) |
+| KB금융체Display (KBFG Display) | 제목, 강조 | Light(300), Medium(400), Bold(700), ExtraBold(800), Heavy(900) |
+
+### 폰트 파일 위치
+
+| 포맷 | 경로 | 용도 |
+|---|---|---|
+| TTF (시스템) | `~/.local/share/fonts/kb-finance/KBfg*.ttf` | Python PIL/reportlab (서버사이드 렌더링) |
+| WOFF2 (www) | `www/static/webfonts/KBfg*.woff2` | 서비스 페이지 웹폰트 |
+| WOFF2 (fastapi) | `fastapi/static/webfonts/KBfg*.woff2` | 관리자/편집기 페이지 웹폰트 |
+
+### 사용 규칙
+
+- **CSS (웹)**: `font-family: 'KB금융체Text', sans-serif` (본문), `'KB금융체Display', sans-serif` (제목)
+- **Python PIL**: `~/.local/share/fonts/kb-finance/KBfgTextM.ttf` 를 최우선 경로로 지정
+- **Python reportlab**: KB금융체 TTF를 `KBFont` 이름으로 등록 후 사용
+- 기존 Noto Sans KR, NanumGothic 등은 KB금융체가 없을 때의 fallback으로만 유지
+
 ## KB신용정보 데이터 현황 (2026-02-27 기준)
 
-### 마이그레이션 완료
-- 세브란스 데이터 → KB신용정보 데이터로 완전 교체
+### DB 현황 (2026-03-09)
 - **wz_cate**: 11개 분류 (1~11편)
 - **wz_dept**: 7개 부서
-- **wz_rule**: 91개 규정 (현행)
-- 8개 규정 DOCX 파싱 완료 (JSON+DB), 83개 플레이스홀더 (기본정보만)
+- **wz_rule**: 8개 규정 (DOCX 파싱된 것만, 플레이스홀더 83건 삭제)
+- **wz_appendix**: 16건 (KB 별표/서식, 세브란스 orphaned 286건 삭제)
+- 백업: `wz_rule_backup_20260309`, `wz_appendix_backup_20260309`
 - 등록 스크립트: `fastapi/register_kb_regulations.py`
 
 ### 별표/서식 관리 (구현 완료)
@@ -194,7 +220,6 @@ cd /home/wizice/kbregulation/fastapi
 ### 미완료
 - [ ] ES 재색인 (index_sev.py 실행 필요, 별표/서식 포함)
 - [ ] `(7-2) 별표 제1호_기안문.docx` 정상 파일 확보 후 재변환
-- [ ] 나머지 83개 규정 DOCX 파싱 (원본 확보 시)
 - [ ] 서버 재시작 필요 (uvicorn --workers 2 환경에서 코드 변경 반영)
 
 ### 검증 필요

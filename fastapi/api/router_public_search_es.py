@@ -216,7 +216,15 @@ async def search_with_elasticsearch(
         # 검색 쿼리 구성
         if search_type == 'title':
             # 내규명 검색: 와일드카드 사용
-            q_string = f'+규정명:*{q}*'
+            # ES 규정명 필드가 text 타입이므로 keyword 서브필드로 전체 문자열 매칭
+            # 규정명에 문자 사이 공백이 있을 수 있음 (예: "여  비  규  정")
+            # 각 문자 사이에 와일드카드 삽입하여 매칭
+            q_chars = list(q.replace(' ', ''))
+            if len(q_chars) > 1:
+                wild_pattern = '*'.join(q_chars)
+                q_string = f'+규정명.keyword:*{wild_pattern}*'
+            else:
+                q_string = f'+규정명.keyword:*{q}*'
 
         elif search_type == 'content':
             # 내규본문 검색: 형태소 분석 사용
@@ -309,8 +317,7 @@ async def search_with_elasticsearch(
                         }
                     },
                     "sort": [
-                        {"_score": {"order": "desc"}},
-                        {"규정명.keyword": {"order": "asc"}}
+                        {"_score": {"order": "desc"}}
                     ]
                 }
             )
@@ -322,7 +329,7 @@ async def search_with_elasticsearch(
                 index=INDEX_RULE,
                 from_=offset,
                 size=limit,
-                sort="규정명.keyword:asc",
+                sort=None,
                 debug=False
             )
 
@@ -385,7 +392,7 @@ async def search_with_elasticsearch(
                 index=INDEX_RULE,
                 from_=offset,
                 size=limit,
-                sort="규정명.keyword:asc",
+                sort=None,
                 debug=False
             )
 
@@ -404,27 +411,18 @@ async def search_with_elasticsearch(
         unique_results = {}
         for hit in hits:
             source = hit.get("_source", {})
-            pubno = source.get('규정표기명', '')
             seq = source.get('seq', '0')
 
-            # pubno에서 규정 코드만 추출 (예: "1.1.1. 정확한 환자 확인" → "1.1.1")
-            # name에서 규정명만 추출 (예: "1.1.1. 정확한 환자 확인" → "정확한 환자 확인")
-            # 참고: summary_kbregulation.json의 code 형식과 일치시킴 (trailing dot 없음)
-            pubno_code = pubno
-            regulation_name = source.get('규정명', '')
-
-            if pubno:
-                # 숫자와 점으로 시작하는 부분만 추출
-                match = re.match(r'^([\d.]+)\.?\s*(.*)$', pubno)
-                if match:
-                    pubno_code = match.group(1).rstrip('.')  # trailing dot 제거
-                    # 규정명에서 코드 부분 제거
-                    regulation_name = match.group(2).strip()
+            # pubno를 _id에서 추출 (규정표기명 필드는 잘못된 데이터가 있음)
+            # _id 형식: "6_8" → pubno: "6-8"
+            doc_id = hit.get("_id", "")
+            pubno_code = doc_id.replace("_", "-")
+            regulation_name = re.sub(r'\s+', ' ', source.get('규정명', '')).strip()
 
             result = {
                 'id': seq,
-                'name': regulation_name,  # 규정명만 반환 (코드 제외)
-                'pubno': pubno_code,  # 규정 코드만 반환
+                'name': regulation_name,  # 규정명
+                'pubno': pubno_code,  # 규정 코드 (N-M 형식)
                 'department': source.get('담당부서'),
                 'establishedDate': source.get('제정일'),
                 'executionDate': source.get('최종개정일'),
@@ -435,12 +433,12 @@ async def search_with_elasticsearch(
             }
 
             # 같은 pubno가 있으면 seq가 더 큰 것만 유지
-            if pubno in unique_results:
-                existing_seq = unique_results[pubno]['id']
+            if pubno_code in unique_results:
+                existing_seq = unique_results[pubno_code]['id']
                 if seq > existing_seq:
-                    unique_results[pubno] = result
+                    unique_results[pubno_code] = result
             else:
-                unique_results[pubno] = result
+                unique_results[pubno_code] = result
 
         search_results = list(unique_results.values())
 
@@ -466,12 +464,14 @@ async def search_with_elasticsearch(
                 if pubno not in existing_pubnos and not appendix_info.get('added'):
                     # 규정 정보 조회하여 추가
                     try:
+                        # pubno는 "6-8" 형식, _id는 "6_8" 형식
+                        rule_doc_id = pubno.replace("-", "_")
                         rule_result = client.es.search(
                             index=INDEX_RULE,
                             size=1,
                             body={
                                 "query": {
-                                    "match": {"규정표기명": pubno}
+                                    "ids": {"values": [rule_doc_id]}
                                 }
                             }
                         )
@@ -479,14 +479,7 @@ async def search_with_elasticsearch(
                         if rule_hits:
                             source = rule_hits[0].get("_source", {})
                             seq = source.get('seq', '0')
-                            regulation_name = source.get('규정명', '')
-
-                            # 규정표기명에서 코드 추출
-                            raw_pubno = source.get('규정표기명', '')
-                            match = re.match(r'^([\d.]+)\.?\s*(.*)$', raw_pubno)
-                            if match:
-                                pubno_code = match.group(1).rstrip('.')
-                                regulation_name = match.group(2).strip() or regulation_name
+                            regulation_name = re.sub(r'\s+', ' ', source.get('규정명', '')).strip()
 
                             search_results.append({
                                 'id': seq,

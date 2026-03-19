@@ -13,7 +13,7 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'KB금융체Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: #f5f7fa;
             color: #333;
         }
@@ -427,7 +427,7 @@
             <div class="code-block">
                 <span class="comment"># API 키로 요청하기</span><br>
                 curl -H <span class="string">"Authorization: Bearer kbr_live_abc123..."</span> \<br>
-                &nbsp;&nbsp;https://kbregulationeditor.wizice.com/api/v1/regulations/current
+                &nbsp;&nbsp;https://{{ request.headers.get('host', 'localhost') }}/api/v1/regulations/current
             </div>
 
             <h4 style="margin-top: 15px; color: #555;">Python</h4>
@@ -437,7 +437,7 @@
                 API_KEY = <span class="string">"kbr_live_abc123..."</span><br>
                 headers = {<span class="string">"Authorization"</span>: f<span class="string">"Bearer {API_KEY}"</span>}<br><br>
                 response = requests.get(<br>
-                &nbsp;&nbsp;<span class="string">"https://kbregulationeditor.wizice.com/api/v1/regulations/current"</span>,<br>
+                &nbsp;&nbsp;<span class="string">"https://{{ request.headers.get('host', 'localhost') }}/api/v1/regulations/current"</span>,<br>
                 &nbsp;&nbsp;headers=headers<br>
                 )<br>
                 print(response.json())
@@ -447,7 +447,7 @@
             <div class="code-block">
                 <span class="comment">// fetch API 사용</span><br>
                 const API_KEY = <span class="string">"kbr_live_abc123..."</span>;<br><br>
-                fetch(<span class="string">"https://kbregulationeditor.wizice.com/api/v1/regulations/current"</span>, {<br>
+                fetch(<span class="string">"https://{{ request.headers.get('host', 'localhost') }}/api/v1/regulations/current"</span>, {<br>
                 &nbsp;&nbsp;headers: { <span class="string">"Authorization"</span>: `Bearer ${API_KEY}` }<br>
                 })<br>
                 .then(res => res.json())<br>

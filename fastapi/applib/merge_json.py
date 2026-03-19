@@ -50,33 +50,35 @@ logger.info(f"로그 파일: {log_file}")
 class JSONMerger:
     """PDF와 DOCX에서 추출한 JSON을 병합하는 클래스"""
 
-    def __init__(self, pdf_json_path: str, docx_json_path: str):
+    def __init__(self, pdf_json_path: str = None, docx_json_path: str = None):
         """
         초기화
 
         Args:
-            pdf_json_path: PDF에서 추출한 JSON 파일 경로
+            pdf_json_path: PDF에서 추출한 JSON 파일 경로 (선택)
             docx_json_path: DOCX에서 추출한 JSON 파일 경로
         """
-        self.pdf_json_path = Path(pdf_json_path)
+        self.pdf_json_path = Path(pdf_json_path) if pdf_json_path else None
         self.docx_json_path = Path(docx_json_path)
         self.pdf_data = None
         self.docx_data = None
 
-        logger.info(f"PDF JSON: {self.pdf_json_path}")
+        logger.info(f"PDF JSON: {self.pdf_json_path or 'None (DOCX only mode)'}")
         logger.info(f"DOCX JSON: {self.docx_json_path}")
 
     def load_json_files(self) -> bool:
         """JSON 파일들을 로드"""
         try:
-            # PDF JSON 로드
-            if self.pdf_json_path.exists():
+            # PDF JSON 로드 (선택)
+            if self.pdf_json_path and self.pdf_json_path.exists():
                 with open(self.pdf_json_path, 'r', encoding='utf-8') as f:
                     self.pdf_data = json.load(f)
                 logger.info(f"PDF JSON 로드 완료: {len(self.pdf_data.get('조문내용', []))} 개 조문")
             else:
-                logger.warning(f"PDF JSON 파일이 존재하지 않습니다: {self.pdf_json_path}")
-                return False
+                if self.pdf_json_path:
+                    logger.warning(f"PDF JSON 파일이 존재하지 않습니다: {self.pdf_json_path}")
+                else:
+                    logger.info("PDF JSON 없음 (DOCX only mode)")
 
             # DOCX JSON 로드
             if self.docx_json_path.exists():
@@ -101,10 +103,15 @@ class JSONMerger:
 
     def merge_sections(self) -> List[Dict[str, Any]]:
         """조문 내용을 병합"""
-        merged_sections = []
-
-        pdf_sections = self.pdf_data.get('조문내용', [])
         docx_sections = self.docx_data.get('조문내용', [])
+
+        # PDF 데이터가 없으면 DOCX 섹션을 그대로 반환
+        if not self.pdf_data:
+            logger.info(f"PDF 데이터 없음, DOCX 섹션 {len(docx_sections)}개 그대로 사용")
+            return docx_sections
+
+        merged_sections = []
+        pdf_sections = self.pdf_data.get('조문내용', [])
 
         # PDF 섹션을 seq로 매핑
         pdf_map = {section.get('seq'): section for section in pdf_sections if 'seq' in section}
@@ -135,9 +142,15 @@ class JSONMerger:
 
     def merge_documents_info(self) -> Dict[str, Any]:
         """문서 정보를 병합"""
-        pdf_info = self.pdf_data.get('문서정보', {})
         # 웹 API는 '문서정보', 폴더 실행은 'document_info' 사용
         docx_info = self.docx_data.get('문서정보', self.docx_data.get('document_info', {}))
+
+        # PDF 데이터가 없으면 DOCX 문서정보만 사용
+        if not self.pdf_data:
+            logger.info("PDF 데이터 없음, DOCX 문서정보만 사용")
+            return docx_info.copy()
+
+        pdf_info = self.pdf_data.get('문서정보', {})
 
         # DOCX의 document_info를 우선하고 PDF로 보완
         merged_info = docx_info.copy()
@@ -151,8 +164,8 @@ class JSONMerger:
 
     def merge_regulation(self) -> Dict[str, Any]:
         """규정을 병합하여 최종 결과 생성"""
-        if not self.pdf_data or not self.docx_data:
-            logger.error("데이터가 로드되지 않았습니다")
+        if not self.docx_data:
+            logger.error("DOCX 데이터가 로드되지 않았습니다")
             return None
 
         # 조문 내용 병합
@@ -175,9 +188,9 @@ class JSONMerger:
         # 병합 메타데이터 추가
         result['merge_info'] = {
             'merge_date': datetime.now().isoformat(),
-            'source_pdf': str(self.pdf_json_path),
+            'source_pdf': str(self.pdf_json_path) if self.pdf_json_path else None,
             'source_docx': str(self.docx_json_path),
-            'merge_type': 'auto'
+            'merge_type': 'auto' if self.pdf_data else 'docx_only'
         }
 
         logger.info("규정 병합 완료")

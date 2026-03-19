@@ -56,7 +56,7 @@ const EditWindow = {
     <title>편집 - ${regulation.title}</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; }
+        body { font-family: 'KB금융체Text', sans-serif; background: #f5f5f5; }
         
         .edit-container {
             display: flex;
@@ -72,7 +72,7 @@ const EditWindow = {
         
         .sidebar-header {
             padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #FFBC00 0%, #60584C 100%);
             color: white;
         }
         
@@ -92,8 +92,8 @@ const EditWindow = {
         
         .sidebar-item.active {
             background: #e7f1ff;
-            color: #667eea;
-            border-left: 3px solid #667eea;
+            color: #60584C;
+            border-left: 3px solid #FFBC00;
         }
         
         .main-content {
@@ -175,7 +175,7 @@ const EditWindow = {
         }
         
         .btn-primary {
-            background: #667eea;
+            background: #FFBC00;
             color: white;
         }
         
@@ -254,7 +254,7 @@ const EditWindow = {
         }
         
         .upload-area:hover {
-            border-color: #667eea;
+            border-color: #60584C;
             background: #f8f9fa;
         }
         
@@ -985,7 +985,7 @@ const EditWindow = {
                     <title>\${window.regulationData.title} - 미리보기</title>
                     <style>
                         body { font-family: sans-serif; padding: 20px; }
-                        h1 { color: #667eea; }
+                        h1 { color: #60584C; }
                     </style>
                 </head>
                 <body>
@@ -1396,7 +1396,7 @@ function showUploadOverlay(title) {
                 width: 60px;
                 height: 60px;
                 border: 5px solid #e0e0e0;
-                border-top-color: #667eea;
+                border-top-color: #60584C;
                 border-radius: 50%;
                 animation: spinOverlay 1s linear infinite;
                 margin: 0 auto 24px;
@@ -1424,7 +1424,7 @@ function showUploadOverlay(title) {
             }
             .upload-progress-bar {
                 height: 100%;
-                background: linear-gradient(90deg, #667eea, #764ba2);
+                background: linear-gradient(90deg, #FFBC00, #60584C);
                 border-radius: 10px;
                 transition: width 0.3s ease;
                 width: 0%;
@@ -1432,7 +1432,7 @@ function showUploadOverlay(title) {
             .upload-percent {
                 font-size: 28px;
                 font-weight: 700;
-                color: #667eea;
+                color: #60584C;
             }
         </style>
         <div class="upload-modal">

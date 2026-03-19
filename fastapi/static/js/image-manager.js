@@ -292,7 +292,7 @@ const ImageManager = {
                     <div style="margin-bottom: 10px;">
                         <label style="font-size: 11px; color: #6c757d; display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
                             <span>📐 새 크기 (너비)</span>
-                            <span id="size-label-${articleSeq}-${index}" style="font-weight: 600; color: #667eea;">800px</span>
+                            <span id="size-label-${articleSeq}-${index}" style="font-weight: 600; color: #60584C;">800px</span>
                         </label>
                         <input type="range"
                                id="size-slider-${articleSeq}-${index}"
@@ -302,7 +302,7 @@ const ImageManager = {
                                value="800"
                                step="50"
                                oninput="ImageManager.updateSizeLabel('${articleSeq}', ${index}, this.value)"
-                               style="width: 100%; height: 6px; background: linear-gradient(to right, #667eea 0%, #667eea 33%, #dee2e6 33%, #dee2e6 100%); border-radius: 3px; outline: none; -webkit-appearance: none; cursor: pointer;">
+                               style="width: 100%; height: 6px; background: linear-gradient(to right, #FFBC00 0%, #FFBC00 33%, #dee2e6 33%, #dee2e6 100%); border-radius: 3px; outline: none; -webkit-appearance: none; cursor: pointer;">
                         <p style="font-size: 10px; color: #6c757d; margin-top: 4px;">
                             💡 슬라이더로 원하는 크기 선택 후 "크기 저장" 버튼 클릭
                         </p>
@@ -311,7 +311,7 @@ const ImageManager = {
                     <!-- 버튼 그룹 -->
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 6px;">
                         <button onclick="ImageManager.viewFullSize('${img.file_path}', '${img.file_name}')"
-                                style="padding: 6px; border: 1px solid #667eea; background: white; color: #667eea; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; transition: all 0.2s;">
+                                style="padding: 6px; border: 1px solid #FFBC00; background: white; color: #60584C; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; transition: all 0.2s;">
                             🔍 원본보기
                         </button>
                         <button onclick="ImageManager.saveResizedImage('${articleSeq}', ${index}, '${img.file_name}')"
@@ -356,7 +356,7 @@ const ImageManager = {
                 const min = parseInt(slider.min);
                 const max = parseInt(slider.max);
                 const percentage = ((actualWidth - min) / (max - min)) * 100;
-                slider.style.background = `linear-gradient(to right, #667eea 0%, #667eea ${percentage}%, #dee2e6 ${percentage}%, #dee2e6 100%)`;
+                slider.style.background = `linear-gradient(to right, #FFBC00 0%, #FFBC00 ${percentage}%, #dee2e6 ${percentage}%, #dee2e6 100%)`;
             }
         }
     },
@@ -377,7 +377,7 @@ const ImageManager = {
             const min = parseInt(slider.min);
             const max = parseInt(slider.max);
             const percentage = ((size - min) / (max - min)) * 100;
-            slider.style.background = `linear-gradient(to right, #667eea 0%, #667eea ${percentage}%, #dee2e6 ${percentage}%, #dee2e6 100%)`;
+            slider.style.background = `linear-gradient(to right, #FFBC00 0%, #FFBC00 ${percentage}%, #dee2e6 ${percentage}%, #dee2e6 100%)`;
         }
     },
 
@@ -488,7 +488,7 @@ const ImageManager = {
         dropZone.addEventListener('dragover', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            dropZone.style.borderColor = '#667eea';
+            dropZone.style.borderColor = '#FFBC00';
             dropZone.style.background = '#e7f1ff';
         });
 

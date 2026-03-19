@@ -413,7 +413,7 @@ const SearchEngine = {
                     <title>${ruleInfo.name || '규정 상세보기'}</title>
                     <style>
                         body {
-                            font-family: 'Malgun Gothic', sans-serif;
+                            font-family: 'KB금융체Text', sans-serif;
                             margin: 0;
                             padding: 20px;
                             background: #f5f5f5;
@@ -577,6 +577,48 @@ const SearchEngine = {
         if (percentage >= 80) return '#28a745';
         if (percentage >= 50) return '#ffc107';
         return '#dc3545';
+    },
+
+    // 개별 재색인
+    async reindexByType(type) {
+        const typeMap = {
+            'rules': { label: '규정 본문', endpoint: '/api/search/es/reindex/all-rules' },
+            'articles': { label: '조문', endpoint: '/api/search/es/reindex/all-articles' },
+            'appendices': { label: '별표/서식', endpoint: '/api/search/es/reindex/all-appendices' }
+        };
+
+        const info = typeMap[type];
+        if (!info) return;
+
+        if (!confirm(`${info.label} 재색인을 시작하시겠습니까?`)) return;
+
+        const btn = document.getElementById(`reindex-${type}-btn`);
+        const progressDiv = document.getElementById('reindexProgress');
+        if (btn) { btn.disabled = true; btn.textContent = '재색인 중...'; }
+        if (progressDiv) progressDiv.innerHTML = `<div class="spinner" style="display:inline-block;margin-right:8px;"></div> ${info.label} 재색인 진행 중...`;
+
+        try {
+            const response = await fetch(info.endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include'
+            });
+
+            if (!response.ok) throw new Error(`${info.label} 재색인 실패`);
+
+            const data = await response.json();
+            const msg = data.message || `${info.label} 재색인 완료`;
+            if (progressDiv) progressDiv.innerHTML = `<span style="color:#28a745;">${msg}</span>`;
+            this.showNotification(msg, 'success');
+            await this.loadStatus();
+            await this.loadStats();
+        } catch (error) {
+            console.error('재색인 오류:', error);
+            if (progressDiv) progressDiv.innerHTML = `<span style="color:#dc3545;">오류: ${error.message}</span>`;
+            this.showNotification(`${info.label} 재색인 중 오류가 발생했습니다.`, 'error');
+        } finally {
+            if (btn) { btn.disabled = false; btn.textContent = `${info.label} 재색인`; }
+        }
     },
 
     // 알림 표시

@@ -100,13 +100,13 @@ BORDER_STYLE_MAP = {
 }
 
 FONT_CSS_MAP = {
-    '바탕체': "'Batangche', 'Batang', serif",
-    '바탕': "'Batang', serif",
-    '맑은 고딕': "'Malgun Gothic', sans-serif",
-    '굴림': "'Gulim', sans-serif",
-    '돋움': "'Dotum', sans-serif",
-    '궁서': "'Gungsuh', serif",
-    'HY신명조': "'Batang', serif",
+    '바탕체': "'KB금융체Text', 'Batangche', 'Batang', serif",
+    '바탕': "'KB금융체Text', 'Batang', serif",
+    '맑은 고딕': "'KB금융체Text', 'Malgun Gothic', sans-serif",
+    '굴림': "'KB금융체Text', 'Gulim', sans-serif",
+    '돋움': "'KB금융체Text', 'Dotum', sans-serif",
+    '궁서': "'KB금융체Text', 'Gungsuh', serif",
+    'HY신명조': "'KB금융체Text', 'Batang', serif",
 }
 
 
@@ -583,8 +583,15 @@ class DocxTableRenderer:
     # ── PIL 렌더링 ──────────────────────────────────────
 
     def _find_korean_font(self) -> Optional[str]:
-        """한글 지원 폰트 경로 탐색"""
+        """한글 지원 폰트 경로 탐색 (KB금융체 우선)"""
+        import pathlib
+        home = str(pathlib.Path.home())
         font_paths = [
+            # KB금융체 (최우선)
+            f"{home}/.local/share/fonts/kb-finance/KBfgTextM.ttf",
+            f"{home}/.local/share/fonts/kb-finance/KBfgTextB.ttf",
+            f"{home}/.local/share/fonts/kb-finance/KBfgTextL.ttf",
+            # 기존 fallback
             "/tmp/NotoSansKR.ttf",
             "/usr/share/fonts/truetype/nanum/NanumGothic.ttf",
             "/usr/share/fonts/truetype/nanum/NanumBarunGothic.ttf",
