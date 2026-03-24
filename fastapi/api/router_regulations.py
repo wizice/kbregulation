@@ -68,7 +68,7 @@ async def current_regulations(
             {
                 "request": request,
                 "user": user,
-                "page_title": "세브란스병원 내규 편집기",
+                "page_title": "KB신용정보 내규 편집기",
                 "regulations": regulations,
                 "total_count": len(regulations)
             }
@@ -81,7 +81,7 @@ async def current_regulations(
             {
                 "request": request,
                 "user": user,
-                "page_title": "세브란스병원 내규 편집기",
+                "page_title": "KB신용정보 내규 편집기",
                 "regulations": [],
                 "total_count": 0,
                 "error": str(e)
@@ -159,7 +159,7 @@ async def regulation_history(
         {
             "request": request,
             "user": user,
-            "page_title": "세브란스병원 내규 편집기"
+            "page_title": "KB신용정보 내규 편집기"
         }
     )
 
@@ -317,7 +317,7 @@ async def classification_management(
         {
             "request": request,
             "user": user,
-            "page_title": "세브란스병원 내규 편집기"
+            "page_title": "KB신용정보 내규 편집기"
         }
     )
 
@@ -333,7 +333,7 @@ async def department_management(
         {
             "request": request,
             "user": user,
-            "page_title": "세브란스병원 내규 편집기"
+            "page_title": "KB신용정보 내규 편집기"
         }
     )
 
@@ -349,7 +349,7 @@ async def search_engine_management(
         {
             "request": request,
             "user": user,
-            "page_title": "세브란스병원 내규 편집기"
+            "page_title": "KB신용정보 내규 편집기"
         }
     )
 
@@ -365,7 +365,7 @@ async def service_management(
         {
             "request": request,
             "user": user,
-            "page_title": "세브란스병원 내규 편집기"
+            "page_title": "KB신용정보 내규 편집기"
         }
     )
 

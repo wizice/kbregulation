@@ -8,8 +8,8 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: 'KB금융체Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f0ede8;
     min-height: 100vh;
     padding: 20px;
 }
@@ -26,12 +26,13 @@ body {
 
 /* ===== 헤더 ===== */
 .header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #545045;
     color: white;
     padding: 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-bottom: 3px solid #FFBC00;
 }
 
 .header h1 {
@@ -52,7 +53,7 @@ body {
     height: 40px;
     border-radius: 50%;
     background: white;
-    color: #667eea;
+    color: #60584C;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -80,7 +81,7 @@ body {
 }
 
 .nav-tab.active {
-    color: #667eea;
+    color: #60584C;
     background: white;
 }
 
@@ -91,20 +92,20 @@ body {
     left: 0;
     right: 0;
     height: 2px;
-    background: #667eea;
+    background: #FFBC00;
 }
 
 .nav-tab:hover {
-    background: rgba(102, 126, 234, 0.1);
+    background: rgba(255, 188, 0, 0.1);
 }
 
 /* ===== 검색 바 ===== */
 .search-bar {
-    padding: 20px;
+    padding: 10px 16px;
     background: white;
     border-bottom: 1px solid #e9ecef;
     display: flex;
-    gap: 15px;
+    gap: 8px;
     align-items: center;
     flex-wrap: wrap;
 }
@@ -112,14 +113,14 @@ body {
 .search-input {
     flex: 1;
     min-width: 300px;
-    padding: 10px 15px;
+    padding: 8px 12px;
     border: 1px solid #ddd;
     border-radius: 8px;
     font-size: 14px;
 }
 
 .filter-select {
-    padding: 10px 15px;
+    padding: 8px 12px;
     border: 1px solid #ddd;
     border-radius: 8px;
     font-size: 14px;
@@ -141,13 +142,14 @@ body {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: #FFBC00;
+    color: #545045;
+    font-weight: 600;
 }
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 5px 15px rgba(255, 188, 0, 0.4);
 }
 
 .btn-secondary {
@@ -196,9 +198,9 @@ body {
 }
 
 .btn-sm {
-    font-size: 12px;
-
-    padding: 9px 16px;
+    font-size: 13px;
+    padding: 9px 18px;
+    font-weight: 600;
 }
 
 .full-width {
@@ -312,7 +314,7 @@ body {
 .history-table tr.selected,
 .search-results-table tr.selected {
     background: linear-gradient(90deg, #e7f1ff 0%, #f0f7ff 100%);
-    box-shadow: inset 3px 0 0 #667eea;
+    box-shadow: inset 3px 0 0 #FFBC00;
 }
 
 /* 클릭 가능한 제목 스타일 */
@@ -324,7 +326,7 @@ body {
 }
 
 .regulation-table td a:hover {
-    color: #667eea !important;
+    color: #60584C !important;
     text-decoration: underline !important;
     transform: translateX(2px);
 }
@@ -413,7 +415,7 @@ body {
 }
 
 .modal-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #FFBC00;
     color: white;
     padding: 20px;
     display: flex;
@@ -474,8 +476,8 @@ body {
 .form-textarea:focus,
 .form-select:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: #60584C;
+    box-shadow: 0 0 0 3px rgba(255, 188, 0, 0.1);
 }
 
 .form-textarea {
@@ -511,7 +513,7 @@ body {
 /* ===== 정보 박스 ===== */
 .info-box {
     background: #f8f9fa;
-    border-left: 4px solid #667eea;
+    border-left: 4px solid #FFBC00;
     padding: 15px;
     margin-bottom: 20px;
     border-radius: 4px;
@@ -685,7 +687,7 @@ body {
 .stat-value {
     font-size: 24px;
     font-weight: bold;
-    color: #667eea;
+    color: #60584C;
 }
 
 .stat-label {
@@ -769,7 +771,7 @@ body {
 }
 
 .progress-fill {
-    background: linear-gradient(90deg, #667eea, #764ba2);
+    background: #FFBC00;
     height: 100%;
     transition: width 0.3s;
 }
@@ -808,7 +810,7 @@ body {
     padding: 2px 8px;
     font-size: 11px;
     border: none;
-    background: #667eea;
+    background: #FFBC00;
     color: white;
     border-radius: 3px;
     cursor: pointer;
@@ -821,7 +823,7 @@ body {
     height: 20px;
     border: 3px solid rgba(0,0,0,0.1);
     border-radius: 50%;
-    border-top-color: #667eea;
+    border-top-color: #60584C;
     animation: spin 0.8s linear infinite;
 }
 
@@ -908,40 +910,148 @@ body {
 @media (max-width: 768px) {
     .nav-tabs {
         overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        flex-wrap: nowrap;
     }
-    
+
+    .nav-tabs::-webkit-scrollbar {
+        display: none;
+    }
+
+    .nav-tab {
+        padding: 12px 18px;
+        font-size: 13px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
     .search-bar {
         flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
     }
-    
+
     .search-input {
         min-width: 100%;
     }
-    
+
+    .filter-select {
+        min-width: 100%;
+    }
+
+    .search-bar .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Table horizontal scroll */
+    .content-area {
+        padding: 10px;
+        overflow-x: auto;
+    }
+
+    .regulation-table,
+    .history-table,
+    .search-results-table {
+        min-width: 650px;
+    }
+
+    .regulation-table th,
+    .regulation-table td,
+    .history-table th,
+    .history-table td {
+        padding: 10px 8px;
+        font-size: 13px;
+    }
+
+    .header {
+        padding: 12px;
+    }
+
+    .header h1 {
+        font-size: 18px;
+    }
+
+    body {
+        padding: 10px;
+    }
+
     .form-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .classification-grid,
     .elasticsearch-grid,
     .service-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .modal-content {
         width: 100%;
         height: 100%;
         border-radius: 0;
     }
-    
+
     .open-windows {
         display: none;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .search-stats {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .nav-tab {
+        padding: 10px 12px;
+        font-size: 12px;
+    }
+
+    .header h1 {
+        font-size: 16px;
+        gap: 6px;
+    }
+
+    .user-info {
+        gap: 8px;
+        font-size: 12px;
+    }
+
+    .regulation-table th,
+    .regulation-table td,
+    .history-table th,
+    .history-table td {
+        padding: 8px 5px;
+        font-size: 12px;
+    }
+
+    .btn {
+        padding: 8px 14px;
+        font-size: 13px;
+    }
+
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .stat-value {
+        font-size: 20px;
     }
 }
 
 /* ===== 비교 모달 스타일 ===== */
 .comparison-pane {
-    font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+    font-family: 'KB금융체Text', sans-serif;
     line-height: 1.8;
     color: #333;
 }
@@ -965,7 +1075,7 @@ body {
 
 /* 비교 모달 버튼 스타일 */
 .btn-success {
-    background: linear-gradient(135deg, #667eea 0%, #52d67a 100%);
+    background: linear-gradient(135deg, #FFBC00 0%, #52d67a 100%);
     border: none;
     color: white;
     padding: 8px 16px;
@@ -976,7 +1086,7 @@ body {
 
 .btn-success:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 5px 15px rgba(255, 188, 0, 0.4);
 }
 
 .btn-warning {
@@ -996,11 +1106,11 @@ body {
 
 /* ===== 검색 바 ===== */
 .search-bar {
-    padding: 20px;
+    padding: 10px 16px;
     background: white;
     border-bottom: 1px solid #e9ecef;
     display: flex;
-    gap: 10px;
+    gap: 8px;
     align-items: center;
     flex-wrap: wrap;
 }
@@ -1008,14 +1118,14 @@ body {
 .search-input {
     flex: 1;
     min-width: 200px;
-    padding: 10px 15px;
+    padding: 8px 12px;
     border: 1px solid #ddd;
     border-radius: 8px;
     font-size: 14px;
 }
 
 .filter-select {
-    padding: 10px 12px;
+    padding: 8px 12px;
     border: 1px solid #ddd;
     border-radius: 8px;
     font-size: 14px;
@@ -1120,9 +1230,9 @@ body {
 
 .search-form-group input:focus,
 .search-form-group select:focus {
-    border-color: #667eea;
+    border-color: #60584C;
     outline: none;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    box-shadow: 0 0 0 3px rgba(255, 188, 0, 0.1);
 }
 
 /* 부서관리 탭 */
@@ -1299,7 +1409,7 @@ body {
 }
 
 .service-card-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #FFBC00;
     padding: 20px;
     color: white;
 }
@@ -1344,7 +1454,7 @@ body {
 
 /* 공통 향상된 버튼 스타일 */
 .btn-gradient-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #FFBC00;
     color: white;
     padding: 12px 24px;
     border: none;
@@ -1352,12 +1462,12 @@ body {
     font-weight: 500;
     cursor: pointer;
     transition: all 0.3s;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 4px 15px rgba(255, 188, 0, 0.3);
 }
 
 .btn-gradient-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 6px 20px rgba(255, 188, 0, 0.4);
 }
 
 .btn-gradient-success {
@@ -1397,8 +1507,8 @@ body {
 
 .search-input-modern:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    border-color: #60584C;
+    box-shadow: 0 0 0 4px rgba(255, 188, 0, 0.1);
     transform: translateY(-1px);
 }
 
@@ -1414,13 +1524,13 @@ body {
 }
 
 .select-modern:hover {
-    border-color: #667eea;
+    border-color: #60584C;
 }
 
 .select-modern:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    border-color: #60584C;
+    box-shadow: 0 0 0 4px rgba(255, 188, 0, 0.1);
 }
 
 /* ===== seq별 조문 편집 테이블 ===== */
@@ -1442,7 +1552,7 @@ body {
 
 .edit-info span:first-child {
     font-weight: 600;
-    color: #667eea;
+    color: #60584C;
 }
 
 .article-edit-table {
@@ -1456,7 +1566,7 @@ body {
 }
 
 .article-edit-table thead {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #FFBC00;
     color: white;
 }
 
@@ -1507,7 +1617,7 @@ body {
 
 .number-cell {
     font-size: 13px;
-    color: #667eea;
+    color: #60584C;
     font-weight: 600;
 }
 
@@ -1521,7 +1631,7 @@ body {
     border: 1px solid #e9ecef;
     border-radius: 6px;
     font-size: 14px;
-    font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+    font-family: 'KB금융체Text', sans-serif;
     line-height: 1.6;
     resize: vertical;
     transition: all 0.3s;
@@ -1529,8 +1639,8 @@ body {
 
 .article-content-input:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: #60584C;
+    box-shadow: 0 0 0 3px rgba(255, 188, 0, 0.1);
     background: #fafbff;
 }
 

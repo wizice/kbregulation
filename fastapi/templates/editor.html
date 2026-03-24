@@ -209,16 +209,19 @@
             <button class="nav-tab" onclick="window.location.href='/admin/view-analytics'">
                 조회수 분석
             </button>
+            <button class="nav-tab" onclick="window.location.href='/admin/access-logs'">
+                접근 로그
+            </button>
         </div>
 
         <!-- 검색 바 -->
         <div class="search-bar">
-            <input type="text" class="search-input" placeholder="제목, 내용, 공포번호로 검색..." id="searchInput" onkeyup="if(event.key==='Enter') RuleEditor.searchRegulations()">
-            <select class="filter-select" id="classificationFilter">
+            <input type="text" class="search-input" placeholder="제목, 내용, 공포번호로 검색..." id="searchInput" oninput="RuleEditor.searchRegulations()">
+            <select class="filter-select" id="classificationFilter" onchange="RuleEditor.searchRegulations()">
                 <option value="">모든 분류</option>
                 <!-- 동적으로 생성됨 -->
             </select>
-            <select class="filter-select department-select" id="departmentFilter">
+            <select class="filter-select department-select" id="departmentFilter" onchange="RuleEditor.searchRegulations()">
                 <option value="">모든 부서</option>
                 <!-- 부서 목록이 동적으로 로드됨 -->
             </select>
@@ -236,10 +239,10 @@
                 <option value="6m">최근 6개월</option>
                 <option value="1y">최근 1년</option>
             </select>
-            <button class="btn btn-primary btn-sm" onclick="RuleEditor.searchRegulations()">
+            <button class="btn btn-primary btn-sm" onclick="RuleEditor.searchRegulations()" style="padding: 9px 22px; font-size: 14px; font-weight: 700;">
                 검색
             </button>
-            <button class="btn btn-success btn-sm" onclick="RuleEditor.openNewModal()">
+            <button class="btn btn-success btn-sm" onclick="RuleEditor.openNewModal()" style="padding: 9px 22px; font-size: 14px; font-weight: 700;">
                 제정
             </button>
             <button class="btn btn-warning btn-sm" onclick="RuleEditor.exportSelected()" style="display: none;">
@@ -1128,7 +1131,7 @@
             <div class="modal-header" style="position: relative;">
                 <h2 id="editModalTitle">내규 편집</h2>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <button class="btn btn-danger btn-sm" onclick="RuleEditor.deleteRegulation()" style="font-size: 13px; padding: 6px 14px;">
+                    <button onclick="RuleEditor.deleteRegulation()" style="background: white; border: 1px solid #dc3545; color: #dc3545; cursor: pointer; padding: 6px 14px; font-size: 13px; font-weight: 600; border-radius: 6px; transition: all 0.2s; display: inline-flex; align-items: center; gap: 4px;" onmouseover="this.style.background='#dc3545'; this.style.color='white'" onmouseout="this.style.background='white'; this.style.color='#dc3545'">
                         내규 삭제
                     </button>
                     <button class="modal-close" onclick="RuleEditor.closeEditModal()">✕</button>

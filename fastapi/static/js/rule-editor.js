@@ -478,23 +478,17 @@ const RuleEditor = {
         modalDiv.innerHTML = `
             <div class="modal-content" style="max-width: 800px; width: 85%; height: 80vh;">
                 <div class="modal-header">
-                    <h2>${modalTitle} - ${this.currentRule.wzname || ''}</h2>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <button onclick="RuleEditor.closeModal()" style="background: #f0f0f0; border: 1px solid #ccc; border-radius: 6px; padding: 6px 14px; cursor: pointer; font-size: 13px; font-weight: 600; color: #555; display: inline-flex; align-items: center; gap: 4px; transition: background 0.2s;" onmouseover="this.style.background='#e0e0e0'" onmouseout="this.style.background='#f0f0f0'">&#8592; 목록으로</button>
+                        <h2 style="margin: 0;">${modalTitle} - ${this.currentRule.wzname || ''}</h2>
+                    </div>
                     <div style="display: flex; align-items: center; gap: 10px;">
-                        <!-- 점 3개 메뉴 버튼 -->
-                        <div class="dropdown-menu-wrapper" style="position: relative;">
-                            <button class="menu-dots" onclick="RuleEditor.toggleEditMenu()"
-                                    onmouseover="this.style.background='#ffe0e0'"
-                                    onmouseout="this.style.background='transparent'"
-                                    style="background: transparent; border: none; cursor: pointer; padding: 8px 12px; font-size: 28px; color: #dc3545; border-radius: 6px; transition: all 0.2s; font-weight: bold;">
-                                ⋮
-                            </button>
-                            <div id="editDropdownMenu" class="dropdown-menu" style="display: none; position: absolute; right: 0; top: 100%; background: white; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); min-width: 150px; z-index: 1000; margin-top: 5px;">
-                                <button onclick="RuleEditor.deleteRegulation()"
-                                        style="display: block; width: 100%; padding: 10px 15px; background: none; border: none; text-align: left; cursor: pointer; color: #dc3545; hover: background: #f8f9fa;">
-                                    🗑️ 내규 삭제
-                                </button>
-                            </div>
-                        </div>
+                        <button onclick="RuleEditor.deleteRegulation()"
+                                style="background: white; border: 1px solid #dc3545; color: #dc3545; cursor: pointer; padding: 6px 14px; font-size: 13px; font-weight: 600; border-radius: 6px; transition: all 0.2s; display: inline-flex; align-items: center; gap: 4px;"
+                                onmouseover="this.style.background='#dc3545'; this.style.color='white'"
+                                onmouseout="this.style.background='white'; this.style.color='#dc3545'">
+                            내규 삭제
+                        </button>
                         <button class="modal-close" onclick="RuleEditor.closeModal()">✕</button>
                     </div>
                 </div>
@@ -1109,7 +1103,7 @@ const RuleEditor = {
         const statusDiv = document.getElementById(`${type}Status`);
 
         if (fileNameDiv) {
-            fileNameDiv.innerHTML = `<span style="color: #4CAF50;">✅ ${file.name}</span>`;
+            fileNameDiv.innerHTML = `<span style="color: #4CAF50;">✅ ${file.name}</span> <button onclick="event.preventDefault(); event.stopPropagation(); RuleEditor.clearFileSelect('${type}')" style="background: none; border: none; color: #dc3545; cursor: pointer; font-size: 16px; font-weight: bold; padding: 0 4px; vertical-align: middle;" title="파일 삭제">&times;</button>`;
             fileNameDiv.style.color = '#4CAF50';
         }
 
@@ -1123,6 +1117,34 @@ const RuleEditor = {
             if (processBtn) {
                 processBtn.disabled = false;
                 processBtn.style.opacity = '1';
+            }
+        }
+    },
+
+    // 파일 선택 초기화
+    clearFileSelect(type) {
+        if (this.uploadedFiles) {
+            this.uploadedFiles[type] = null;
+        }
+
+        const fileInput = document.getElementById(type === 'docx' ? 'editDocxFile' : `edit${type.charAt(0).toUpperCase() + type.slice(1)}File`);
+        if (fileInput) fileInput.value = '';
+
+        const fileNameDiv = document.getElementById(`${type}FileName`);
+        if (fileNameDiv) {
+            fileNameDiv.innerHTML = type === 'docx' ? '📄 클릭하여 DOCX 파일을 선택하세요' : '파일을 선택하세요';
+            fileNameDiv.style.color = '#6c757d';
+        }
+
+        const statusDiv = document.getElementById(`${type}Status`);
+        if (statusDiv) statusDiv.innerHTML = '';
+
+        // DOCX 파일이 삭제되면 처리 버튼 비활성화
+        if (type === 'docx') {
+            const processBtn = document.getElementById('processFilesBtn');
+            if (processBtn) {
+                processBtn.disabled = true;
+                processBtn.style.opacity = '0.5';
             }
         }
     },
@@ -1142,10 +1164,10 @@ const RuleEditor = {
         // 파일 저장
         this.uploadedFiles[type] = file;
 
-        // 파일명 표시
+        // 파일명 표시 (X 버튼 포함)
         const fileNameElement = document.getElementById(`${type}FileName`);
         if (fileNameElement) {
-            fileNameElement.textContent = file.name;
+            fileNameElement.innerHTML = `${file.name} <button onclick="event.preventDefault(); event.stopPropagation(); RuleEditor.clearFileSelectOld('${type}')" style="background: none; border: none; color: #dc3545; cursor: pointer; font-size: 16px; font-weight: bold; padding: 0 4px; vertical-align: middle;" title="파일 삭제">&times;</button>`;
         }
 
         // 상태 업데이트
@@ -1161,6 +1183,28 @@ const RuleEditor = {
                 uploadBtn.disabled = false;
             }
         }
+    },
+
+    // 기존 업로드 모달 파일 선택 초기화
+    clearFileSelectOld(type) {
+        if (this.uploadedFiles) {
+            this.uploadedFiles[type] = null;
+        }
+
+        const fileInput = document.getElementById(`${type}File`);
+        if (fileInput) fileInput.value = '';
+
+        const fileNameElement = document.getElementById(`${type}FileName`);
+        if (fileNameElement) {
+            fileNameElement.textContent = '파일을 선택하세요';
+        }
+
+        const statusElement = document.getElementById(`${type}Status`);
+        if (statusElement) statusElement.innerHTML = '';
+
+        // 업로드 버튼 비활성화
+        const uploadBtn = document.getElementById('uploadBtn');
+        if (uploadBtn) uploadBtn.disabled = true;
     },
 
     // 수정 이력파일 선택 처리
@@ -2328,7 +2372,10 @@ const RuleEditor = {
             <div class="modal active" id="fileUploadModal">
                 <div class="modal-content" style="max-width: 600px;">
                     <div class="modal-header">
-                        <h2>내규 ${mode} - 파일 업로드</h2>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <button onclick="RuleEditor.backToNewModal()" style="background: #f0f0f0; border: 1px solid #ccc; border-radius: 6px; padding: 6px 14px; cursor: pointer; font-size: 13px; font-weight: 600; color: #555; display: inline-flex; align-items: center; gap: 4px; transition: background 0.2s;" onmouseover="this.style.background='#e0e0e0'" onmouseout="this.style.background='#f0f0f0'">&larr; 제정</button>
+                            <h2 style="margin: 0;">내규 ${mode} - 파일 업로드</h2>
+                        </div>
                         <button class="modal-close" onclick="RuleEditor.closeModal()">✕</button>
                     </div>
                     <div class="modal-body">
@@ -2374,6 +2421,23 @@ const RuleEditor = {
 
         // 스타일 추가
         this.addModalStyles();
+    },
+
+    // 파일 업로드에서 제정 모달로 돌아가기
+    backToNewModal() {
+        // 파일 업로드 모달 닫기
+        const fileUploadModal = document.getElementById('fileUploadModal');
+        if (fileUploadModal) {
+            fileUploadModal.remove();
+        }
+        this.currentModal = null;
+
+        // 제정 모달 다시 열기
+        const newModal = document.getElementById('newModal');
+        if (newModal) {
+            newModal.style.display = 'flex';
+            newModal.classList.add('active');
+        }
     },
 
     // 기존 파일 업로드 모달용 파일 선택 처리 (주석처리 - 중복 정의 제거)

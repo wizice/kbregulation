@@ -213,9 +213,10 @@ body.font-size-130 i[class*="fa-"] {
 }
 
 body {
-    font-family: 'KB금융체Text', 'NanumSquare', 'Malgun Gothic', sans-serif;
+    font-family: 'KB금융체Text', sans-serif;
     line-height: 1.6;
     color: #333;
+    font-size: 17px;
     /*background-color: #FFFBF0;*/
 }
 /* Font Awesome 아이콘은 원래 폰트 유지 */
@@ -317,30 +318,7 @@ body {
     text-align: center;
 }
 
-/* 첫 번째 탭(검색)은 버튼 스타일 */
-.nav-item:first-child .nav-link {
-    background: #FFBC00;
-    color: #fff;
-    border-radius: 25px;
-    padding: 12px 40px;
-    font-weight: 600;
-    border-bottom: none;
-}
-
-.nav-item:first-child .nav-link:hover {
-    background: #E5A800;
-    color: #fff;
-    border-bottom: none;
-    border-radius: 25px;
-}
-
-.nav-item:first-child .nav-link.active {
-    background: #FFBC00;
-    color: #fff;
-    border-bottom: none;
-    border-radius: 25px;
-}
-
+/* 네비게이션 링크 공통 스타일 */
 .nav-link {
     display: block;
     padding: 12px 30px;
@@ -348,22 +326,37 @@ body {
     text-decoration: none;
     transition: all 0.3s;
     white-space: nowrap;
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 500;
     border-bottom: none;
+    border-radius: 25px;
     cursor: pointer;
 }
 
 .nav-link:hover {
-    color: #FFBC00;
+    background: #FFF3CC;
+    color: #E5A800;
     border-bottom: none;
+    box-shadow: 0 1px 4px rgba(255, 188, 0, 0.15);
 }
 
+/* GNB 활성 상태: 배경색 + 폰트색 모두 변경 */
 .nav-link.active {
-    color: #FFBC00;
-    font-weight: 600;
+    background: #FFBC00;
+    color: #fff;
+    font-weight: 700;
     border-bottom: none;
+    border-radius: 25px;
+    box-shadow: 0 2px 8px rgba(255, 188, 0, 0.3);
 }
+
+.nav-link.active:hover {
+    background: #E5A800;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(255, 188, 0, 0.4);
+}
+
+/* 홈 탭도 active 시 다른 탭과 동일하게 표시 */
 
 
 /* 메인 레이아웃 */
@@ -374,74 +367,115 @@ body {
     display: flex;
     height: calc(100vh - 120px); /* 헤더+네비 높이 제외 */
     max-height: calc(100vh - 120px);
-    gap: 25px;
+    gap: 5px;
     padding-top : 1.5rem;
-    overflow: hidden; /* 전체 레이아웃 스크롤 방지 */
-}
-
-/* 사이드바 */
-.sidebar {
-    width: 350px;
-    background: white;
-    border-right: 1px solid #FFF8E1;
-    box-shadow: 2px 0 10px rgba(33,150,243,0.1);
-    transition: width 0.3s ease, padding 0.3s ease, border 0.3s ease;
-    height: 100%;
-    overflow-y: auto; /* 세로 스크롤 활성화 */
-    overflow-x: hidden;
-}
-.sidebar.collapsed {
-    width: 0;
-    padding: 0;
-    border: none;
     overflow: hidden;
 }
 
-/* 사이드바 토글 버튼 */
-.sidebar-toggle-btn {
-    position: absolute;
-    left: 350px;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 10;
-    width: 24px;
-    height: 48px;
-    background: #FFBC00;
-    border: none;
-    border-radius: 0 6px 6px 0;
-    cursor: pointer;
+/* 사이드바 */
+/* 사이드바 래퍼 = sidebar + 핸들 */
+/* 사이드바 래퍼: sidebar + handle을 flex로 묶음 */
+.sidebar-wrapper {
+    flex-shrink: 0;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-size: 12px;
+    height: 100%;
+    overflow: visible;
+}
+
+/* 사이드바 본체 */
+.sidebar {
+    width: 350px;
+    flex-shrink: 0;
+    background: white;
+    border-right: 1px solid #FFF8E1;
+    box-shadow: 2px 0 10px rgba(33,150,243,0.1);
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* 접힌 상태: 사이드바를 좁은 스트립으로 유지 */
+.sidebar-wrapper.collapsed .sidebar {
+    width: 0;
     padding: 0;
-    transition: left 0.3s ease, background 0.2s;
-    box-shadow: 2px 0 6px rgba(0,0,0,0.15);
+    overflow: hidden;
+    border: none;
+    box-shadow: none;
 }
-.sidebar-toggle-btn:hover {
-    background: #e5a800;
+.sidebar-wrapper.collapsed {
+    min-width: 80px;
+    position: relative;
 }
-.sidebar-toggle-btn i {
-    transition: transform 0.3s ease;
+
+/* 사이드바 토글 핸들 (항상 보이는 세로 손잡이) */
+/* 긴 세로 핸들 바 숨김 - 접기/열기 버튼으로 대체 */
+.sidebar-handle {
+    display: none !important;
 }
-.sidebar.collapsed ~ .sidebar-toggle-btn {
-    left: 0;
+
+/* 사이드바 접기/열기 공통 스타일 (KB CI) */
+.sidebar-toggle-text-btn,
+.sidebar-open-float {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 20px;
+    color: #FFBC00;
+    background: #FFF8E1;
+    border: 1px solid #FFBC00;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    height: 30px;
+    box-sizing: border-box;
 }
-.sidebar.collapsed ~ .sidebar-toggle-btn i {
-    transform: rotate(180deg);
+.sidebar-toggle-text-btn {
+    margin-right: 8px;
 }
-body.layout-mode-1 .sidebar-toggle-btn {
+.sidebar-toggle-text-btn:hover,
+.sidebar-open-float:hover {
+    background: #FFBC00;
+    color: #fff;
+    border-color: #FFBC00;
+    box-shadow: 0 2px 6px rgba(255, 188, 0, 0.3);
+}
+.sidebar-toggle-text-btn i,
+.sidebar-open-float i {
+    font-size: 11px;
+}
+
+/* 접힌 상태에서 열기 플로팅 버튼 */
+.sidebar-open-float {
+    display: none;
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+}
+.sidebar-wrapper.collapsed .sidebar-open-float {
+    display: inline-flex;
+}
+
+body.layout-mode-1 .sidebar-wrapper,
+body.layout-mode-1 .sidebar {
     display: none;
 }
 @media (max-width: 768px) {
-    .sidebar-toggle-btn {
+    .sidebar-handle {
         display: none !important;
     }
 }
 
 .sidebar-header {
     padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 /* 트리 메뉴 */
@@ -450,14 +484,14 @@ body.layout-mode-1 .sidebar-toggle-btn {
 }
 
 .tree-header {
-    padding: 8px 10px;
+    padding: 10px 12px;
     cursor: pointer;
     display: flex;
     justify-content: space-between;
     align-items: center;
     transition: background 0.3s;
     font-weight: 500;
-    font-size: 16px;
+    font-size: 17px;
 }
 
 .tree-header:hover {
@@ -483,7 +517,7 @@ body.layout-mode-1 .sidebar-toggle-btn {
     padding: 6px 22px 6px 25px;
     cursor: pointer;
     transition: background 0.3s;
-    font-size: 14px;
+    font-size: 16px;
     border-bottom: 1px solid #f1f3f4;
     position: relative;
     /* 들여쓰기 기능 */
@@ -523,7 +557,7 @@ body.layout-mode-1 .sidebar-toggle-btn {
     padding: 4px 10px 4px 15px;
     cursor: pointer;
     transition: background 0.3s;
-    font-size: 13px;
+    font-size: 15px;
     border-bottom: 1px solid #e0e0e0;
     color: #666;
     /* 들여쓰기 기능 */
@@ -638,21 +672,24 @@ body.layout-mode-1 .sidebar-toggle-btn {
 }
 .article-title {
     color: #000;
-    font-size: 14px;
+    font-size: 11pt;
+    font-weight: 300;
     /* font-weight: bold 제거 - <b> 태그로 원본 DOCX 굵게 범위만 적용 */
     margin: 15px 0 5px 0;
     padding: 5px 0;
+    line-height: 20pt;
 }
 
 .appendix-item {
     margin: 5px 0;
     padding-left: 20px;
-    font-size:14px;
+    font-size: 11pt;
 }
 
 .article-item {
     margin: 0;
     padding-left: 20px;
+    line-height: 20pt;
 }
 
 .article-sub-item {
@@ -660,7 +697,7 @@ body.layout-mode-1 .sidebar-toggle-btn {
     padding-left: 100px;
     text-indent: -15px;
     color: #555;
-    line-height: 1.6;
+    line-height: 20pt;
 }
 /* 분수 수식 표현 */
 .formula-wrapper {
@@ -785,10 +822,11 @@ body.layout-mode-1 .sidebar-toggle-btn {
 }
 
 .page-title {
-    font-size: 28px;
-    /*font-weight: 700;*/
+    font-size: 18pt;
+    font-weight: 700;
     /*color: #FFBC00;*/
     margin-bottom: 4px;
+    line-height: 20pt;
 }
 
 .page-subtitle {
@@ -1792,7 +1830,7 @@ body.layout-mode-1 .sidebar-toggle-btn {
     /*padding: 12px;*/
     margin-bottom: 12px;
     width: 100%;
-    max-width: 800px;
+    max-width: 900px;
     margin: 0 auto;
 }
 
@@ -1805,12 +1843,12 @@ body.layout-mode-1 .sidebar-toggle-btn {
 }
 
 .search-tab {
-    padding: 8px 22px;
+    padding: 10px 24px;
     background: #f1f1f1;
     border: 1px solid #f1f1f1;
     cursor: pointer;
     transition: all 0.3s;
-    font-size: 15px;
+    font-size: 16px;
     border-radius: 8px;
     white-space: nowrap;
 }
@@ -1837,10 +1875,10 @@ body.layout-mode-1 .sidebar-toggle-btn {
     flex: 1;
 }
 .search-input {
-    padding: 0.7rem 1.5rem;
+    padding: 0.9rem 1.8rem;
     border: 1px solid #dee2e6;
-    border-radius: 1.5rem;
-    font-size: 20px;
+    border-radius: 2rem;
+    font-size: 22px;
     outline: none;
     transition: border-color 0.3s, box-shadow 0.3s;
     width: 100%;
@@ -1853,13 +1891,13 @@ body.layout-mode-1 .sidebar-toggle-btn {
 /* 입력 필드 안의 검색 버튼 */
 .search-btn-inside {
     position: absolute;
-    right: 5px;
+    right: 8px;
     top: 50%;
     transform: translateY(-50%);
     border: none;
     border-radius: 50%;
-    width: 35px;
-    height: 35px;
+    width: 40px;
+    height: 40px;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -1868,7 +1906,28 @@ body.layout-mode-1 .sidebar-toggle-btn {
 }
 
 .search-btn-inside i {
+    font-size: 16px;
+}
+
+/* 검색 초기화 X 버튼 */
+.search-clear-btn {
+    position: absolute;
+    right: 45px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: #999;
     font-size: 14px;
+    padding: 4px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.3s;
+}
+.search-clear-btn:hover {
+    color: #e53935;
 }
 
 .search-btn {
@@ -1890,6 +1949,8 @@ body.layout-mode-1 .sidebar-toggle-btn {
     margin: 0.5rem 0px;
     flex-wrap: wrap;
     border-bottom: none;
+    align-items: center;
+    justify-content: space-between;
 }
 .side-tab {
     padding: 10px 25px;
@@ -2437,8 +2498,8 @@ body.layout-mode-1 .sidebar-toggle-btn {
 
 .regulation-modal-header h3 {
     margin: 0;
-    font-size: 18px;
-    font-weight: 600;
+    font-size: 18pt;
+    font-weight: 700;
 }
 
 .regulation-modal-close {
@@ -2665,19 +2726,23 @@ body.layout-mode-1 .sidebar-toggle-btn {
     }
     */
 
+    .sidebar-wrapper {
+        position: static;
+        width: auto;
+        height: auto;
+    }
+
     .sidebar {
         position: fixed;
-        top: 120px; /* ✅ 헤더 전체 높이로 수정 (80px → 120px) */
+        top: 120px;
         left: 0;
-        width: 280px; /* 모바일에 적절한 너비 */
-        height: calc(100vh - 120px); /* ✅ 헤더 전체 높이 반영 */
-        transform: translateX(-100%); /* 처음에는 숨김 */
+        width: 280px;
+        height: calc(100vh - 120px);
+        transform: translateX(-100%);
         z-index: 150;
-        min-height: calc(100vh - 120px); /* ✅ 헤더 전체 높이 반영 */
-
-        overflow-y: auto; /* 세로 스크롤 허용 */
-        overflow-x: hidden; /* 가로 스크롤 숨김 */
-
+        min-height: calc(100vh - 120px);
+        overflow-y: auto;
+        overflow-x: hidden;
     }
 
     /* 웹킷 기반 브라우저 스크롤바 스타일 */
@@ -2983,6 +3048,7 @@ body.layout-mode-1 .sidebar-toggle-btn {
         display: none !important;
     }
     /* 데스크톱 layout-mode-1: 사이드바 숨김 */
+    body.layout-mode-1 .sidebar-wrapper,
     body.layout-mode-1 .sidebar {
         display: none !important;
     }
@@ -2992,11 +3058,17 @@ body.layout-mode-1 .sidebar-toggle-btn {
     }
 
     /* 데스크톱 layout-mode-2: 기본 레이아웃 (사이드바 보임) */
+    body.layout-mode-2 .sidebar-wrapper {
+        display: flex !important;
+    }
     body.layout-mode-2 .sidebar {
         display: block !important;
     }
 
     /* 데스크톱 layout-mode-3: 사이드바 보임 + 네비 스타일 변경 */
+    body.layout-mode-3 .sidebar-wrapper {
+        display: flex !important;
+    }
     body.layout-mode-3 .sidebar {
         display: block !important;
     }
@@ -3482,8 +3554,8 @@ body.layout-mode-1 .sidebar-toggle-btn {
 }
 
 .chapter-icon {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     border-radius: 12px;
     background: linear-gradient(135deg, #E5A800 0%, #FFCC00 100%);
     display: flex;
@@ -3498,14 +3570,24 @@ body.layout-mode-1 .sidebar-toggle-btn {
     font-size: 20px;
 }
 
+/* 챕터 번호 표시 스타일 */
+.chapter-icon .chapter-number {
+    color: white;
+    font-size: 18px;
+    font-weight: 700;
+    font-family: 'KB금융체Display', sans-serif;
+    line-height: 1;
+}
+
 .chapter-info {
     flex: 1;
 }
 
+.chapter-info h2,
 .chapter-info h3 {
     margin: 0 0 5px 0;
     color: #2c3e50;
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 600;
 }
 
@@ -3580,13 +3662,13 @@ body.layout-mode-1 .sidebar-toggle-btn {
     color: #545045;
     padding: 2px 8px;
     border-radius: 4px;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 600;
     flex-shrink: 0;
 }
 
 .reg-name {
-    font-size: 16px;
+    font-size: 17px;
     color: #495057;
     line-height: 1.4;
     /* 들여쓰기 기능 */  
@@ -4025,12 +4107,55 @@ body.layout-mode-1 .sidebar-toggle-btn {
     color: #fff;
     border-color: #FFBC00;
 }
+.regulation-notice-form input[type="text"] {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    margin-bottom: 8px;
+    box-sizing: border-box;
+}
+.regulation-notice-title {
+    font-weight: 600;
+    font-size: 15px;
+    color: #333;
+    margin-bottom: 4px;
+}
+.regulation-notice-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+    justify-content: flex-end;
+}
+.btn-notice-edit,
+.btn-notice-delete {
+    padding: 3px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    border: 1px solid #ddd;
+    background: #f8f8f8;
+    color: #555;
+}
+.btn-notice-delete {
+    background: #fff0f0;
+    border-color: #ffcccc;
+    color: #dc3545;
+}
+.btn-notice-edit:hover {
+    background: #e8e8e8;
+}
+.btn-notice-delete:hover {
+    background: #ffe0e0;
+}
 
 /* 인쇄 시 불필요한 요소 숨기기 */
 @media print {
     .header,
     .nav,
     .footer,
+    .sidebar-wrapper,
     .sidebar,
     .sidebar-toggle-btn,
     .overlay,
@@ -4762,7 +4887,7 @@ body.layout-mode-1 .sidebar-toggle-btn {
 
 /* 토스트 메시지 스타일 */
 .toast-message {
-    font-family: 'NanumSquare', 'Malgun Gothic', sans-serif !important;
+    font-family: 'KB금융체Text', sans-serif !important;
 }
 
 /* 모바일 반응형 */
@@ -5080,121 +5205,118 @@ body.layout-mode-3 .nav-link.active  {
     border-top-right-radius: 0.5rem;
 }
 
-/* =================== 내규 상세보기 글꼴 크기 조절 =================== */
+/* =================== 내규 상세보기 글꼴 크기 조절 (KB 폰트 가이드 기준) =================== */
 
-/* 1. 기본 컨테이너에 글꼴 크기 적용 */
-.regulation-detail.font-size-xs,
-.regulation-detail.font-size-xs *:not(.regulation-meta-table):not(.regulation-meta-table *):not(.mobile-meta-cards):not(.mobile-meta-cards *):not(.page-actions):not(.page-actions *):not(.regulation-actions *) {
-    font-size: 0.9em !important;
-}
-
-.regulation-detail.font-size-sm,
-.regulation-detail.font-size-sm *:not(.regulation-meta-table):not(.regulation-meta-table *):not(.mobile-meta-cards):not(.mobile-meta-cards *):not(.page-actions):not(.page-actions *):not(.regulation-actions *) {
-    font-size: 0.95em !important;
-}
-
-.regulation-detail.font-size-md,
-.regulation-detail.font-size-md *:not(.regulation-meta-table):not(.regulation-meta-table *):not(.mobile-meta-cards):not(.mobile-meta-cards *):not(.page-actions):not(.page-actions *):not(.regulation-actions *) {
-    font-size: 1.0em !important;
-}
-
-.regulation-detail.font-size-lg,
-.regulation-detail.font-size-lg *:not(.regulation-meta-table):not(.regulation-meta-table *):not(.mobile-meta-cards):not(.mobile-meta-cards *):not(.page-actions):not(.page-actions *):not(.regulation-actions *) {
-    font-size: 1.05em !important;
-}
-
-.regulation-detail.font-size-xl,
-.regulation-detail.font-size-xl *:not(.regulation-meta-table):not(.regulation-meta-table *):not(.mobile-meta-cards):not(.mobile-meta-cards *):not(.page-actions):not(.page-actions *):not(.regulation-actions *) {
-    font-size: 1.1em !important;
-}
-
-.regulation-detail.font-size-xxl,
-.regulation-detail.font-size-xxl *:not(.regulation-meta-table):not(.regulation-meta-table *):not(.mobile-meta-cards):not(.mobile-meta-cards *):not(.page-actions):not(.page-actions *):not(.regulation-actions *) {
-    font-size: 1.15em !important;
-}
-
-/* 2. 더 간단한 방법 - CSS 변수 사용 */
+/* 1. CSS 변수 기반 크기 조절 — 기본 11pt (가이드 본문 크기) */
 .regulation-detail {
-    --content-font-size: 1em; /* 기본값 */
+    --reg-base-size: 11pt;
 }
 
-.regulation-detail.font-size-xs { --content-font-size: 0.9em; }
-.regulation-detail.font-size-sm { --content-font-size: 0.95em; }
-.regulation-detail.font-size-md { --content-font-size: 1.0em; }
-.regulation-detail.font-size-lg { --content-font-size: 1.05em; }
-.regulation-detail.font-size-xl { --content-font-size: 1.1em; }
-.regulation-detail.font-size-xxl { --content-font-size: 1.15em; }
+.regulation-detail.font-size-xs { --reg-base-size: 10pt; }
+.regulation-detail.font-size-sm { --reg-base-size: 10.5pt; }
+.regulation-detail.font-size-md { --reg-base-size: 11pt; }
+.regulation-detail.font-size-lg { --reg-base-size: 11.5pt; }
+.regulation-detail.font-size-xl { --reg-base-size: 12pt; }
+.regulation-detail.font-size-xxl { --reg-base-size: 12.5pt; }
+
+/* 내규 본문 컨테이너 — Light(300) 기본 */
+.regulation-articles,
+.content-body,
+#modalRegulationBody,
+#mobileRegulationBody {
+    font-family: 'KB금융체Text', sans-serif;
+    font-weight: 300;
+    font-size: var(--reg-base-size, 11pt);
+    line-height: 20pt;
+    color: #000;
+}
 
 /* 내규 내용 영역에 CSS 변수 적용 */
 .regulation-content,
 .regulation-content *:not(.regulation-meta-table *):not(.mobile-meta-cards *):not(.page-actions *):not(.chapter-title):not(.section-title) {
-    font-size: var(--content-font-size) !important;
+    font-size: var(--reg-base-size, 11pt) !important;
+    font-weight: 300;
+    line-height: 20pt;
 }
 
+/* 제N장 부제 — 13pt Bold 가운데정렬 (가이드) */
 .chapter-title {
-    font-size: calc(var(--content-font-size) * 1.5) !important;
-    font-weight: bold;
+    font-size: calc(var(--reg-base-size, 11pt) * 1.18) !important;
+    font-weight: 700;
     color: #000;
     text-align: center;
     margin-top: 30px;
     margin-bottom: 20px;
     padding-bottom: 10px;
+    line-height: 20pt;
 }
 
+/* 제N절 — 13pt Bold 가운데정렬 (가이드) */
 .section-title {
-    font-size: calc(var(--content-font-size) * 1.15) !important;
-    font-weight: bold;
+    font-size: calc(var(--reg-base-size, 11pt) * 1.18) !important;
+    font-weight: 700;
     color: #000;
     text-align: center;
     margin-top: 25px;
     margin-bottom: 15px;
+    line-height: 20pt;
 }
 
+/* 제N조 (Level 1) — 11pt, Light 기본 (<b> 태그로 Bold 적용) */
 .article-title {
-    font-size: calc(var(--content-font-size) * 1.2) !important;
-    /* font-weight: bold 제거 - <b> 태그로 원본 DOCX 굵게 범위만 적용 */
+    font-size: var(--reg-base-size, 11pt) !important;
+    font-weight: 300;
     color: #000;
     margin: 15px 0 5px 0;
     padding: 5px 0;
+    line-height: 20pt;
 }
 
+/* Level 2+ 항목 — 11pt Light */
 .article-item {
-    font-size: var(--content-font-size) !important;
-    line-height: 1.6;
+    font-size: var(--reg-base-size, 11pt) !important;
+    font-weight: 300;
+    line-height: 20pt;
 }
 
 .article-sub-item {
-    font-size: var(--content-font-size) !important;
-    line-height: 1.6;
+    font-size: var(--reg-base-size, 11pt) !important;
+    font-weight: 300;
+    line-height: 20pt;
 }
 
+/* 부칙 — 11pt Bold (가이드) */
 .appendix-section,
 .appendix-section * {
-    font-size: var(--content-font-size) !important;
+    font-size: var(--reg-base-size, 11pt) !important;
+    line-height: 20pt;
 }
 
 .appendix-section h3,
 .appendix-section h5 {
-    font-size: calc(var(--content-font-size) * 1.1) !important;
+    font-size: calc(var(--reg-base-size, 11pt) * 1.1) !important;
+    font-weight: 700;
 }
 
-/* 3. 새창 페이지용 (#regulationContent) */
+/* 2. 새창 페이지용 (#regulationContent) */
 #regulationContent {
-    --content-font-size: 1em; /* 기본값 */
+    --reg-base-size: 11pt;
 }
 
-#regulationContent.font-size-xs { --content-font-size: 0.9em; }
-#regulationContent.font-size-sm { --content-font-size: 0.95em; }
-#regulationContent.font-size-md { --content-font-size: 1.0em; }
-#regulationContent.font-size-lg { --content-font-size: 1.05em; }
-#regulationContent.font-size-xl { --content-font-size: 1.1em; }
-#regulationContent.font-size-xxl { --content-font-size: 1.15em; }
+#regulationContent.font-size-xs { --reg-base-size: 10pt; }
+#regulationContent.font-size-sm { --reg-base-size: 10.5pt; }
+#regulationContent.font-size-md { --reg-base-size: 11pt; }
+#regulationContent.font-size-lg { --reg-base-size: 11.5pt; }
+#regulationContent.font-size-xl { --reg-base-size: 12pt; }
+#regulationContent.font-size-xxl { --reg-base-size: 12.5pt; }
 
 #regulationContent *:not(.regulation-meta-table *):not(.mobile-meta-cards *):not(.page-actions *) {
-    font-size: var(--content-font-size) !important;
+    font-size: var(--reg-base-size, 11pt) !important;
+    font-weight: 300;
+    line-height: 20pt;
 }
 
-/* 4. 예외 처리 - 크기가 변하지 않아야 할 요소들 */
+/* 3. 예외 처리 - 크기가 변하지 않아야 할 요소들 */
 .regulation-meta-table,
 .regulation-meta-table *,
 .mobile-meta-cards,
@@ -5205,7 +5327,9 @@ body.layout-mode-3 .nav-link.active  {
 .regulation-actions *,
 .action-btn,
 .action-btn * {
-    font-size: inherit !important; /* 원래 크기 유지 */
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    line-height: inherit !important;
 }
 
 /* 모바일 메타 카드 고정 크기 */
@@ -5222,10 +5346,10 @@ body.layout-mode-3 .nav-link.active  {
     font-size: 14px !important;
 }
 
-/* 5. Font Awesome 아이콘 크기 고정 */
-.fas, .far, .fab, .fa, 
+/* 4. Font Awesome 아이콘 크기 고정 */
+.fas, .far, .fab, .fa,
 i[class*="fa-"] {
-    font-size: inherit !important; /* 부모 요소 크기 따라감 */
+    font-size: inherit !important;
 }
 
 .page-actions .fas,
@@ -5233,16 +5357,24 @@ i[class*="fa-"] {
 .page-actions .fab,
 .page-actions .fa,
 .page-actions i[class*="fa-"] {
-    font-size: 14px !important; /* 액션 버튼의 아이콘은 고정 */
+    font-size: 14px !important;
+}
+
+/* 5. <b> 태그로 감싼 요소는 Bold(700) 적용 (가이드: 조문번호 등) */
+.regulation-articles b,
+.regulation-content b,
+#regulationContent b {
+    font-weight: 700 !important;
 }
 
 /* 6. 인쇄 시에도 글꼴 크기 유지 */
 @media print {
     .regulation-detail,
     .regulation-detail *:not(.regulation-meta-table *):not(.mobile-meta-cards *) {
-        font-size: var(--content-font-size) !important;
+        font-size: var(--reg-base-size, 11pt) !important;
+        line-height: 20pt;
     }
-    
+
     .page-actions {
         display: none !important;
     }
@@ -5269,15 +5401,23 @@ i[class*="fa-"] {
 .revision-search {
     position: relative;
     flex: 1;
-    max-width: 400px;
+    max-width: 60%;
+    min-width: 300px;
 }
 
 .revision-search input {
     width: 100%;
-    padding: 8px 35px 8px 12px;
-    border: 1px solid #FFF8E1;
-    border-radius: 6px;
-    font-size: 14px;
+    padding: 12px 40px 12px 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.revision-search input:focus {
+    outline: none;
+    border-color: #FFBC00;
+    box-shadow: 0 0 0 3px rgba(255, 188, 0, 0.15);
 }
 
 .revision-search i {
@@ -5445,7 +5585,7 @@ i[class*="fa-"] {
     padding: 4px 8px;
     border-radius: 4px;
     font-weight: 600;
-    font-size: 15px;
+    font-size: 16px;
     min-width: 60px;
     text-align: center;
 }
@@ -5455,7 +5595,7 @@ i[class*="fa-"] {
 }
 
 .revision-regulation-name {
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 500;
     color: #333;
     margin-bottom: 8px;
@@ -5466,7 +5606,7 @@ i[class*="fa-"] {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
-    font-size: 12px;
+    font-size: 13px;
     color: #666;
 }
 
@@ -5490,6 +5630,7 @@ i[class*="fa-"] {
     
     .revision-search {
         max-width: none;
+        min-width: unset;
     }
     
     .revision-regulation-item {
@@ -6859,7 +7000,7 @@ i[class*="fa-"] {
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
-    font-family: 'Malgun Gothic', sans-serif;
+    font-family: 'KB금융체Text', sans-serif;
     line-height: 1.4;
     text-align: center;
 }
@@ -6963,7 +7104,7 @@ i[class*="fa-"] {
 
 .info-tabs-container {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 20px;
     max-width: 100%;
     margin: 0;
@@ -7165,22 +7306,27 @@ i[class*="fa-"] {
     font-size: 12px;
 }
 
-/* 반응형 */
-@media (max-width: 992px) {
+/* 반응형 - 정보탭 영역 */
+@media (max-width: 1200px) {
     .info-tabs-container {
         grid-template-columns: 1fr 1fr;
         gap: 15px;
     }
 
     .info-tabs-section {
-        padding: 25px 20px 40px;
+        padding: 15px 15px 30px;
+    }
+
+    .info-tab {
+        font-size: 14px;
+        padding: 12px 15px;
     }
 }
 
 @media (max-width: 768px) {
     .info-tabs-container {
         grid-template-columns: 1fr;
-        gap: 20px;
+        gap: 15px;
     }
 
     .search-section-center {
@@ -7197,16 +7343,145 @@ i[class*="fa-"] {
     }
 
     .info-tabs-section {
-        padding: 20px 15px 30px;
+        padding: 15px 10px 20px;
+    }
+
+    .info-tab {
+        font-size: 13px;
+        padding: 10px 12px;
     }
 
     .info-table-header,
     .info-table-row {
-        padding: 12px 15px;
+        padding: 10px 12px;
     }
 
     .info-table-header .col-date,
     .info-table-row .col-date {
-        width: 90px;
+        width: 80px;
+        font-size: 12px;
+    }
+
+    .info-table-header .col-type,
+    .info-table-row .col-type {
+        width: 50px;
+    }
+
+    .info-table-row .col-name,
+    .info-table-row .col-title {
+        font-size: 13px;
+    }
+
+    .info-table-body {
+        min-height: 200px;
+        max-height: 250px;
+    }
+
+    .badge-type {
+        font-size: 11px;
+        padding: 3px 6px;
+        min-width: 34px;
+    }
+
+    .info-panel-more a {
+        font-size: 12px;
+        padding: 6px 18px;
+    }
+}
+
+/* ===== Mobile 480px breakpoint ===== */
+@media (max-width: 480px) {
+    /* Header: shrink logo text */
+    .logo {
+        font-size: 14px;
+        gap: 5px;
+    }
+
+    .logo-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 13px;
+    }
+
+    .header-container {
+        height: 55px;
+        max-width: 100%;
+        padding: 0 8px;
+    }
+
+    .header-utils {
+        gap: 5px;
+    }
+
+    /* GNB: horizontal scroll, smaller tabs */
+    .nav-container {
+        max-width: 100%;
+        padding: 6px 8px;
+        gap: 6px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        flex-wrap: nowrap;
+        scrollbar-width: none;
+    }
+
+    .nav-container::-webkit-scrollbar {
+        display: none;
+    }
+
+    .nav-link {
+        font-size: 13px;
+        padding: 7px 12px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .nav-item {
+        width: auto;
+    }
+
+    /* Search input */
+    .search-input {
+        font-size: 16px;
+        padding: 0.6rem 1rem;
+    }
+
+    .search-btn-inside {
+        width: 34px;
+        height: 34px;
+    }
+
+    /* Category cards */
+    .category-card-header {
+        padding: 14px;
+    }
+
+    .category-icon-large {
+        width: 44px;
+        height: 44px;
+        font-size: 18px;
+        margin-bottom: 10px;
+    }
+
+    .category-card-title {
+        font-size: 15px;
+    }
+
+    .category-card-body {
+        padding: 14px;
+    }
+
+    .category-card-footer {
+        padding: 10px 14px;
+    }
+
+    /* Adjust body padding for smaller fixed header */
+    body {
+        padding-top: 105px;
+    }
+
+    .sidebar {
+        top: 105px;
+        height: calc(100vh - 105px);
+        min-height: calc(100vh - 105px);
     }
 }

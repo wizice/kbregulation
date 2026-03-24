@@ -160,23 +160,7 @@
                             + 부서 추가
                         </button>
                     </div>
-                    <!-- 부서 검색 영역 추가 -->
-                    <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
-                        <div style="display: flex; gap: 10px; align-items: center;">
-                            <input type="text"
-                                   id="departmentSearchInput"
-                                   class="form-input"
-                                   placeholder="부서명, 상위부서로 검색..."
-                                   style="flex: 1;"
-                                   onkeyup="if(event.key === 'Enter') DepartmentManager.searchDepartments()">
-                            <button class="btn btn-primary btn-sm" onclick="DepartmentManager.searchDepartments()">
-                                🔍 검색
-                            </button>
-                            <button class="btn btn-secondary btn-sm" onclick="DepartmentManager.clearSearch()">
-                                초기화
-                            </button>
-                        </div>
-                    </div>
+                    <!-- 부서 검색 삭제 (부서 수 적어서 불필요) -->
                     <div id="departmentStats" style="margin-bottom: 20px; display: flex; gap: 20px; font-size: 14px;">
                         <!-- 통계 정보가 여기에 표시됩니다 -->
                     </div>
@@ -189,9 +173,6 @@
                                     </th>
                                     <th class="sortable" onclick="DepartmentManager.sortBy('name')">
                                         부서명 <span class="sort-indicator" data-column="name"></span>
-                                    </th>
-                                    <th class="sortable" onclick="DepartmentManager.sortBy('parent')">
-                                        상위부서 <span class="sort-indicator" data-column="parent"></span>
                                     </th>
                                     <th class="sortable" onclick="DepartmentManager.sortBy('count')">
                                         내규 수 <span class="sort-indicator" data-column="count"></span>

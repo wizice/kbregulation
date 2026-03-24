@@ -22,6 +22,12 @@ let activeSearchType = 'all';
 // 레이아웃 설정 관련 전역 변수
 let currentLayoutMode = 2; // 기본값: 표준 모드
 
+// 사이드바 표시/숨김 헬퍼
+function setSidebarDisplay(value) {
+    const el = document.getElementById('sidebarWrapper') || document.getElementById('sidebar');
+    if (el) el.style.display = value;
+}
+
 
 // 개정이력 관련 전역 변수
 let allRevisionData = []; // 전체 개정이력 데이터
@@ -47,7 +53,7 @@ let currentUsagePage = 1; // 현재 페이지
 let usagePerPage = 10; // 페이지당 사용방법 수
 
 // 헬퍼 함수: 중첩된 hospitalRegulations 구조에서 챕터 데이터 찾기
-// JSON 구조: { "KB규정": { "1. 정관·이사회": { title, regulations }, ... } }
+// JSON 구조: { "KB규정": { "1편 정관·이사회": { title, regulations }, ... } }
 function getChapterData(chapter) {
     // hospitalRegulations의 모든 카테고리를 순회하여 chapter 찾기
     for (const category of Object.values(hospitalRegulations)) {
@@ -56,6 +62,25 @@ function getChapterData(chapter) {
         }
     }
     return undefined;
+}
+
+// 헬퍼 함수: pubno(예: "6-8")로 규정 찾기 (2중 중첩 구조 순회)
+function findRegulationByPubno(pubno) {
+    if (!pubno || !hospitalRegulations) return null;
+    const targetCode = pubno.replace(/\.$/, '');
+    for (const category of Object.values(hospitalRegulations)) {
+        if (!category || typeof category !== 'object') continue;
+        for (const [chapterKey, chapterData] of Object.entries(category)) {
+            if (!chapterData || !Array.isArray(chapterData.regulations)) continue;
+            const foundReg = chapterData.regulations.find(reg =>
+                reg.code === targetCode || reg.code === pubno
+            );
+            if (foundReg) {
+                return { regulation: foundReg, chapterKey, chapterTitle: chapterData.title || '' };
+            }
+        }
+    }
+    return null;
 }
 
 // FAQ 관련 전역 변수
@@ -192,6 +217,10 @@ async function loadRegulationDetail(fileName) {
             throw new Error(`규정 파일을 불러올 수 없습니다: ${fileName}`);
         }
         const data = await response.json();
+        // docx2json 파싱 결과(sections) → 사용자화면 키(조문내용)로 매핑
+        if (!data.조문내용 && data.sections) {
+            data.조문내용 = data.sections;
+        }
         console.log('Loaded data:', data);
         console.log('조문내용 count:', data.조문내용 ? data.조문내용.length : 0);
         return data;
@@ -218,6 +247,9 @@ function initializeApplication() {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM 로드 완료 - 검색 기능 초기화');
 
+    // 홈 탭 active 스타일 제거 (초기 로드 시 yellow 배경 방지)
+    updateNavigation('홈');
+
     // localStorage 초기화 시도 (Android 대응)
     initializeLocalStorage();
 
@@ -232,8 +264,8 @@ document.addEventListener('DOMContentLoaded', function() {
     updateFavoritesList();
     updateRecentRegulationsList();
 
-    // 데스크톱 사이드바 접힘 상태 복원
-    restoreDesktopSidebarState();
+    // 사이드바 접기/펼치기 핸들 동적 삽입 + 상태 복원
+    initSidebarToggle();
 
     // 검색 폼 이벤트 리스너 (기존 onsubmit 대신 addEventListener 사용)
     const searchForm = document.querySelector('.search-form');
@@ -351,10 +383,13 @@ function mapSearchTypeToAPI(localType) {
 function performLocalSearchByType(searchTerm, searchType) {
     let results = [];
 
-    Object.keys(hospitalRegulations).forEach(chapter => {
-        const chapterData = getChapterData(chapter);
+    // 2중 중첩 구조 순회: { "KB규정": { "1편 ...": { regulations: [...] }, ... } }
+    for (const category of Object.values(hospitalRegulations)) {
+        if (!category || typeof category !== 'object') continue;
+        Object.keys(category).forEach(chapter => {
+            const chapterData = category[chapter];
 
-        if (!Array.isArray(chapterData.regulations)) return;
+            if (!chapterData || !Array.isArray(chapterData.regulations)) return;
 
         chapterData.regulations.forEach(regulation => {
             if (!regulation || !regulation.name) return;
@@ -418,7 +453,8 @@ function performLocalSearchByType(searchTerm, searchType) {
                 });
             }
         });
-    });
+        });
+    }
 
     return results;
 }
@@ -469,13 +505,12 @@ async function performIntegratedAPISearch(searchTerm) {
                     const appendixName = result.wzappendixname || '';
                     const metaContent = `부록 ${appendixNo}. ${appendixName}`;
 
-                    // 규정 코드 추출
-                    const codeMatch = pubno.match(/^[\d.]+/);
-                    const code = codeMatch ? codeMatch[0].replace(/\.$/, '') : pubno;
+                    // 규정 코드 추출 (KB 형식: "6-8" 하이픈 기반)
+                    const code = pubno.replace(/\.$/, '');
 
-                    // 장 추정
-                    const chapterNum = code.split('.')[0];
-                    const finalChapter = `${chapterNum}장`;
+                    // 편 추정
+                    const chapterNum = code.split('-')[0];
+                    const finalChapter = `${chapterNum}편`;
 
                     combinedResults.push({
                         regulation: {
@@ -504,43 +539,20 @@ async function performIntegratedAPISearch(searchTerm) {
                 let foundRegulation = null;
 
                 if (result.pubno && hospitalRegulations) {
-                    const chapterNum = result.pubno.split('.')[0];
-                    const estimatedChapter = `${chapterNum}장`;
-
-                    if (hospitalRegulations[estimatedChapter]) {
-                        const chapterData = hospitalRegulations[estimatedChapter];
-                        const foundReg = chapterData.regulations.find(reg =>
-                            reg.code === result.pubno || reg.code === result.pubno.replace(/\.$/, '')
-                        );
-
-                        if (foundReg) {
-                            foundRegulation = foundReg;
-                            chapterKey = estimatedChapter;
-                            chapterTitle = chapterData.title || '';
-                        }
-                    }
-
-                    if (!foundRegulation) {
-                        for (const [key, chapterData] of Object.entries(hospitalRegulations)) {
-                            const foundReg = chapterData.regulations.find(reg =>
-                                reg.code === result.pubno || reg.code === result.pubno.replace(/\.$/, '')
-                            );
-                            if (foundReg) {
-                                foundRegulation = foundReg;
-                                chapterKey = key;
-                                chapterTitle = chapterData.title || '';
-                                break;
-                            }
-                        }
+                    const found = findRegulationByPubno(result.pubno);
+                    if (found) {
+                        foundRegulation = found.regulation;
+                        chapterKey = found.chapterKey;
+                        chapterTitle = found.chapterTitle;
                     }
                 }
 
-                // 규정 코드 추출 (예: "2.1.1.2. 규정명" → "2.1.1.2")
+                // 규정 코드 추출 (예: "6-8" → "6-8")
                 const extractRegulationCode = (pubno) => {
                     if (!pubno) return 'N/A';
-                    // 숫자와 점으로 시작하는 부분만 추출
-                    const match = pubno.match(/^[\d.]+/);
-                    return match ? match[0].replace(/\.$/, '') : pubno;
+                    // KB 형식: 숫자와 하이픈으로 구성 (예: "6-8", "11-16")
+                    const match = pubno.match(/^[\d\-]+/);
+                    return match ? match[0].replace(/[\-.]$/, '') : pubno;
                 };
 
                 const regulationData = foundRegulation || {
@@ -554,11 +566,11 @@ async function performIntegratedAPISearch(searchTerm) {
                     }
                 };
 
-                // chapter가 없으면 pubno에서 추정 (예: "3.2.4.1" → "3장")
+                // chapter가 없으면 pubno에서 추정 (예: "6-8" → "6편 ...")
                 let finalChapter = chapterKey;
                 if (!finalChapter && result.pubno) {
-                    const chapterNum = result.pubno.split('.')[0];
-                    finalChapter = `${chapterNum}장`;
+                    const chapterNum = result.pubno.split('-')[0];
+                    finalChapter = `${chapterNum}편`;
                 }
 
                 combinedResults.push({
@@ -566,7 +578,15 @@ async function performIntegratedAPISearch(searchTerm) {
                     chapter: finalChapter || '',
                     chapterTitle: chapterTitle || result.name || '',
                     matchType: type,
-                    matchContent: result.matchedContent || result.snippet || ''
+                    matchContent: result.matchedContent || result.snippet
+                        || (result.matching_articles && result.matching_articles.length > 0
+                            ? result.matching_articles.slice(0, 3).map(a => {
+                                const text = (a.display_text || a.article_content || '').replace(/<[^>]*>/g, '');
+                                return text;
+                            }).join(' | ')
+                            : ''),
+                    matchingAppendix: result.matching_appendix || [],
+                    matchingArticleCount: result.matching_article_count || 0
                 });
             });
         });
@@ -633,6 +653,9 @@ async function performAPISearch(searchTerm, searchType) {
         const searchResultsSection = document.getElementById('searchResultsSection');
         const resultsBody = document.getElementById('resultsBody');
 
+        // 정보 탭 숨기고 검색 결과 표시
+        const infoTabsSection = document.querySelector('.info-tabs-section');
+        if (infoTabsSection) infoTabsSection.style.display = 'none';
         searchResultsSection.style.display = 'block';
         resultsBody.innerHTML = '<div class="search-loading"><i class="fas fa-spinner fa-spin"></i> 검색 중...</div>';
 
@@ -759,46 +782,20 @@ async function performAPISearch(searchTerm, searchType) {
             let foundRegulation = null;
 
             if (result.pubno && hospitalRegulations) {
-                // pubno의 첫 번째 숫자로 장 추정 (예: "3.2.4.1" → "3장")
-                const chapterNum = result.pubno.split('.')[0];
-                const estimatedChapter = `${chapterNum}장`;
-
-                // hospitalRegulations에서 해당 장의 regulations를 검색
-                if (hospitalRegulations[estimatedChapter]) {
-                    const chapterData = hospitalRegulations[estimatedChapter];
-                    const foundReg = chapterData.regulations.find(reg =>
-                        reg.code === result.pubno || reg.code === result.pubno.replace(/\.$/, '')
-                    );
-
-                    if (foundReg) {
-                        foundRegulation = foundReg;
-                        chapterKey = estimatedChapter;
-                        chapterTitle = chapterData.title || '';
-                    }
-                }
-
-                // 못 찾았으면 전체 검색
-                if (!foundRegulation) {
-                    for (const [key, chapterData] of Object.entries(hospitalRegulations)) {
-                        const foundReg = chapterData.regulations.find(reg =>
-                            reg.code === result.pubno || reg.code === result.pubno.replace(/\.$/, '')
-                        );
-                        if (foundReg) {
-                            foundRegulation = foundReg;
-                            chapterKey = key;
-                            chapterTitle = chapterData.title || '';
-                            break;
-                        }
-                    }
+                const found = findRegulationByPubno(result.pubno);
+                if (found) {
+                    foundRegulation = found.regulation;
+                    chapterKey = found.chapterKey;
+                    chapterTitle = found.chapterTitle;
                 }
             }
 
-            // 규정 코드 추출 (예: "2.1.1.2. 규정명" → "2.1.1.2")
+            // 규정 코드 추출 (예: "6-8" → "6-8")
             const extractRegulationCode = (pubno) => {
                 if (!pubno) return 'N/A';
-                // 숫자와 점으로 시작하는 부분만 추출
-                const match = pubno.match(/^[\d.]+/);
-                return match ? match[0].replace(/\.$/, '') : pubno;
+                // KB 형식: 숫자와 하이픈으로 구성 (예: "6-8", "11-16")
+                const match = pubno.match(/^[\d\-]+/);
+                return match ? match[0].replace(/[\-.]$/, '') : pubno;
             };
 
             // foundRegulation이 있으면 그것을 사용, 없으면 API 데이터로 생성
@@ -813,20 +810,28 @@ async function performAPISearch(searchTerm, searchType) {
                 }
             };
 
-            // chapter가 없으면 pubno에서 추정 (예: "3.2.4.1" → "3장")
+            // chapter가 없으면 pubno에서 추정 (예: "6-8" → "6편 ...")
             let finalChapter = chapterKey;
             if (!finalChapter && result.pubno) {
-                const chapterNum = result.pubno.split('.')[0];
-                finalChapter = `${chapterNum}장`;
+                const chapterNum = result.pubno.split('-')[0];
+                finalChapter = `${chapterNum}편`;
             }
 
             return {
                 regulation: regulationData,
-                chapter: finalChapter || '',  // 장 키 (예: "3장")
+                chapter: finalChapter || '',
                 chapterTitle: chapterTitle || result.name || '',  // 장 제목 (예: "환자진료")
                 matchType: mapMatchType(result.matchType),
-                matchContent: result.matchedContent || result.snippet || '',  // 매칭된 본문 내용
-                matchingAppendix: result.matching_appendix || []  // 부록 내용 매칭 정보
+                matchContent: result.matchedContent || result.snippet
+                    || (result.matching_articles && result.matching_articles.length > 0
+                        ? result.matching_articles.slice(0, 3).map(a => {
+                            // HTML 태그 제거 후 텍스트만 추출
+                            const text = (a.display_text || a.article_content || '').replace(/<[^>]*>/g, '');
+                            return text;
+                        }).join(' | ')
+                        : ''),
+                matchingAppendix: result.matching_appendix || [],  // 부록 내용 매칭 정보
+                matchingArticleCount: result.matching_article_count || 0
             };
         });
 
@@ -847,6 +852,32 @@ async function performAPISearch(searchTerm, searchType) {
             </div>
         `;
     }
+}
+
+// 검색 결과 초기화
+function clearSearchResults() {
+    // 검색어 초기화
+    const searchInput = document.getElementById('mainSearchInput');
+    if (searchInput) searchInput.value = '';
+
+    // 검색 상태 초기화
+    currentSearchTerm = '';
+    currentSearchResults = [];
+
+    // 검색 결과 영역 숨기기
+    const searchResultsSection = document.getElementById('searchResultsSection');
+    if (searchResultsSection) searchResultsSection.style.display = 'none';
+
+    // 정보 탭 섹션 복원
+    const infoTabsSection = document.querySelector('.info-tabs-section');
+    if (infoTabsSection) infoTabsSection.style.display = '';
+
+    // X 버튼 숨기기
+    const clearBtn = document.getElementById('searchClearBtn');
+    if (clearBtn) clearBtn.style.display = 'none';
+
+    // 검색어 입력란 포커스
+    if (searchInput) searchInput.focus();
 }
 
 // 메인 검색 함수
@@ -874,6 +905,10 @@ async function performSearch(event) {
 
     currentSearchTerm = searchTerm;
 
+    // X 버튼 표시
+    const clearBtn = document.getElementById('searchClearBtn');
+    if (clearBtn) clearBtn.style.display = 'flex';
+
     // API 검색을 사용할 타입 확인
     // API 사용: 본문 검색, 통합 검색, 부록 검색
     // 로컬: 제목, 부서 검색
@@ -899,16 +934,17 @@ async function performSearchByType(searchTerm, searchType) {
 
     let results = [];
     
-    // hospitalRegulations 데이터에서 검색
-    Object.keys(hospitalRegulations).forEach(chapter => {
-        const chapterData = getChapterData(chapter);
-        
+    // hospitalRegulations 데이터에서 검색 (2중 중첩 구조)
+    for (const category of Object.values(hospitalRegulations)) {
+        if (!category || typeof category !== 'object') continue;
+        Object.keys(category).forEach(chapter => {
+        const chapterData = category[chapter];
+
         // ✅ regulations 배열 확인
-        if (!Array.isArray(chapterData.regulations)) {
-            console.warn(`검색 중 오류: Chapter ${chapter}의 regulations가 배열이 아닙니다`);
+        if (!chapterData || !Array.isArray(chapterData.regulations)) {
             return;
         }
-        
+
         chapterData.regulations.forEach(regulation => {
             // ✅ regulation 객체 확인
             if (!regulation || !regulation.name) {
@@ -1043,8 +1079,9 @@ async function performSearchByType(searchTerm, searchType) {
                 });
             }
         });
-    });
-    
+        });
+    }
+
     currentSearchResults = results;
     displaySearchResults(results, searchTerm, searchType);
 
@@ -1054,7 +1091,9 @@ async function performSearchByType(searchTerm, searchType) {
 function displaySearchResults(results, searchTerm, searchType) {
     const searchResultsSection = document.getElementById('searchResultsSection');
     const resultsBody = document.getElementById('resultsBody');
-    // 검색 결과 섹션 표시
+    // 정보 탭 숨기고 검색 결과 섹션 표시
+    const infoTabsSection = document.querySelector('.info-tabs-section');
+    if (infoTabsSection) infoTabsSection.style.display = 'none';
     searchResultsSection.style.display = 'block';
     // 검색 타입에 따른 추가 정보
     const searchTypeText = getSearchTypeText(searchType);
@@ -1109,9 +1148,9 @@ function displayIntegratedResultsByMatchType(results, container) {
         const codeA = a.regulation.code;
         const codeB = b.regulation.code;
 
-        // 코드를 점(.)으로 분리하여 숫자 배열로 변환
-        const partsA = codeA.split('.').map(Number);
-        const partsB = codeB.split('.').map(Number);
+        // 코드를 하이픈(-)으로 분리하여 숫자 배열로 변환 (KB 형식: "6-8")
+        const partsA = codeA.split('-').map(Number);
+        const partsB = codeB.split('-').map(Number);
 
         // 각 부분을 순서대로 비교
         for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
@@ -1250,9 +1289,9 @@ function displaySimpleResults(results, container) {
         const codeA = a.regulation.code;
         const codeB = b.regulation.code;
 
-        // 코드를 점(.)으로 분리하여 숫자 배열로 변환
-        const partsA = codeA.split('.').map(Number);
-        const partsB = codeB.split('.').map(Number);
+        // 코드를 하이픈(-)으로 분리하여 숫자 배열로 변환 (KB 형식: "6-8")
+        const partsA = codeA.split('-').map(Number);
+        const partsB = codeB.split('-').map(Number);
 
         // 각 부분을 순서대로 비교
         for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
@@ -1490,8 +1529,49 @@ async function generateRegulationContent(regulation, chapter, chapterTitle) {
             const fontStyle = docFont ? ` style="font-family: '${docFont}', sans-serif;"` : '';
             contentHtml += `<div class="regulation-articles"${fontStyle}>`;
             let previousLevel = 0; // 이전 레벨 추적
+            let inByulpyoSection = false; // 별표/별첨/서식 섹션 내부 추적
             articles.forEach((article, index) => {
                 if (!article) return;
+
+                // 별표/별첨/서식 섹션 헤더 감지
+                const plainContent = (article.내용 || '').replace(/<[^>]+>/g, '').trim();
+                const isByulpyoHeader = !article.번호 && /^『(별표|별첨|서식)\s*제?\s*\d+\s*호/.test(plainContent);
+
+                // 별표 헤더가 나오면 별표 섹션 시작
+                if (isByulpyoHeader) {
+                    inByulpyoSection = true;
+
+                    // 별표 번호와 유형 추출
+                    const headerMatch = plainContent.match(/^『(별표|별첨|서식)\s*제?\s*(\d+)\s*호/);
+                    if (headerMatch) {
+                        const byulpyoType = headerMatch[1];
+                        const byulpyoNum = parseInt(headerMatch[2]);
+                        const typeName = `${byulpyoType} 제${byulpyoNum}호`;
+                        const escapedName = typeName.replace(/'/g, "\\'");
+
+                        // 별표 제목 추출 (『별표 제N호』 뒤의 텍스트)
+                        const titleMatch = plainContent.match(/『[^』]+』\s*(.*)/);
+                        const title = titleMatch ? titleMatch[1].trim() : '';
+
+                        contentHtml += `<div style="color: #1976d2; font-weight: 600; margin: 20px 0 5px 0; cursor: pointer; text-decoration: underline;"
+                                         onclick="openByulpyoPdf('${regulation.code}', ${byulpyoNum}, '${escapedName}', event)">
+                                         『${typeName}』 ${title} <span style="font-size: 0.85em; color: #666; font-weight: normal;">(PDF 보기)</span>
+                                       </div>`;
+                    }
+                    previousLevel = article.레벨;
+                    return;
+                }
+
+                // 별표 섹션 내부의 하위 항목은 건너뛰기 (다음 별표 헤더 또는 새로운 '제N조' 가 나올 때까지)
+                if (inByulpyoSection) {
+                    // 새로운 별표 헤더가 아니고, 일반 조문(제N조)도 아니면 건너뛰기
+                    const hasArticleNo = article.번호 && /^제\d+조/.test(article.번호);
+                    if (!isByulpyoHeader && !hasArticleNo) {
+                        return; // 별표 테이블 데이터 건너뛰기
+                    }
+                    // 새로운 조문이 시작되면 별표 섹션 종료
+                    inByulpyoSection = false;
+                }
 
                 // 레벨 0인 항목: "제X장" 패턴이면 가운데 정렬로 표시, 아니면 건너뜀
                 if (article.레벨 === 0) {
@@ -1503,7 +1583,7 @@ async function generateRegulationContent(regulation, chapter, chapterTitle) {
                 }
 
                 // 제N절 패턴: 별도 section-title 스타일 적용
-                if (article.레벨 === 1 && !article.번호 && /^제\d+절/.test((article.내용 || '').replace(/<[^>]+>/g, '').trim())) {
+                if (article.레벨 === 1 && !article.번호 && /^제\d+절/.test(plainContent)) {
                     contentHtml += `<div class="section-title">${article.내용}</div>`;
                     previousLevel = article.레벨;
                     return;
@@ -1532,7 +1612,7 @@ async function generateRegulationContent(regulation, chapter, chapterTitle) {
 
                 switch(article.레벨) {
                     case 1: // 제1조, 제2조 등 - <b> 태그로 원본 bold 범위 적용
-                        style = 'color: #000; font-size: 14px; margin: 15px 0 5px 0;';
+                        style = 'color: #000; margin: 15px 0 5px 0;';
                         paddingLeft = 0;
                         break;
                     case 2: // ①, ② 등 - 원본: Normal, 11pt, 검정
@@ -1576,34 +1656,30 @@ async function generateRegulationContent(regulation, chapter, chapterTitle) {
                     displayText = article.번호 ? `${article.번호} ${article.내용}` : article.내용;
                 }
 
-                // 별표 참조를 클릭 가능한 링크로 변환 (별표 섹션 자체는 제외)
-                const isByulpyo1 = !article.번호 && (article.내용 || '').replace(/<[^>]+>/g, '').trim().startsWith('『별표');
-                displayText = linkifyByulpyo(displayText, articles, isByulpyo1);
+                // 별표 참조를 클릭 가능한 링크로 변환
+                displayText = linkifyByulpyo(displayText, articles, false, regulation.code);
 
                 // 검색어가 있으면 하이라이트 적용
                 if (currentSearchTerm && currentSearchTerm.trim() !== '') {
                     displayText = highlightText(displayText, currentSearchTerm);
                 }
 
-                // 별표 섹션이면 data 속성 추가 (스크롤 타겟)
-                const byulpyoAttrs = getByulpyoDataAttrs(article.내용);
-
                 if (article.레벨 === 2) {
-                    contentHtml += `<div ${byulpyoAttrs} style="${style} ${alignmentStyle} padding-left: 35px; text-indent: -15px;">${displayText}</div>`;
+                    contentHtml += `<div style="${style} ${alignmentStyle} padding-left: 35px; text-indent: -15px;">${displayText}</div>`;
                 } else if (article.레벨 === 3) {
-                    contentHtml += `<div ${byulpyoAttrs} style="${style} ${alignmentStyle} padding-left: 60px; text-indent: -20px;">${displayText}</div>`;
+                    contentHtml += `<div style="${style} ${alignmentStyle} padding-left: 60px; text-indent: -20px;">${displayText}</div>`;
                 } else if (article.레벨 === 4) {
-                    contentHtml += `<div ${byulpyoAttrs} style="${style} ${alignmentStyle} padding-left: 80px; text-indent: -20px;">${displayText}</div>`;
+                    contentHtml += `<div style="${style} ${alignmentStyle} padding-left: 80px; text-indent: -20px;">${displayText}</div>`;
                 } else if (article.레벨 === 5) {
-                    contentHtml += `<div ${byulpyoAttrs} style="${style} ${alignmentStyle} padding-left: 105px; text-indent: -20px;">${displayText}</div>`;
+                    contentHtml += `<div style="${style} ${alignmentStyle} padding-left: 105px; text-indent: -20px;">${displayText}</div>`;
                 } else if (article.레벨 === 6) {
-                    contentHtml += `<div ${byulpyoAttrs} style="${style} ${alignmentStyle} padding-left: 125px; text-indent: -20px;">${displayText}</div>`;
+                    contentHtml += `<div style="${style} ${alignmentStyle} padding-left: 125px; text-indent: -20px;">${displayText}</div>`;
                 } else if (article.레벨 === 7) {
-                    contentHtml += `<div ${byulpyoAttrs} style="${style} ${alignmentStyle} padding-left: 140px; text-indent: -20px;">${displayText}</div>`;
+                    contentHtml += `<div style="${style} ${alignmentStyle} padding-left: 140px; text-indent: -20px;">${displayText}</div>`;
                 } else if (article.레벨 === 8) {
-                    contentHtml += `<div ${byulpyoAttrs} style="${style} ${alignmentStyle} padding-left: 160px; text-indent: -20px;">${displayText}</div>`;
+                    contentHtml += `<div style="${style} ${alignmentStyle} padding-left: 160px; text-indent: -20px;">${displayText}</div>`;
                 } else {
-                    contentHtml += `<div ${byulpyoAttrs} style="${style} ${alignmentStyle} padding-left: ${paddingLeft}px;">${displayText}</div>`;
+                    contentHtml += `<div style="${style} ${alignmentStyle} padding-left: ${paddingLeft}px;">${displayText}</div>`;
                 }
 
                 // 관련 이미지가 있으면 표시
@@ -1623,7 +1699,7 @@ async function generateRegulationContent(regulation, chapter, chapterTitle) {
         } else {
             console.warn('No articles found for regulation:', regulation.code);
             contentHtml = `
-                <div style="color: #000; font-size: 14px; font-weight: bold; margin: 20px 0 10px 0;">내규 내용</div>
+                <div style="color: #000; font-weight: bold; margin: 20px 0 10px 0;">내규 내용</div>
                 <div style="margin: 10px 0; padding-left: 20px;">이 내규의 상세 내용을 불러오는 중 오류가 발생했습니다.</div>
             `;
         }
@@ -1642,7 +1718,7 @@ async function generateRegulationContent(regulation, chapter, chapterTitle) {
 
                 // article.title 존재 여부 확인
                 if (article.title) {
-                    contentHtml += `<div style="color: #000; font-size: 14px; font-weight: bold; margin: 20px 0 10px 0; padding: 10px 0;">${article.title}</div>`;
+                    contentHtml += `<div style="color: #000; font-weight: bold; margin: 20px 0 10px 0; padding: 10px 0;">${article.title}</div>`;
                 }
 
                 // article.content 존재 여부 확인
@@ -1680,7 +1756,7 @@ async function generateRegulationContent(regulation, chapter, chapterTitle) {
             // articles가 없거나 비어있는 경우 기본 메시지
             console.warn('No articles found for regulation:', regulation.code);
             contentHtml = `
-                <div style="color: #000; font-size: 14px; font-weight: bold; margin: 20px 0 10px 0;">내규 내용</div>
+                <div style="color: #000; font-weight: bold; margin: 20px 0 10px 0;">내규 내용</div>
                 <div style="margin: 10px 0; padding-left: 20px;">이 내규의 상세 내용은 관련 부서에서 별도로 관리됩니다.</div>
             `;
         }
@@ -1688,9 +1764,9 @@ async function generateRegulationContent(regulation, chapter, chapterTitle) {
         // detailData도 없고 기존 detail.articles도 없는 경우
         console.log('No regulation content found, showing default message');
         contentHtml = `
-            <div style="color: #000; font-size: 14px; font-weight: bold; margin: 20px 0 10px 0;">내규 내용</div>
+            <div style="color: #000; font-weight: bold; margin: 20px 0 10px 0;">내규 내용</div>
             <div style="margin: 10px 0; padding-left: 20px;">내규 상세 정보를 불러오는 중입니다...</div>
-            <div style="margin: 10px 0; padding-left: 20px; color: #666; font-size: 14px;">
+            <div style="margin: 10px 0; padding-left: 20px; color: #666;">
                 만약 내용이 계속 표시되지 않는다면 담당 부서에 문의하시기 바랍니다.
             </div>
         `;
@@ -1835,7 +1911,7 @@ async function generateRegulationContent(regulation, chapter, chapterTitle) {
                     </button>
                 </div>
                 ${modalMetaHTML}
-                <div style="line-height: 1.8; font-size: 14px;">
+                <div>
                     ${contentHtml}
                 </div>
             </div>
@@ -1846,7 +1922,7 @@ async function generateRegulationContent(regulation, chapter, chapterTitle) {
             <div style="margin: 10px 0; padding-left: 20px;">내규데이터 업로드 중.</div>
         `;
     }
-    
+
     return `
         <div style="background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
             <div style="border-bottom: 1px solid #e0e0e0; padding-bottom: 15px; margin-bottom: 20px;">
@@ -1862,7 +1938,7 @@ async function generateRegulationContent(regulation, chapter, chapterTitle) {
                     `}
                 </div>
             </div>
-            <div style="line-height: 1.8; font-size: 14px;">
+            <div>
                 ${contentHtml}
             </div>
         </div>
@@ -2301,7 +2377,7 @@ async function showRegulationDetail(regulation, chapter) {
     }
 
     // 페이지 상태 설정 - 이 순서가 중요!
-    document.getElementById('sidebar').style.display = 'block';
+    setSidebarDisplay('');
     document.getElementById('mainPageContent').style.display = 'none';
     document.getElementById('contentBody').style.display = 'block';
     document.getElementById('main-content-header').style.display = 'block';
@@ -2519,9 +2595,40 @@ async function showRegulationDetail(regulation, chapter) {
                 let previousArticle = null;
                 let inAppendixSection = false; // 부록 섹션 여부를 추적
                 let appendixCounter = 0; // 부록 인덱스 카운터
+                let inByulpyoSectionV2 = false; // 별표/별첨/서식 섹션 내부 추적
 
                 detailData.조문내용.forEach((article, index) => {
                     if (!article) return;
+
+                    // 별표/별첨/서식 섹션 헤더 감지
+                    const plainContentV2 = (article.내용 || '').replace(/<[^>]+>/g, '').trim();
+                    const isByulpyoHeaderV2 = !article.번호 && /^『(별표|별첨|서식)\s*제?\s*\d+\s*호/.test(plainContentV2);
+
+                    // 별표 헤더가 나오면 PDF 링크로 렌더링하고 이후 내용 건너뛰기
+                    if (isByulpyoHeaderV2) {
+                        inByulpyoSectionV2 = true;
+                        const hm = plainContentV2.match(/^『(별표|별첨|서식)\s*제?\s*(\d+)\s*호/);
+                        if (hm) {
+                            const bType = hm[1], bNum = parseInt(hm[2]);
+                            const tName = `${bType} 제${bNum}호`;
+                            const tm = plainContentV2.match(/『[^』]+』\s*(.*)/);
+                            const bTitle = tm ? tm[1].trim() : '';
+                            contentParts.push(`<div style="color: #1976d2; font-weight: 600; margin: 20px 0 5px 0; cursor: pointer; text-decoration: underline;"
+                                             onclick="openByulpyoPdf('${regulation.code}', ${bNum}, '${tName.replace(/'/g, "\\'")}', event)">
+                                             『${tName}』 ${bTitle} <span style="font-size: 0.85em; color: #666; font-weight: normal;">(PDF 보기)</span>
+                                           </div>`);
+                        }
+                        previousArticle = article;
+                        return;
+                    }
+
+                    // 별표 섹션 내부의 하위 항목은 건너뛰기
+                    if (inByulpyoSectionV2) {
+                        if (!(article.번호 && /^제\d+조/.test(article.번호))) {
+                            return;
+                        }
+                        inByulpyoSectionV2 = false;
+                    }
 
                     // 레벨 0인 항목: "제X장" 패턴이면 가운데 정렬로 표시, 아니면 건너뜀
                     if (article.레벨 === 0) {
@@ -2534,7 +2641,7 @@ async function showRegulationDetail(regulation, chapter) {
                     }
 
                     // 제N절 패턴: 별도 section-title 스타일 적용
-                    if (article.레벨 === 1 && !article.번호 && /^제\d+절/.test((article.내용 || '').replace(/<[^>]+>/g, '').trim())) {
+                    if (article.레벨 === 1 && !article.번호 && /^제\d+절/.test(plainContentV2)) {
                         contentParts.push(`<div class="section-title">${article.내용}</div>`);
                         previousArticle = article;
                         return;
@@ -2554,7 +2661,7 @@ async function showRegulationDetail(regulation, chapter) {
                     if (previousArticle && previousArticle.번호 === '제5조' &&
                         article.번호 === '제1조' && article.내용 && article.내용.includes('내규의 제정')) {
                         // 제개정 이력 제목 추가
-                        contentParts.push(`<div style="font-weight: 600; color: #2786dd; text-align:center; font-size:20px!important;padding-left: 0px;margin-top:30px;margin-bottom:20px;">내규의 제·개정 이력</div>`);
+                        contentParts.push(`<div style="font-weight: 600; color: #2786dd; text-align:center; padding-left: 0px;margin-top:30px;margin-bottom:20px;">내규의 제·개정 이력</div>`);
                     }
 
                     // 레벨에 따른 클래스 설정
@@ -2614,12 +2721,8 @@ async function showRegulationDetail(regulation, chapter) {
                         displayText = article.번호 ? `${article.번호} ${article.내용}` : article.내용;
                     }
 
-                    // 별표 참조를 클릭 가능한 링크로 변환 (별표 섹션 자체는 제외)
-                    const isByulpyo = !article.번호 && (article.내용 || '').replace(/<[^>]+>/g, '').trim().startsWith('『별표');
-                    displayText = linkifyByulpyo(displayText, detailData.조문내용, isByulpyo);
-
-                    // 별표 섹션이면 data 속성 추가 (스크롤 타겟)
-                    const byulpyoAttrs = getByulpyoDataAttrs(article.내용);
+                    // 별표 참조를 클릭 가능한 링크로 변환
+                    displayText = linkifyByulpyo(displayText, detailData.조문내용, false, regulation.code);
 
                     // 부록 섹션 내의 레벨 2 항목인지 확인
                     let isAppendixItem = false;
@@ -2632,7 +2735,7 @@ async function showRegulationDetail(regulation, chapter) {
                     if (isAppendixItem) {
                         // 부록 텍스트에서 부록 제목 추출
                         const appendixTitle = article.내용.replace(/^\d+\.\s*/, '');
-                        contentParts.push(`<div ${byulpyoAttrs} class="${className} appendix-link"
+                        contentParts.push(`<div class="${className} appendix-link"
                                            style="padding-left: ${paddingLeft}px; cursor: pointer; color: #1976d2; text-decoration: underline;"
                                            onclick="openAppendixPdf('${regulation.code}', ${appendixCounter}, '${appendixTitle.replace(/'/g, "\\'")}')">
                                            ${displayText}
@@ -2641,28 +2744,28 @@ async function showRegulationDetail(regulation, chapter) {
                     } else {
                         if (className === 'article-sub-item') {
                             if (article.레벨 === 3) {
-                                contentParts.push(`<div ${byulpyoAttrs} class="${className}" style="padding-left: 60px; text-indent: -20px;">${displayText}</div>`);
+                                contentParts.push(`<div class="${className}" style="padding-left: 60px; text-indent: -20px;">${displayText}</div>`);
                             } else if (article.레벨 === 4) {
-                                contentParts.push(`<div ${byulpyoAttrs} class="${className}" style="padding-left: 80px; text-indent: -20px;">${displayText}</div>`);
+                                contentParts.push(`<div class="${className}" style="padding-left: 80px; text-indent: -20px;">${displayText}</div>`);
                             } else if (article.레벨 === 5) {
-                                contentParts.push(`<div ${byulpyoAttrs} class="${className}" style="padding-left: 105px; text-indent: -20px;">${displayText}</div>`);
+                                contentParts.push(`<div class="${className}" style="padding-left: 105px; text-indent: -20px;">${displayText}</div>`);
                             } else if (article.레벨 === 6) {
-                                contentParts.push(`<div ${byulpyoAttrs} class="${className}" style="padding-left: 125px; text-indent: -20px;">${displayText}</div>`);
+                                contentParts.push(`<div class="${className}" style="padding-left: 125px; text-indent: -20px;">${displayText}</div>`);
                             } else if (article.레벨 === 7) {
-                                contentParts.push(`<div ${byulpyoAttrs} class="${className}" style="padding-left: 140px; text-indent: -20px;">${displayText}</div>`);
+                                contentParts.push(`<div class="${className}" style="padding-left: 140px; text-indent: -20px;">${displayText}</div>`);
                             } else if (article.레벨 === 8) {
-                                contentParts.push(`<div ${byulpyoAttrs} class="${className}" style="padding-left: 160px; text-indent: -20px;">${displayText}</div>`);
+                                contentParts.push(`<div class="${className}" style="padding-left: 160px; text-indent: -20px;">${displayText}</div>`);
                             } else {
-                                contentParts.push(`<div ${byulpyoAttrs} class="${className}" style="padding-left: ${paddingLeft}px;">${displayText}</div>`);
+                                contentParts.push(`<div class="${className}" style="padding-left: ${paddingLeft}px;">${displayText}</div>`);
                             }
                         } else {
                             if (className === 'article-item' && article.레벨 === 2) {
-                                contentParts.push(`<div ${byulpyoAttrs} class="${className}" style="padding-left: 35px; text-indent: -15px; ${additionalStyle}">${displayText}</div>`);
+                                contentParts.push(`<div class="${className}" style="padding-left: 35px; text-indent: -15px; ${additionalStyle}">${displayText}</div>`);
                             } else if (isHistorySection) {
                                 // 내규의 제·개정 이력은 특별한 스타일 적용
-                                contentParts.push(`<div ${byulpyoAttrs} class="${className}" style="padding-left: 0px; text-align: center; font-size: 15px; padding-bottom: 8px; font-weight: bold; color: #000; ${additionalStyle}">${displayText}</div>`);
+                                contentParts.push(`<div class="${className}" style="padding-left: 0px; text-align: center; padding-bottom: 8px; font-weight: bold; color: #000; ${additionalStyle}">${displayText}</div>`);
                             } else {
-                                contentParts.push(`<div ${byulpyoAttrs} class="${className}" style="padding-left: ${paddingLeft}px; ${additionalStyle}">${displayText}</div>`);
+                                contentParts.push(`<div class="${className}" style="padding-left: ${paddingLeft}px; ${additionalStyle}">${displayText}</div>`);
                             }
                         }
                     }
@@ -2842,7 +2945,7 @@ async function showRegulationDetailWithoutSidebarUpdate(regulation, chapter) {
     }
 
     // 페이지 상태 설정
-    document.getElementById('sidebar').style.display = 'block';
+    setSidebarDisplay('');
     document.getElementById('mainPageContent').style.display = 'none';
     document.getElementById('contentBody').style.display = 'block';
     document.getElementById('main-content-header').style.display = 'block';
@@ -3145,9 +3248,40 @@ async function showRegulationDetailWithoutSidebarUpdate(regulation, chapter) {
                 let previousArticle = null;
                 let inAppendixSection = false; // 부록 섹션 여부를 추적
                 let appendixCounter = 0; // 부록 인덱스 카운터
+                let inByulpyoSectionV2 = false; // 별표/별첨/서식 섹션 내부 추적
 
                 detailData.조문내용.forEach((article, index) => {
                     if (!article) return;
+
+                    // 별표/별첨/서식 섹션 헤더 감지
+                    const plainContentV2 = (article.내용 || '').replace(/<[^>]+>/g, '').trim();
+                    const isByulpyoHeaderV2 = !article.번호 && /^『(별표|별첨|서식)\s*제?\s*\d+\s*호/.test(plainContentV2);
+
+                    // 별표 헤더가 나오면 PDF 링크로 렌더링하고 이후 내용 건너뛰기
+                    if (isByulpyoHeaderV2) {
+                        inByulpyoSectionV2 = true;
+                        const hm = plainContentV2.match(/^『(별표|별첨|서식)\s*제?\s*(\d+)\s*호/);
+                        if (hm) {
+                            const bType = hm[1], bNum = parseInt(hm[2]);
+                            const tName = `${bType} 제${bNum}호`;
+                            const tm = plainContentV2.match(/『[^』]+』\s*(.*)/);
+                            const bTitle = tm ? tm[1].trim() : '';
+                            contentParts.push(`<div style="color: #1976d2; font-weight: 600; margin: 20px 0 5px 0; cursor: pointer; text-decoration: underline;"
+                                             onclick="openByulpyoPdf('${regulation.code}', ${bNum}, '${tName.replace(/'/g, "\\'")}', event)">
+                                             『${tName}』 ${bTitle} <span style="font-size: 0.85em; color: #666; font-weight: normal;">(PDF 보기)</span>
+                                           </div>`);
+                        }
+                        previousArticle = article;
+                        return;
+                    }
+
+                    // 별표 섹션 내부의 하위 항목은 건너뛰기
+                    if (inByulpyoSectionV2) {
+                        if (!(article.번호 && /^제\d+조/.test(article.번호))) {
+                            return;
+                        }
+                        inByulpyoSectionV2 = false;
+                    }
 
                     // 레벨 0인 항목: "제X장" 패턴이면 가운데 정렬로 표시, 아니면 건너뜀
                     if (article.레벨 === 0) {
@@ -3160,7 +3294,7 @@ async function showRegulationDetailWithoutSidebarUpdate(regulation, chapter) {
                     }
 
                     // 제N절 패턴: 별도 section-title 스타일 적용
-                    if (article.레벨 === 1 && !article.번호 && /^제\d+절/.test((article.내용 || '').replace(/<[^>]+>/g, '').trim())) {
+                    if (article.레벨 === 1 && !article.번호 && /^제\d+절/.test(plainContentV2)) {
                         contentParts.push(`<div class="section-title">${article.내용}</div>`);
                         previousArticle = article;
                         return;
@@ -3180,7 +3314,7 @@ async function showRegulationDetailWithoutSidebarUpdate(regulation, chapter) {
                     if (previousArticle && previousArticle.번호 === '제5조' &&
                         article.번호 === '제1조' && article.내용 && article.내용.includes('내규의 제정')) {
                         // 제개정 이력 제목 추가
-                        contentParts.push(`<div style="font-weight: 600; color: #2786dd; text-align:center; font-size:20px!important;padding-left: 0px;margin-top:30px;margin-bottom:20px;">내규의 제·개정 이력</div>`);
+                        contentParts.push(`<div style="font-weight: 600; color: #2786dd; text-align:center; padding-left: 0px;margin-top:30px;margin-bottom:20px;">내규의 제·개정 이력</div>`);
                     }
 
                     // 레벨에 따른 클래스 설정
@@ -3240,12 +3374,8 @@ async function showRegulationDetailWithoutSidebarUpdate(regulation, chapter) {
                         displayText = article.번호 ? `${article.번호} ${article.내용}` : article.내용;
                     }
 
-                    // 별표 참조를 클릭 가능한 링크로 변환 (별표 섹션 자체는 제외)
-                    const isByulpyo = !article.번호 && (article.내용 || '').replace(/<[^>]+>/g, '').trim().startsWith('『별표');
-                    displayText = linkifyByulpyo(displayText, detailData.조문내용, isByulpyo);
-
-                    // 별표 섹션이면 data 속성 추가 (스크롤 타겟)
-                    const byulpyoAttrs = getByulpyoDataAttrs(article.내용);
+                    // 별표 참조를 클릭 가능한 링크로 변환
+                    displayText = linkifyByulpyo(displayText, detailData.조문내용, false, regulation.code);
 
                     // 부록 섹션 내의 레벨 2 항목인지 확인
                     let isAppendixItem = false;
@@ -3258,7 +3388,7 @@ async function showRegulationDetailWithoutSidebarUpdate(regulation, chapter) {
                     if (isAppendixItem) {
                         // 부록 텍스트에서 부록 제목 추출
                         const appendixTitle = article.내용.replace(/^\d+\.\s*/, '');
-                        contentParts.push(`<div ${byulpyoAttrs} class="${className} appendix-link"
+                        contentParts.push(`<div class="${className} appendix-link"
                                            style="padding-left: ${paddingLeft}px; cursor: pointer; color: #1976d2; text-decoration: underline;"
                                            onclick="openAppendixPdf('${regulation.code}', ${appendixCounter}, '${appendixTitle.replace(/'/g, "\\'")}')">
                                            ${displayText}
@@ -3267,28 +3397,28 @@ async function showRegulationDetailWithoutSidebarUpdate(regulation, chapter) {
                     } else {
                         if (className === 'article-sub-item') {
                             if (article.레벨 === 3) {
-                                contentParts.push(`<div ${byulpyoAttrs} class="${className}" style="padding-left: 60px; text-indent: -20px;">${displayText}</div>`);
+                                contentParts.push(`<div class="${className}" style="padding-left: 60px; text-indent: -20px;">${displayText}</div>`);
                             } else if (article.레벨 === 4) {
-                                contentParts.push(`<div ${byulpyoAttrs} class="${className}" style="padding-left: 80px; text-indent: -20px;">${displayText}</div>`);
+                                contentParts.push(`<div class="${className}" style="padding-left: 80px; text-indent: -20px;">${displayText}</div>`);
                             } else if (article.레벨 === 5) {
-                                contentParts.push(`<div ${byulpyoAttrs} class="${className}" style="padding-left: 105px; text-indent: -20px;">${displayText}</div>`);
+                                contentParts.push(`<div class="${className}" style="padding-left: 105px; text-indent: -20px;">${displayText}</div>`);
                             } else if (article.레벨 === 6) {
-                                contentParts.push(`<div ${byulpyoAttrs} class="${className}" style="padding-left: 125px; text-indent: -20px;">${displayText}</div>`);
+                                contentParts.push(`<div class="${className}" style="padding-left: 125px; text-indent: -20px;">${displayText}</div>`);
                             } else if (article.레벨 === 7) {
-                                contentParts.push(`<div ${byulpyoAttrs} class="${className}" style="padding-left: 140px; text-indent: -20px;">${displayText}</div>`);
+                                contentParts.push(`<div class="${className}" style="padding-left: 140px; text-indent: -20px;">${displayText}</div>`);
                             } else if (article.레벨 === 8) {
-                                contentParts.push(`<div ${byulpyoAttrs} class="${className}" style="padding-left: 160px; text-indent: -20px;">${displayText}</div>`);
+                                contentParts.push(`<div class="${className}" style="padding-left: 160px; text-indent: -20px;">${displayText}</div>`);
                             } else {
-                                contentParts.push(`<div ${byulpyoAttrs} class="${className}" style="padding-left: ${paddingLeft}px;">${displayText}</div>`);
+                                contentParts.push(`<div class="${className}" style="padding-left: ${paddingLeft}px;">${displayText}</div>`);
                             }
                         } else {
                             if (className === 'article-item' && article.레벨 === 2) {
-                                contentParts.push(`<div ${byulpyoAttrs} class="${className}" style="padding-left: 35px; text-indent: -15px; ${additionalStyle}">${displayText}</div>`);
+                                contentParts.push(`<div class="${className}" style="padding-left: 35px; text-indent: -15px; ${additionalStyle}">${displayText}</div>`);
                             } else if (isHistorySection) {
                                 // 내규의 제·개정 이력은 특별한 스타일 적용
-                                contentParts.push(`<div ${byulpyoAttrs} class="${className}" style="padding-left: 0px; text-align: center; font-size: 15px; padding-bottom: 8px; font-weight: bold; color: #000; ${additionalStyle}">${displayText}</div>`);
+                                contentParts.push(`<div class="${className}" style="padding-left: 0px; text-align: center; padding-bottom: 8px; font-weight: bold; color: #000; ${additionalStyle}">${displayText}</div>`);
                             } else {
-                                contentParts.push(`<div ${byulpyoAttrs} class="${className}" style="padding-left: ${paddingLeft}px; ${additionalStyle}">${displayText}</div>`);
+                                contentParts.push(`<div class="${className}" style="padding-left: ${paddingLeft}px; ${additionalStyle}">${displayText}</div>`);
                             }
                         }
                     }
@@ -3454,7 +3584,7 @@ function addActionButtonsToHeader(regulation, chapter, isMobile) {
 // 부록 상세보기
 async function showAppendixDetail(regulation, appendixItem, chapter, index = null) {
     // sidebar 보이도록
-    document.getElementById('sidebar').style.display = 'block';
+    setSidebarDisplay('');
     document.getElementById('mainPageContent').style.display = 'none';
     document.getElementById('contentBody').style.display = 'block';
     document.getElementById('main-content-header').style.display = 'none';
@@ -3587,7 +3717,7 @@ function old_printRegulation() {
                 color: #dc3545 !important;
                 font-size: 12px;
                 font-weight: bold;
-                font-family: 'NanumSquare', 'Malgun Gothic', sans-serif;
+                font-family: 'KB금융체Text', sans-serif;
                 padding: 2px 6px; 
                 border: 1px solid #dc3545;
                 border-radius: 3px;
@@ -3612,6 +3742,7 @@ function old_printRegulation() {
                 width: 100%; 
             }
             .regulation-actions { display: none !important; }
+            .sidebar-wrapper { display: none !important; }
             .sidebar { display: none !important; }
             .header { display: none !important; }
             .footer { display: none !important; }
@@ -3737,7 +3868,7 @@ async function showCategoryListPage() {
     }
 
     // '분류'탭 선택 시 sidebar 숨기기
-    document.getElementById('sidebar').style.display = 'none';
+    setSidebarDisplay('none');
     document.getElementById('main-content-header').style.display = 'none';
 
     // 네비게이션 활성화
@@ -3756,15 +3887,15 @@ async function showCategoryListPage() {
     });
 
     closeSidebar();
-    // 동적으로 챕터 카드들 생성
+    // 동적으로 챕터 카드들 생성 (2중 중첩 구조)
     function generateChapterCards() {
-        return Object.keys(hospitalRegulations).map(chapter => {
-            const chapterData = getChapterData(chapter);
-            
+        const cards = [];
+        for (const category of Object.values(hospitalRegulations)) {
+            if (!category || typeof category !== 'object') continue;
+            for (const [chapter, chapterData] of Object.entries(category)) {
             // regulations 배열 확인
-            if (!Array.isArray(chapterData.regulations)) {
-                console.warn(`generateChapterCards: Chapter ${chapter}의 regulations가 배열이 아닙니다`);
-                return '';
+            if (!chapterData || !Array.isArray(chapterData.regulations)) {
+                continue;
             }
             
             const regulationsHTML = chapterData.regulations.map((regulation, regIndex) => {
@@ -3819,7 +3950,7 @@ async function showCategoryListPage() {
                     return `
                         <div class="regulation-group">
                             <div class="regulation-chip main-regulation" 
-                                 onclick="showRegulationDetail(hospitalRegulations['${chapter}'].regulations[${regIndex}], '${chapter}')">
+                                 onclick="showRegulationDetail(getChapterData('${chapter}').regulations[${regIndex}], '${chapter}')">
                                 <span class="reg-code">${regulation.code}.</span>
                                 <span class="reg-name">${regulation.name}</span>
                                 <div class="sub-toggle" onclick="event.stopPropagation(); toggleSubRegulations(this)">
@@ -3835,7 +3966,7 @@ async function showCategoryListPage() {
                     // 하위 부록이 없는 경우
                     return `
                         <div class="regulation-chip" 
-                             onclick="showRegulationDetail(hospitalRegulations['${chapter}'].regulations[${regIndex}], '${chapter}')">
+                             onclick="showRegulationDetail(getChapterData('${chapter}').regulations[${regIndex}], '${chapter}')">
                             <span class="reg-code">${regulation.code}.</span>
                             <span class="reg-name">${regulation.name}</span>
                         </div>
@@ -3843,11 +3974,15 @@ async function showCategoryListPage() {
                 }
             }).filter(html => html !== '').join('');
  
-            return `
+            // 챕터에서 번호 추출 (예: "1편 총칙" → "01", "제2편 ..." → "02")
+            const chapterNumMatch = chapter.match(/(\d+)/);
+            const chapterNum = chapterNumMatch ? String(chapterNumMatch[1]).padStart(2, '0') : '00';
+
+            const cardHtml = `
                 <div class="chapter-card" data-chapter="${chapter}">
                     <div class="chapter-card-header">
                         <div class="chapter-icon">
-                            <i class="${chapterData.icon}"></i>
+                            <span class="chapter-number">${chapterNum}</span>
                         </div>
                         <div class="chapter-info">
                             <h2>${chapter}</h2>
@@ -3864,7 +3999,10 @@ async function showCategoryListPage() {
                     </div>
                 </div>
             `;
-        }).filter(html => html !== '').join(''); // 빈 문자열 제거
+            cards.push(cardHtml);
+            }
+        }
+        return cards.join('');
     }
 
     // 웰컴 메시지 표시
@@ -3881,10 +4019,10 @@ async function showCategoryListPage() {
             <div class="regulation-content">
                 <div class="welcome-intro">
                     <div class="control-buttons">
-                        <button id="expandAllBtn" class="control-btn">
+                        <button id="expandAllBtn" class="control-btn" style="display: none;">
                             <i class="fas fa-expand-arrows-alt"></i> 모두 펼치기
                         </button>
-                        <button id="collapseAllBtn" class="control-btn" style="display: none;">
+                        <button id="collapseAllBtn" class="control-btn" style="display: flex;">
                             <i class="fas fa-compress-arrows-alt"></i> 모두 접기
                         </button>
                     </div>
@@ -3895,6 +4033,9 @@ async function showCategoryListPage() {
             </div>
         </div>
     `;
+
+    // 디폴트: 모두 펼치기 상태로 시작
+    expandAllChapters();
 
 }
 
@@ -4320,7 +4461,7 @@ function openRecentRegulation(recentKey) {
         }
     } else {
         // 일반 내규 열기
-        const regulation = hospitalRegulations[recentItem.chapter]?.regulations?.find(reg => 
+        const regulation = getChapterData(recentItem.chapter)?.regulations?.find(reg =>
             reg.code === recentItem.code && reg.name === recentItem.name
         );
         
@@ -4354,7 +4495,7 @@ function getTimeAgoText(dateString, index) {
 // 메인 페이지 표시
 function showMainPage() {
     // sidebar 보이도록
-    document.getElementById('sidebar').style.display = 'block';
+    setSidebarDisplay('');
     document.getElementById('main-content-header').style.display = 'none';
 
 
@@ -4363,6 +4504,12 @@ function showMainPage() {
 
     document.getElementById('mainPageContent').style.display = 'block';
     document.getElementById('contentBody').style.display = 'none';
+
+    // 검색 결과 숨기고 정보 탭 복원
+    const searchResultsSection = document.getElementById('searchResultsSection');
+    if (searchResultsSection) searchResultsSection.style.display = 'none';
+    const infoTabsSection = document.querySelector('.info-tabs-section');
+    if (infoTabsSection) infoTabsSection.style.display = '';
 
     // 네비게이션 활성화
     updateNavigation('홈');
@@ -4489,22 +4636,77 @@ function closeLayoutSettings() {
 }
 
 // ========== 데스크톱 사이드바 토글 ==========
-function toggleDesktopSidebar() {
+// 사이드바 접기/펼치기 핸들 동적 삽입
+function initSidebarToggle() {
+    if (window.innerWidth <= 768) return;
+
     const sidebar = document.getElementById('sidebar');
-    const icon = document.getElementById('sidebarToggleIcon');
     if (!sidebar) return;
 
-    const isCollapsed = sidebar.classList.toggle('collapsed');
+    // 이미 토글 버튼이 있으면 스킵
+    if (document.querySelector('.sidebar-toggle-text-btn')) return;
+
+    // wrapper가 없으면 생성
+    let wrapper = document.getElementById('sidebarWrapper');
+    if (!wrapper) {
+        wrapper = document.createElement('div');
+        wrapper.className = 'sidebar-wrapper';
+        wrapper.id = 'sidebarWrapper';
+        sidebar.parentNode.insertBefore(wrapper, sidebar);
+        wrapper.appendChild(sidebar);
+    }
+
+    // 사이드바 헤더 영역(side-tabs)에 접기 버튼 추가
+    const sideTabs = sidebar.querySelector('.side-tabs');
+    if (sideTabs && !sideTabs.querySelector('.sidebar-toggle-text-btn')) {
+        const toggleBtn = document.createElement('button');
+        toggleBtn.className = 'sidebar-toggle-text-btn';
+        toggleBtn.innerHTML = '<i class="fas fa-chevron-left"></i> 접기';
+        toggleBtn.onclick = function(e) { e.stopPropagation(); toggleDesktopSidebar(); };
+        sideTabs.appendChild(toggleBtn);
+    }
+
+    // 접힌 상태에서 열기 플로팅 버튼 추가
+    if (!wrapper.querySelector('.sidebar-open-float')) {
+        const floatBtn = document.createElement('button');
+        floatBtn.className = 'sidebar-open-float';
+        floatBtn.innerHTML = '<i class="fas fa-chevron-right"></i> 열기';
+        floatBtn.onclick = toggleDesktopSidebar;
+        wrapper.appendChild(floatBtn);
+    }
+
+    // 저장된 접힘 상태 복원
+    restoreDesktopSidebarState();
+}
+
+function toggleDesktopSidebar() {
+    const wrapper = document.getElementById('sidebarWrapper');
+    if (!wrapper) return;
+
+    const isCollapsed = wrapper.classList.toggle('collapsed');
     safeSetStorage('sidebarCollapsed', isCollapsed ? '1' : '0');
+
+    // 헤더 내 접기/열기 버튼 텍스트 업데이트
+    const toggleBtn = wrapper.querySelector('.sidebar-toggle-text-btn');
+    if (toggleBtn) {
+        toggleBtn.innerHTML = isCollapsed
+            ? '<i class="fas fa-chevron-right"></i> 열기'
+            : '<i class="fas fa-chevron-left"></i> 접기';
+    }
 }
 
 function restoreDesktopSidebarState() {
-    const sidebar = document.getElementById('sidebar');
-    if (!sidebar || window.innerWidth <= 768) return;
+    const wrapper = document.getElementById('sidebarWrapper');
+    if (!wrapper || window.innerWidth <= 768) return;
 
     const saved = safeGetStorage('sidebarCollapsed');
     if (saved === '1') {
-        sidebar.classList.add('collapsed');
+        wrapper.classList.add('collapsed');
+        // 접기 버튼 텍스트도 업데이트
+        const toggleBtn = wrapper.querySelector('.sidebar-toggle-text-btn');
+        if (toggleBtn) {
+            toggleBtn.innerHTML = '<i class="fas fa-chevron-right"></i> 열기';
+        }
     }
 }
 
@@ -4520,21 +4722,17 @@ function setLayoutMode(mode, saveToStorage = true) {
         }
     });
 
-    const toggleBtn = document.getElementById('sidebarToggleBtn');
+    const sidebarWrapper = document.getElementById('sidebarWrapper');
 
-    // 수정된 코드
-    if (window.innerWidth > 768) {  // ← 데스크톱에서만 적용
+    if (window.innerWidth > 768) {
         if (mode === 1) {
-            if (sidebar) sidebar.style.display = 'none';
-            if (toggleBtn) toggleBtn.style.display = 'none';
+            if (sidebarWrapper) sidebarWrapper.style.display = 'none';
         } else {
-            if (sidebar) sidebar.style.display = 'block';
-            if (toggleBtn) toggleBtn.style.display = '';
-            // 저장된 사이드바 접힘 상태 복원
+            if (sidebarWrapper) sidebarWrapper.style.display = '';
             restoreDesktopSidebarState();
         }
     } else {
-        if (sidebar) sidebar.style.display = 'block';
+        if (sidebarWrapper) sidebarWrapper.style.display = '';
     }
 
     currentLayoutMode = mode;
@@ -4548,7 +4746,9 @@ function setLayoutMode(mode, saveToStorage = true) {
 function updateNavigation(activeTab) {
     document.querySelectorAll('.nav-link').forEach(link => {
         link.classList.remove('active');
-        if (link.textContent.trim() === activeTab) {
+
+        const linkText = link.textContent.trim();
+        if (linkText === activeTab) {
             link.classList.add('active');
         }
     });
@@ -4753,8 +4953,8 @@ function updateRegulationCounts() {
 // 현재 보고 있는 내규를 새창으로 열기
 function openInNewWindow() {
     if (currentRegulation && currentChapter) {
-        const chapterData = hospitalRegulations[currentChapter];
-        openRegulationInNewWindow(currentRegulation, currentChapter, chapterData.title);
+        const chapterData = getChapterData(currentChapter);
+        openRegulationInNewWindow(currentRegulation, currentChapter, chapterData?.title || '');
     }
 }
 
@@ -5020,10 +5220,10 @@ function openFavoriteRegulation(favoriteKey) {
         openFavoriteAppendix(favorite);
     } else {
         // 기존 내규 처리
-        const regulation = hospitalRegulations[favorite.chapter]?.regulations?.find(reg => 
+        const regulation = getChapterData(favorite.chapter)?.regulations?.find(reg =>
             reg.code === favorite.code && reg.name === favorite.name
         );
-        
+
         if (regulation) {
             showRegulationDetail(regulation, favorite.chapter);
             closeSidebar();
@@ -5044,10 +5244,10 @@ function openFavoriteRegulationFromPage(favoriteKey) {
         openFavoriteAppendix(favorite);
     } else {
         // 기존 내규 처리
-        const regulation = hospitalRegulations[favorite.chapter]?.regulations?.find(reg => 
+        const regulation = getChapterData(favorite.chapter)?.regulations?.find(reg =>
             reg.code === favorite.code && reg.name === favorite.name
         );
-        
+
         if (regulation) {
             showRegulationDetail(regulation, favorite.chapter);
         } else {
@@ -5087,7 +5287,7 @@ function openFavoriteAppendix(favorite) {
 // 즐겨찾기 페이지 표시
 function showFavoritesPage() {
     // 사이드바 표시
-    document.getElementById('sidebar').style.display = 'block';
+    setSidebarDisplay('');
     document.getElementById('mainPageContent').style.display = 'none';
     document.getElementById('contentBody').style.display = 'block';
     document.getElementById('main-content-header').style.display = 'none';
@@ -5308,7 +5508,7 @@ async function showRevisionHistoryPage() {
     }
 
     // 사이드바 표시
-    document.getElementById('sidebar').style.display = 'block';
+    setSidebarDisplay('');
     document.getElementById('mainPageContent').style.display = 'none';
     document.getElementById('contentBody').style.display = 'block';
     document.getElementById('main-content-header').style.display = 'none';
@@ -5336,7 +5536,7 @@ async function showRevisionHistoryPage() {
 
 // 외규 제·개정 페이지 표시
 function showExternalRevisionPage() {
-    document.getElementById('sidebar').style.display = 'block';
+    setSidebarDisplay('');
     document.getElementById('mainPageContent').style.display = 'none';
     document.getElementById('contentBody').style.display = 'block';
     document.getElementById('main-content-header').style.display = 'none';
@@ -5692,8 +5892,9 @@ function displayRevisionHistoryContent() {
                                 </span>
                                 <div class="revision-regulation-info">
                                     <div class="revision-regulation-meta">
-                                        <span>제정일 : ${regulation.enactmentDate}</span>
+                                        <span>제정일 : ${regulation.enactmentDate || '-'}</span>
                                         <span>최종 개정일 : ${regulation.revisionDate}</span>
+                                        <span>시행일 : ${regulation.effectiveDate || '-'}</span>
                                     </div>
                                 </div>
                             </div>
@@ -5718,15 +5919,17 @@ function displayRevisionHistoryContent() {
 // 모든 내규 수집 함수
 function collectAllRegulations() {
     const regulations = [];
-    
-    Object.keys(hospitalRegulations).forEach(chapter => {
-        const chapterData = getChapterData(chapter);
-        
-        if (!Array.isArray(chapterData.regulations)) {
-            console.warn(`개정이력: Chapter ${chapter}의 regulations가 배열이 아닙니다`);
+
+    // 2중 중첩 구조 순회
+    for (const category of Object.values(hospitalRegulations)) {
+        if (!category || typeof category !== 'object') continue;
+        Object.keys(category).forEach(chapter => {
+        const chapterData = category[chapter];
+
+        if (!chapterData || !Array.isArray(chapterData.regulations)) {
             return;
         }
-        
+
         chapterData.regulations.forEach(regulation => {
             if (!regulation || !regulation.code || !regulation.name) {
                 console.warn(`개정이력: 유효하지 않은 regulation`, regulation);
@@ -5735,8 +5938,9 @@ function collectAllRegulations() {
             
             const revisionDate = regulation.detail?.documentInfo?.최종개정일;
             const enactmentDate = regulation.detail?.documentInfo?.제정일;
+            const effectiveDate = regulation.detail?.documentInfo?.시행일;
             const department = regulation.detail?.documentInfo?.소관부서 || '소관부서 미지정';
-            
+
             // 개정일이 있는 경우만 추가
             if (revisionDate && revisionDate !== '-') {
                 const cleanRevisionDate = revisionDate.trim().replace(/\.$/, '');
@@ -5749,13 +5953,15 @@ function collectAllRegulations() {
                     wzRuleSeq: regulation.wzRuleSeq || null,
                     revisionDate: cleanRevisionDate,
                     enactmentDate: enactmentDate && enactmentDate !== '-' ? enactmentDate : null,
+                    effectiveDate: effectiveDate && effectiveDate !== '-' ? effectiveDate : null,
                     department: department,
                     regulation: regulation
                 });
             }
         });
-    });
-    
+        });
+    }
+
     // 전역 변수에 저장
     allRevisionData = regulations;
     filteredRevisionData = [...regulations]; // 복사본 생성
@@ -6249,34 +6455,24 @@ function highlightText(text, searchTerm) {
     return result;
 }
 
-// 별표 참조 텍스트를 클릭 가능한 링크로 변환
+// 별표/별첨/서식 참조 텍스트를 클릭 가능한 PDF 팝업 링크로 변환
 // isByulpyoSection=true이면 별표 섹션 자체이므로 링크 변환하지 않음
-function linkifyByulpyo(text, articles, isByulpyoSection) {
-    if (!text || !articles || articles.length === 0 || isByulpyoSection) return text;
+function linkifyByulpyo(text, articles, isByulpyoSection, regulationCode) {
+    if (!text || isByulpyoSection) return text;
 
-    // 『별표 제N호』 패턴 매치 (제 생략, 공백 허용 등 변형 대응)
-    const pattern = /『별표\s*제?\s*(\d+)\s*호』/g;
+    // 『별표 제N호』, 『별첨 제N호』, 『서식 제N호』 패턴 매치
+    const pattern = /『(별표|별첨|서식)\s*제?\s*(\d+)\s*호』/g;
     if (!pattern.test(text)) return text;
 
-    // 별표 N호 → 타겟 섹션 seq 매핑 (끝에서부터 역방향 스캔)
-    const byulpyoTargets = {};
-    for (let i = articles.length - 1; i >= 0; i--) {
-        const content = articles[i].내용 || '';
-        const matches = content.matchAll(/별표\s*제?\s*(\d+)\s*호/g);
-        for (const m of matches) {
-            const num = parseInt(m[1]);
-            if (!byulpyoTargets[num]) {
-                byulpyoTargets[num] = articles[i].seq;
-            }
-        }
-    }
-
-    // 패턴을 <a> 링크로 교체
+    // 패턴을 <a> 링크로 교체 - PDF 팝업 열기
     pattern.lastIndex = 0;
-    return text.replace(pattern, (match, numStr) => {
+    return text.replace(pattern, (match, type, numStr) => {
         const num = parseInt(numStr);
-        if (byulpyoTargets[num]) {
-            return `<a class="byulpyo-link" onclick="scrollToByulpyo(${num}, event)">${match}</a>`;
+        if (regulationCode) {
+            // appendixIndex는 num-1 (0-based), appendixName은 DB의 wzappendixname과 매칭
+            const appendixName = `${type} 제${num}호`;
+            const escapedName = appendixName.replace(/'/g, "\\'");
+            return `<a class="byulpyo-link" onclick="openByulpyoPdf('${regulationCode}', ${num}, '${escapedName}', event)">${match}</a>`;
         }
         return match;
     });
@@ -6296,32 +6492,75 @@ function getByulpyoDataAttrs(content) {
     return attrs.join(' ');
 }
 
-// 별표 타겟으로 스크롤 이동 + 하이라이트 효과
-function scrollToByulpyo(n, event) {
+// 별표/별첨/서식 번호로 PDF 팝업 열기
+// regulationCode: 내규 코드 (예: '6-8')
+// byulpyoNo: 별표/별첨/서식 번호 (1-based)
+// typeName: '별표 제N호' 형태의 이름
+async function openByulpyoPdf(regulationCode, byulpyoNo, typeName, event) {
     if (event) {
         event.preventDefault();
         event.stopPropagation();
     }
 
-    const target = document.querySelector(`[data-byulpyo-${n}]`);
-    if (!target) return;
-
-    // .content-body 컨테이너 내부 스크롤 사용 (scrollIntoView는 브라우저 스크롤을 움직임)
-    const container = document.querySelector('.content-body');
-    if (container) {
-        const targetTop = target.offsetTop - container.offsetTop;
-        container.scrollTo({ top: targetTop, behavior: 'smooth' });
-    } else {
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // APPENDIX_PDF_MAPPING에서 해당 별표 번호로 직접 검색
+    if (typeof APPENDIX_PDF_MAPPING !== 'undefined') {
+        for (const key in APPENDIX_PDF_MAPPING) {
+            const [code, no] = key.split('|');
+            if (code === regulationCode && parseInt(no) === byulpyoNo) {
+                // 매핑 찾음 - 매핑의 appendixName을 사용하여 openAppendixPdf 호출
+                const parts = key.split('|');
+                const appendixName = parts[2];
+                await openAppendixPdf(regulationCode, byulpyoNo - 1, appendixName);
+                return;
+            }
+        }
     }
 
-    // 하이라이트 flash 효과
-    const origBg = target.style.backgroundColor;
-    target.style.backgroundColor = '#FFF9C4';
-    target.style.transition = 'background-color 0.3s ease';
-    setTimeout(() => {
-        target.style.backgroundColor = origBg || '';
-    }, 2000);
+    // 매핑에 없으면 API를 통해 appendix 목록에서 번호로 검색
+    try {
+        const timestamp = new Date().getTime();
+        const summaryResponse = await fetch(`/static/file/summary_kbregulation.json?ts=${timestamp}`);
+        if (summaryResponse.ok) {
+            const summaryData = await summaryResponse.json();
+            let regulation = null;
+            function findReg(data) {
+                if (!data || typeof data !== 'object') return;
+                if (data.regulations) {
+                    const found = data.regulations.find(r => r.code === regulationCode);
+                    if (found) { regulation = found; return; }
+                }
+                for (const key of Object.keys(data)) {
+                    if (regulation) break;
+                    findReg(data[key]);
+                }
+            }
+            findReg(summaryData);
+
+            if (regulation) {
+                const ruleSeq = regulation.wzRuleSeq || regulation.wzruleseq;
+                if (ruleSeq) {
+                    const appendixResponse = await fetch(`/api/v1/appendix/list/${ruleSeq}`);
+                    if (appendixResponse.ok) {
+                        const appendixList = await appendixResponse.json();
+                        // wzappendixno가 byulpyoNo와 매칭되는 항목 찾기
+                        const matchIdx = appendixList.findIndex(a => parseInt(a.wzappendixno) === byulpyoNo);
+                        if (matchIdx >= 0) {
+                            const appendix = appendixList[matchIdx];
+                            await openAppendixPdf(regulationCode, matchIdx, appendix.wzappendixname);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+    } catch (error) {
+        console.error('[openByulpyoPdf] API 검색 오류:', error);
+    }
+
+    // 최종 fallback: 못 찾으면 토스트
+    if (typeof showToast === 'function') {
+        showToast(`"${typeName}" PDF 파일을 찾을 수 없습니다.`, 'error');
+    }
 }
 
 // 검색어 하이라이팅
@@ -6613,7 +6852,7 @@ function selectDepartmentRegulation(regulation, chapter, element) {
 // 지원 페이지 표시
 function showSupportPage() {
     // 사이드바 표시
-    document.getElementById('sidebar').style.display = 'block';
+    setSidebarDisplay('');
     document.getElementById('mainPageContent').style.display = 'none';
     document.getElementById('contentBody').style.display = 'block';
     document.getElementById('main-content-header').style.display = 'none';
@@ -6699,7 +6938,7 @@ function displaySupportPage() {
 // 사용방법 가이드 표시
 async function showUsageGuide() {
     // 사이드바 표시
-    document.getElementById('sidebar').style.display = 'block';
+    setSidebarDisplay('');
     document.getElementById('mainPageContent').style.display = 'none';
     document.getElementById('contentBody').style.display = 'block';
     document.getElementById('main-content-header').style.display = 'none';
@@ -6834,7 +7073,7 @@ async function showUsageGuide() {
 // FAQ 표시
 async function showFAQ() {
     // 사이드바 표시
-    document.getElementById('sidebar').style.display = 'block';
+    setSidebarDisplay('');
     document.getElementById('mainPageContent').style.display = 'none';
     document.getElementById('contentBody').style.display = 'block';
     document.getElementById('main-content-header').style.display = 'none';
@@ -7011,7 +7250,7 @@ function showQnA() {
 
 async function showNotices() {
     // 사이드바 표시
-    document.getElementById('sidebar').style.display = 'block';
+    setSidebarDisplay('');
     document.getElementById('mainPageContent').style.display = 'none';
     document.getElementById('contentBody').style.display = 'block';
     document.getElementById('main-content-header').style.display = 'none';
@@ -7501,7 +7740,7 @@ document.addEventListener('keypress', function(e) {
 // KB신용정보 내규 제·개정 절차 표시
 async function showProcedure() {
     // 사이드바 표시
-    document.getElementById('sidebar').style.display = 'block';
+    setSidebarDisplay('');
     document.getElementById('mainPageContent').style.display = 'none';
     document.getElementById('contentBody').style.display = 'block';
     document.getElementById('main-content-header').style.display = 'none';
@@ -8656,15 +8895,15 @@ window.applyWatermarkToContent = applyWatermarkToContent;
 function switchInfoTab(tabName, clickedTab) {
     // 같은 패널 내의 탭들만 처리
     const panel = clickedTab.closest('.info-panel');
-    
+
     // 모든 탭 비활성화
     panel.querySelectorAll('.info-tab').forEach(tab => {
         tab.classList.remove('active');
     });
-    
+
     // 클릭한 탭 활성화
     clickedTab.classList.add('active');
-    
+
     // 콘텐츠 전환
     if (tabName === 'notices') {
         document.getElementById('noticesPanel').style.display = 'block';
@@ -8672,6 +8911,49 @@ function switchInfoTab(tabName, clickedTab) {
     } else if (tabName === 'forms') {
         document.getElementById('noticesPanel').style.display = 'none';
         document.getElementById('formsPanel').style.display = 'block';
+    }
+}
+
+// 제·개정 사규/외규 탭 전환
+function switchRevisionTab(tabName, clickedTab) {
+    const panel = clickedTab.closest('.info-panel');
+
+    // 모든 탭 비활성화
+    panel.querySelectorAll('.info-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+
+    // 클릭한 탭 활성화
+    clickedTab.classList.add('active');
+
+    // 콘텐츠 전환
+    const revisionPanel = document.getElementById('revisionPanel');
+    const externalPanel = document.getElementById('externalRevisionPanel');
+    if (tabName === 'sagyu') {
+        if (revisionPanel) revisionPanel.style.display = 'block';
+        if (externalPanel) externalPanel.style.display = 'none';
+    } else if (tabName === 'oegyu') {
+        if (revisionPanel) revisionPanel.style.display = 'none';
+        if (externalPanel) externalPanel.style.display = 'block';
+    }
+}
+
+function switchNoticeTab(tabName, clickedTab) {
+    const panel = clickedTab.closest('.info-panel');
+
+    panel.querySelectorAll('.info-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    clickedTab.classList.add('active');
+
+    const noticesPanel = document.getElementById('noticesPanel');
+    const formsPanel = document.getElementById('formsPanel');
+    if (tabName === 'notices') {
+        if (noticesPanel) noticesPanel.style.display = 'block';
+        if (formsPanel) formsPanel.style.display = 'none';
+    } else if (tabName === 'forms') {
+        if (noticesPanel) noticesPanel.style.display = 'none';
+        if (formsPanel) formsPanel.style.display = 'block';
     }
 }
 
@@ -8777,7 +9059,7 @@ async function loadNoticesInfo() {
         tbody.innerHTML = displayData.map(item => {
             const date = item.created_at ? formatDate(item.created_at) : '-';
             return `
-                <div class="info-table-row" onclick="openNoticeDetail(${item.id})">
+                <div class="info-table-row" onclick="openNoticeDetail(${item.notice_id})">
                     <span class="col-title">${item.title}</span>
                     <span class="col-date">${date}</span>
                 </div>
@@ -8996,9 +9278,9 @@ function toggleColumnView() {
     if (contentBodyEl) contentBodyEl.style.overflow = 'hidden';
 
     // 사이드바가 접혀있으면 자동 펼침
-    const sidebar = document.getElementById('sidebar');
-    if (sidebar && sidebar.classList.contains('collapsed')) {
-        sidebar.classList.remove('collapsed');
+    const sidebarWrap = document.getElementById('sidebarWrapper');
+    if (sidebarWrap && sidebarWrap.classList.contains('collapsed')) {
+        sidebarWrap.classList.remove('collapsed');
         safeSetStorage('sidebarCollapsed', '0');
     }
 
@@ -9201,6 +9483,8 @@ async function downloadRegulationPdf(regulationCode, regulationName) {
 }
 
 // ========== 안내사항 사이드 패널 ==========
+let _regulationNoticesCache = {};
+
 function toggleRegulationNoticePanel() {
     const panel = document.getElementById('regulationNoticePanel');
     const overlay = document.getElementById('regulationNoticeOverlay');
@@ -9222,6 +9506,11 @@ function closeRegulationNoticePanel() {
     if (overlay) overlay.classList.remove('show');
 }
 
+function escapeNoticeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 async function loadRegulationNotices() {
     const body = document.getElementById('regulationNoticePanelBody');
     const footer = document.getElementById('regulationNoticePanelFooter');
@@ -9239,21 +9528,34 @@ async function loadRegulationNotices() {
         const data = await response.json();
         const notices = Array.isArray(data) ? data : (data.data || []);
 
+        // 캐시 저장
+        _regulationNoticesCache = {};
+        notices.forEach(n => { _regulationNoticesCache[n.id] = n; });
+
+        const isAdminUser = typeof isAdmin === 'function' && isAdmin();
+
         if (notices.length === 0) {
             body.innerHTML = '<div class="regulation-notice-empty">등록된 안내사항이 없습니다.</div>';
         } else {
             body.innerHTML = notices.map(notice => `
                 <div class="regulation-notice-item" data-id="${notice.id}">
+                    ${notice.title ? `<div class="regulation-notice-title">${escapeNoticeHtml(notice.title)}</div>` : ''}
                     <div class="regulation-notice-meta">
-                        ${notice.created_by || '관리자'} | ${formatDate(notice.created_at)}
+                        ${escapeNoticeHtml(notice.created_by || '관리자')} | ${formatDate(notice.created_at)}
                     </div>
-                    <div class="regulation-notice-content">${notice.content}</div>
+                    <div class="regulation-notice-content">${escapeNoticeHtml(notice.content)}</div>
+                    ${isAdminUser ? `
+                        <div class="regulation-notice-actions">
+                            <button onclick="editRegulationNotice(${notice.id})" class="btn-notice-edit">수정</button>
+                            <button onclick="deleteRegulationNotice(${notice.id})" class="btn-notice-delete">삭제</button>
+                        </div>
+                    ` : ''}
                 </div>
             `).join('');
         }
 
         // 관리자인 경우 작성 버튼 표시
-        if (footer && typeof isAdmin === 'function' && isAdmin()) {
+        if (footer && isAdminUser) {
             footer.style.display = 'block';
         }
     } catch (error) {
@@ -9262,27 +9564,38 @@ async function loadRegulationNotices() {
     }
 }
 
-function showRegulationNoticeForm() {
+function showRegulationNoticeForm(editId, editTitle, editCreatedBy, editContent) {
     const body = document.getElementById('regulationNoticePanelBody');
     if (!body) return;
 
     const existingForm = body.querySelector('.regulation-notice-form');
-    if (existingForm) { existingForm.remove(); return; }
+    if (existingForm) { existingForm.remove(); }
 
+    const isEdit = editId != null;
     const form = document.createElement('div');
     form.className = 'regulation-notice-form';
     form.innerHTML = `
-        <textarea id="noticeFormContent" placeholder="안내사항 내용을 입력하세요..."></textarea>
+        <input type="text" id="noticeFormTitle" placeholder="제목" value="${isEdit ? escapeNoticeHtml(editTitle || '') : ''}">
+        <input type="text" id="noticeFormCreatedBy" placeholder="작성자" value="${isEdit ? escapeNoticeHtml(editCreatedBy || '') : escapeNoticeHtml(window.__currentUser?.full_name || '관리자')}">
+        <textarea id="noticeFormContent" placeholder="안내사항 내용을 입력하세요...">${isEdit ? escapeNoticeHtml(editContent || '') : ''}</textarea>
         <div class="form-actions">
             <button onclick="this.closest('.regulation-notice-form').remove()">취소</button>
-            <button class="btn-save" onclick="saveRegulationNotice()">저장</button>
+            <button class="btn-save" onclick="saveRegulationNotice(${isEdit ? editId : 'null'})">${isEdit ? '수정' : '저장'}</button>
         </div>
     `;
     body.insertBefore(form, body.firstChild);
-    form.querySelector('textarea')?.focus();
+    form.querySelector('#noticeFormTitle')?.focus();
 }
 
-async function saveRegulationNotice() {
+function editRegulationNotice(noticeId) {
+    const n = _regulationNoticesCache[noticeId];
+    if (!n) return;
+    showRegulationNoticeForm(noticeId, n.title || '', n.created_by || '', n.content || '');
+}
+
+async function saveRegulationNotice(editId) {
+    const title = document.getElementById('noticeFormTitle')?.value?.trim() || '';
+    const createdBy = document.getElementById('noticeFormCreatedBy')?.value?.trim() || '';
     const content = document.getElementById('noticeFormContent')?.value?.trim();
     if (!content) { showToast('내용을 입력해주세요.', 'warning'); return; }
 
@@ -9290,13 +9603,22 @@ async function saveRegulationNotice() {
     if (!regulationCode) return;
 
     try {
-        const response = await fetch(`/api/regulation-notices/${encodeURIComponent(regulationCode)}`, {
-            method: 'POST',
+        const isEdit = editId != null;
+        const url = isEdit
+            ? `/api/regulation-notices/${encodeURIComponent(regulationCode)}/${editId}`
+            : `/api/regulation-notices/${encodeURIComponent(regulationCode)}`;
+
+        const body = isEdit
+            ? { title, content }
+            : { title, content, created_by: createdBy };
+
+        const response = await fetch(url, {
+            method: isEdit ? 'PUT' : 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content })
+            body: JSON.stringify(body)
         });
         if (!response.ok) throw new Error('저장 실패');
-        showToast('안내사항이 저장되었습니다.', 'success');
+        showToast(isEdit ? '안내사항이 수정되었습니다.' : '안내사항이 저장되었습니다.', 'success');
         loadRegulationNotices();
     } catch (error) {
         console.error('안내사항 저장 실패:', error);
@@ -9304,10 +9626,31 @@ async function saveRegulationNotice() {
     }
 }
 
+async function deleteRegulationNotice(noticeId) {
+    if (!confirm('이 안내사항을 삭제하시겠습니까?')) return;
+
+    const regulationCode = currentRegulation?.code;
+    if (!regulationCode) return;
+
+    try {
+        const response = await fetch(
+            `/api/regulation-notices/${encodeURIComponent(regulationCode)}/${noticeId}`,
+            { method: 'DELETE' }
+        );
+        if (!response.ok) throw new Error('삭제 실패');
+        showToast('안내사항이 삭제되었습니다.', 'success');
+        loadRegulationNotices();
+    } catch (error) {
+        console.error('안내사항 삭제 실패:', error);
+        showToast('삭제에 실패했습니다.', 'error');
+    }
+}
+
 // ========== 복사/붙여넣기 제한 ==========
 (function() {
     function isRegulationContent(el) {
-        return el && (el.closest('.regulation-content') || el.closest('.regulation-detail'));
+        if (!el || typeof el.closest !== 'function') return false;
+        return el.closest('.regulation-content') || el.closest('.regulation-detail');
     }
 
     document.addEventListener('copy', function(e) {

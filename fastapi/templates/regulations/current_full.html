@@ -277,6 +277,81 @@
         width: 100% !important;
     }
 
+    /* ===== 반응형 디자인 ===== */
+    @media (max-width: 768px) {
+        .page-container {
+            padding: 10px;
+        }
+
+        .search-bar {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 8px;
+            padding: 12px;
+        }
+
+        .search-bar .search-input,
+        .search-bar .filter-select,
+        .search-bar .department-select {
+            width: 100% !important;
+            min-width: unset !important;
+        }
+
+        .search-bar .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* Table horizontal scroll */
+        .content-area {
+            padding: 10px;
+            overflow-x: auto;
+        }
+
+        .regulation-table {
+            min-width: 700px;
+            table-layout: auto;
+        }
+
+        /* Hide less important columns: 소관부서 */
+        .regulation-table th:nth-child(4),
+        .regulation-table td:nth-child(4) {
+            display: none;
+        }
+
+        .regulation-table th,
+        .regulation-table td {
+            padding: 8px 6px;
+            font-size: 13px;
+        }
+
+        /* Preview modal */
+        .preview-content {
+            width: 95%;
+            max-height: 90vh;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .regulation-table th,
+        .regulation-table td {
+            padding: 6px 4px;
+            font-size: 12px;
+        }
+
+        /* Also hide 제정일, 개정일 at very narrow widths */
+        .regulation-table th:nth-child(5),
+        .regulation-table td:nth-child(5),
+        .regulation-table th:nth-child(6),
+        .regulation-table td:nth-child(6) {
+            display: none;
+        }
+
+        h2 {
+            font-size: 1.2rem;
+        }
+    }
+
     /* 제정 모달의 소관부서 input에 드롭다운 화살표 추가 */
     #deptSearchInput {
         background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"%3E%3Cpath fill="%23333" d="M6 9L1 4h10z"/%3E%3C/svg%3E') !important;
@@ -306,12 +381,12 @@
 
     <!-- 검색 바 -->
     <div class="search-bar">
-        <input type="text" class="search-input" placeholder="제목, 내용, 공포번호로 검색..." id="searchInput">
-        <select class="filter-select" id="classificationFilter">
+        <input type="text" class="search-input" placeholder="제목, 내용, 공포번호로 검색..." id="searchInput" oninput="RuleEditor.searchRegulations()">
+        <select class="filter-select" id="classificationFilter" onchange="RuleEditor.searchRegulations()">
             <option value="">모든 분류</option>
             <!-- 동적으로 생성됨 -->
         </select>
-        <select class="filter-select department-select" id="departmentFilter">
+        <select class="filter-select department-select" id="departmentFilter" onchange="RuleEditor.searchRegulations()">
             <option value="">모든 부서</option>
             <!-- 부서 목록이 동적으로 로드됨 -->
         </select>

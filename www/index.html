@@ -3,9 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>KB신용정보내규 시스템</title>
     <link href="/static/lib/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="static/css/kbregulation.css?ts=2025121808">
+    <link rel="stylesheet" href="static/css/kbregulation.css?ts=202603201400">
 </head>
 <body>
     <!-- 헤더 -->
@@ -223,13 +226,14 @@
                         </div>
                     </section>
 
-                    <!-- 정보 탭 영역 (사규 제·개정 / 공지사항 / 별표·서식) -->
+                    <!-- 정보 탭 영역 (제·개정 / 공지사항 / 별표·서식) -->
                     <section class="info-tabs-section">
                         <div class="info-tabs-container">
-                            <!-- 좌측: 사규 제·개정 -->
+                            <!-- 좌측: 제·개정 (사규/외규 통합) -->
                             <div class="info-panel">
                                 <div class="info-panel-tabs">
-                                    <button class="info-tab active" data-panel="revision">사규 제·개정</button>
+                                    <button class="info-tab active" data-panel="revision" onclick="switchRevisionTab('sagyu', this)">사규 제·개정</button>
+                                    <button class="info-tab" data-panel="externalRevision" onclick="switchRevisionTab('oegyu', this)">외규 제·개정</button>
                                 </div>
                                 <div class="info-panel-content" id="revisionPanel">
                                     <div class="info-table">
@@ -243,17 +247,10 @@
                                         </div>
                                     </div>
                                     <div class="info-panel-more">
-                                        <a href="#" onclick="showRevisionHistoryPage(); return false;">더 보기 <i class="fas fa-external-link-alt"></i></a>
+                                        <a href="#" onclick="showRevisionHistoryPage(); return false;">더 보기 <i class="fas fa-chevron-right"></i></a>
                                     </div>
                                 </div>
-                            </div>
-
-                            <!-- 중앙: 외규 제·개정 -->
-                            <div class="info-panel">
-                                <div class="info-panel-tabs">
-                                    <button class="info-tab active" data-panel="externalRevision">외규 제·개정</button>
-                                </div>
-                                <div class="info-panel-content" id="externalRevisionPanel">
+                                <div class="info-panel-content" id="externalRevisionPanel" style="display:none;">
                                     <div class="info-table">
                                         <div class="info-table-header">
                                             <span class="col-type">구분</span>
@@ -265,16 +262,16 @@
                                         </div>
                                     </div>
                                     <div class="info-panel-more">
-                                        <a href="#" onclick="showExternalRevisionPage(); return false;">더 보기 <i class="fas fa-external-link-alt"></i></a>
+                                        <a href="#" onclick="showExternalRevisionPage(); return false;">더 보기 <i class="fas fa-chevron-right"></i></a>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- 우측: 공지사항 / 별표·서식 -->
+                            <!-- 우측: 공지사항·별표서식 (탭 전환) -->
                             <div class="info-panel">
                                 <div class="info-panel-tabs">
-                                    <button class="info-tab active" data-panel="notices" onclick="switchInfoTab('notices', this)">공지사항</button>
-                                    <button class="info-tab" data-panel="forms" onclick="switchInfoTab('forms', this)">별표·서식</button>
+                                    <button class="info-tab active" data-panel="notices" onclick="switchNoticeTab('notices', this)">공지사항</button>
+                                    <button class="info-tab" data-panel="forms" onclick="switchNoticeTab('forms', this)">별표·서식</button>
                                 </div>
                                 <div class="info-panel-content" id="noticesPanel">
                                     <div class="info-table">
@@ -287,7 +284,7 @@
                                         </div>
                                     </div>
                                     <div class="info-panel-more">
-                                        <a href="#" onclick="showSupportPage(); return false;">더 보기 <i class="fas fa-external-link-alt"></i></a>
+                                        <a href="#" onclick="showNotices(); return false;">더 보기 <i class="fas fa-chevron-right"></i></a>
                                     </div>
                                 </div>
                                 <div class="info-panel-content" id="formsPanel" style="display:none;">
@@ -301,7 +298,7 @@
                                         </div>
                                     </div>
                                     <div class="info-panel-more">
-                                        <a href="#" onclick="showFormsPage(); return false;">더 보기 <i class="fas fa-external-link-alt"></i></a>
+                                        <a href="#" onclick="showFormsPage(); return false;">더 보기 <i class="fas fa-chevron-right"></i></a>
                                     </div>
                                 </div>
                             </div>
@@ -496,7 +493,7 @@
             <!-- 하단 주소 및 저작권 정보 -->
             <div class="footer-bottom">
                 <div class="footer-address">04513 서울특별시 중구 남대문로 84 (을지로입구역) KB신용정보</div>
-                <div class="footer-copyright">© 2025 KB신용정보. ALL RIGHTS RESERVED.</div>
+                <div class="footer-copyright">© 2026 KB신용정보. ALL RIGHTS RESERVED.</div>
             </div>
         </div>
     </footer>
@@ -512,7 +509,7 @@
     <!-- <script type="module" src="/static/js/kbregulation.js?ts=202512170002"></script> -->
 
     <!-- 기존 스크립트 (원복) -->
-    <script src="/static/js/kbregulation.js?ts=202601261450"></script>
+    <script src="/static/js/kbregulation.js?ts=202603061715"></script>
     <script src="/static/js/kbregulation_comm.js?ts=202512170003"></script>
 </body>
 </html>

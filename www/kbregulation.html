@@ -3,10 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>KB신용정보내규 시스템</title>
     <link href="/static/lib/all.min.css" rel="stylesheet">
     <link rel="icon" href="data:,">
-    <link rel="stylesheet" href="static/css/kbregulation.css?ts=202511031651">
+    <link rel="stylesheet" href="static/css/kbregulation.css?ts=202603201400">
 </head>
 <body>
     <!-- 헤더 -->
@@ -96,71 +99,68 @@
 
     <!-- 메인 레이아웃 -->
     <div class="main-layout">
-        <!-- 사이드바 -->
-        <aside class="sidebar" id="sidebar">
+        <!-- 사이드바 래퍼 -->
+        <div class="sidebar-wrapper" id="sidebarWrapper">
+            <aside class="sidebar" id="sidebar">
 
-            <!-- 사이드 Tab -->
-            <div class="side-tabs">
-                <div class="side-tab active" data-type="side_category">분류</div>
-            </div>
+                <!-- 사이드 Tab -->
+                <div class="side-tabs">
+                    <div class="side-tab active" data-type="side_category">분류</div>
+                </div>
 
-            <!-- 분류별 내규메뉴 -->
-            <nav class="tree-menu" id="treeMenu" style="margin-bottom: 8px;">
-            </nav>
+                <!-- 분류별 내규메뉴 -->
+                <nav class="tree-menu" id="treeMenu" style="margin-bottom: 8px;">
+                </nav>
 
-            <!-- 즐겨찾기 -->
-            <div class="panel favorites-panel">
-                <div class="panel-header">
-                    <span><i class="fas fa-star"></i> 즐겨찾기</span>
-                    <span style="background: rgba(255,255,255,0.3); color: white; padding: 1px 5px; border-radius: 8px; font-size: 12px;" id="favoritesCount">3</span>
+                <!-- 즐겨찾기 -->
+                <div class="panel favorites-panel">
+                    <div class="panel-header">
+                        <span><i class="fas fa-star"></i> 즐겨찾기</span>
+                        <span style="background: rgba(255,255,255,0.3); color: white; padding: 1px 5px; border-radius: 8px; font-size: 12px;" id="favoritesCount">3</span>
+                    </div>
+                    <div class="panel-body" id="favoritesBody" style="max-height:300px; overflow-y:auto;">
+                    </div>
                 </div>
-                <div class="panel-body" id="favoritesBody" style="max-height:300px; overflow-y:auto;">
-                </div>
-            </div>
 
-            <!-- 최근 본 내규 -->
-            <div class="panel recent-panel">
-                <div class="panel-header">
-                    <span><i class="fas fa-history"></i> 최근 본 내규</span>
-                    <span style="background: rgba(255,255,255,0.3); color: white; padding: 1px 5px; border-radius: 8px; font-size: 12px;" id="recentCount"></span>
+                <!-- 최근 본 내규 -->
+                <div class="panel recent-panel">
+                    <div class="panel-header">
+                        <span><i class="fas fa-history"></i> 최근 본 내규</span>
+                        <span style="background: rgba(255,255,255,0.3); color: white; padding: 1px 5px; border-radius: 8px; font-size: 12px;" id="recentCount"></span>
+                    </div>
+                    <div class="panel-body" id="recentBody" style="max-height:300px; overflow-y:auto;">
+                    </div>
                 </div>
-                <div class="panel-body" id="recentBody" style="max-height:300px; overflow-y:auto;">
-                </div>
-            </div>
 
-            <!-- 통계 대시보드 -->
-            <div class="panel stats-panel" style="display:none;">
-                <div class="panel-header">
-                    <span><i class="fas fa-chart-pie"></i> 이용 통계</span>
-                </div>
-                <div class="panel-body">
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <span class="stat-number">47</span>
-                            <div class="stat-label">오늘 조회</div>
-                        </div>
-                        <div class="stat-card">
-                            <span class="stat-number">238</span>
-                            <div class="stat-label">이번 주</div>
-                        </div>
-                        <div class="stat-card">
-                            <span class="stat-number">1,842</span>
-                            <div class="stat-label">이번 달</div>
-                        </div>
-                        <div class="stat-card">
-                            <span class="stat-number">98%</span>
-                            <div class="stat-label">만족도</div>
+                <!-- 통계 대시보드 -->
+                <div class="panel stats-panel" style="display:none;">
+                    <div class="panel-header">
+                        <span><i class="fas fa-chart-pie"></i> 이용 통계</span>
+                    </div>
+                    <div class="panel-body">
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <span class="stat-number">47</span>
+                                <div class="stat-label">오늘 조회</div>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-number">238</span>
+                                <div class="stat-label">이번 주</div>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-number">1,842</span>
+                                <div class="stat-label">이번 달</div>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-number">98%</span>
+                                <div class="stat-label">만족도</div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </aside>
+            </aside>
 
-        <!-- 사이드바 토글 버튼 -->
-        <button class="sidebar-toggle-btn" id="sidebarToggleBtn"
-                onclick="toggleDesktopSidebar()" title="사이드바 접기/펼치기">
-            <i class="fas fa-chevron-left" id="sidebarToggleIcon"></i>
-        </button>
+        </div>
 
         <!-- 메인 컨텐츠 -->
         <main class="main-content">
@@ -205,8 +205,90 @@
                                 <button type="submit" class="search-btn-inside">
                                     <i class="fas fa-search"></i>
                                 </button>
+                                <button type="button" class="search-clear-btn" id="searchClearBtn" onclick="clearSearchResults()" style="display:none;">
+                                    <i class="fas fa-times"></i>
+                                </button>
                             </div>
                         </form>
+                    </section>
+
+                    <!-- 정보 탭 영역 (제·개정 / 공지사항 / 별표·서식) -->
+                    <section class="info-tabs-section">
+                        <div class="info-tabs-container">
+                            <!-- 좌측: 제·개정 (사규/외규 통합) -->
+                            <div class="info-panel">
+                                <div class="info-panel-tabs">
+                                    <button class="info-tab active" data-panel="revision" onclick="switchRevisionTab('sagyu', this)">사규 제·개정</button>
+                                    <button class="info-tab" data-panel="externalRevision" onclick="switchRevisionTab('oegyu', this)">외규 제·개정</button>
+                                </div>
+                                <div class="info-panel-content" id="revisionPanel">
+                                    <div class="info-table">
+                                        <div class="info-table-header">
+                                            <span class="col-type">구분</span>
+                                            <span class="col-name">사규명</span>
+                                            <span class="col-date">제·개정일</span>
+                                        </div>
+                                        <div class="info-table-body" id="revisionTableBody">
+                                            <!-- 동적으로 로드됨 -->
+                                        </div>
+                                    </div>
+                                    <div class="info-panel-more">
+                                        <a href="#" onclick="showRevisionHistoryPage(); return false;">더 보기 <i class="fas fa-chevron-right"></i></a>
+                                    </div>
+                                </div>
+                                <div class="info-panel-content" id="externalRevisionPanel" style="display:none;">
+                                    <div class="info-table">
+                                        <div class="info-table-header">
+                                            <span class="col-type">구분</span>
+                                            <span class="col-name">외규명</span>
+                                            <span class="col-date">제·개정일</span>
+                                        </div>
+                                        <div class="info-table-body" id="externalRevisionTableBody">
+                                            <!-- 동적으로 로드됨 -->
+                                        </div>
+                                    </div>
+                                    <div class="info-panel-more">
+                                        <a href="#" onclick="showExternalRevisionPage(); return false;">더 보기 <i class="fas fa-chevron-right"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 우측: 공지사항·별표서식 (탭 전환) -->
+                            <div class="info-panel">
+                                <div class="info-panel-tabs">
+                                    <button class="info-tab active" data-panel="notices" onclick="switchNoticeTab('notices', this)">공지사항</button>
+                                    <button class="info-tab" data-panel="forms" onclick="switchNoticeTab('forms', this)">별표·서식</button>
+                                </div>
+                                <div class="info-panel-content" id="noticesPanel">
+                                    <div class="info-table">
+                                        <div class="info-table-header">
+                                            <span class="col-title">제목</span>
+                                            <span class="col-date">등록일</span>
+                                        </div>
+                                        <div class="info-table-body" id="noticesTableBody">
+                                            <!-- 동적으로 로드됨 -->
+                                        </div>
+                                    </div>
+                                    <div class="info-panel-more">
+                                        <a href="#" onclick="showNotices(); return false;">더 보기 <i class="fas fa-chevron-right"></i></a>
+                                    </div>
+                                </div>
+                                <div class="info-panel-content" id="formsPanel" style="display:none;">
+                                    <div class="info-table">
+                                        <div class="info-table-header">
+                                            <span class="col-title">제목</span>
+                                            <span class="col-date">등록일</span>
+                                        </div>
+                                        <div class="info-table-body" id="formsTableBody">
+                                            <!-- 동적으로 로드됨 -->
+                                        </div>
+                                    </div>
+                                    <div class="info-panel-more">
+                                        <a href="#" onclick="showFormsPage(); return false;">더 보기 <i class="fas fa-chevron-right"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </section>
 
                     <section class="search-results-section" id="searchResultsSection" style="display:none;">
@@ -382,7 +464,7 @@
             <!-- 하단 주소 및 저작권 정보 -->
             <div class="footer-bottom">
                 <div class="footer-address">04513 서울특별시 중구 남대문로 84 (을지로입구역) KB신용정보</div>
-                <div class="footer-copyright">© 2025 KB신용정보. ALL RIGHTS RESERVED.</div>
+                <div class="footer-copyright">© 2026 KB신용정보. ALL RIGHTS RESERVED.</div>
             </div>
         </div>
     </footer>
@@ -390,7 +472,7 @@
     <script src="/static/js/history.js?ts=2025103012" ></script>
     <!-- Android WebView 최적화 모듈 (kbregulation.js보다 먼저 로드) -->
     <script src="/static/js/kbregulation_android.js?ts=202511100300" ></script>
-    <script src="/static/js/kbregulation.js?ts=202511100115" ></script>
+    <script src="/static/js/kbregulation.js?ts=202603191000" ></script>
     <script src="/static/js/kbregulation_comm.js?ts=2025103012" ></script>
     <script src="/static/js/notices.js?ts=202511031651" ></script>
 </body>
