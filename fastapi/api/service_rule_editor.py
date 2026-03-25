@@ -3781,9 +3781,9 @@ async def save_edited_content(
             else:
                 logger.warning("⚠️ Failed to sync JSON to static/file (continuing with DB update)")
 
-            # 상대경로로 변환하여 DB에 저장
-            from api.file_utils import get_relative_path
-            merged_relative = get_relative_path(merged_filepath)
+            # 사용자화면용 파일명으로 DB 저장 (www/static/file/ 기준)
+            static_json_name = f"({rule_pubno})_{rule_name}.json"
+            logger.info(f"[Revision] DB wzFileJson = {static_json_name}")
 
             query = """
                 UPDATE wz_rule
@@ -3794,7 +3794,7 @@ async def save_edited_content(
                     wzmodifiedby = %s
                 WHERE wzruleseq = %s
             """
-            params = (merged_relative, revision_date, execution_date, '현행', user.get('username', 'admin'), rule_id)
+            params = (static_json_name, revision_date, execution_date, '현행', user.get('username', 'admin'), rule_id)
 
         elif mode == 'new':
             # 제정 모드 - wzNewFlag를 '현행'으로 변경
