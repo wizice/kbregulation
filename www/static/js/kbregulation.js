@@ -6192,46 +6192,52 @@ async function openComparisonTablePdf(regulationCode, regulationName, wzRuleSeq)
     try {
         // 1순위: summary JSON에서 신구대비표PDF 필드 확인
         if (wzRuleSeq && hospitalRegulations) {
-            // summary JSON에서 해당 규정 찾기
-            for (const chapter in hospitalRegulations) {
-                const regulations = getChapterData(chapter).regulations || [];
-                for (const reg of regulations) {
-                    if (reg.wzRuleSeq === wzRuleSeq) {
-                        // JSON 파일에 명시된 신구대비표PDF가 있으면 바로 사용
-                        const comparisonPdfFromJson = reg.detail?.documentInfo?.신구대비표PDF;
-                        if (comparisonPdfFromJson) {
-                            pdfPath = `/static/pdf/comparisonTable/${comparisonPdfFromJson}`;
-                            console.log('[JSON] 신구대비표PDF 사용:', pdfPath);
-                            const pdfPathWithTimestamp = `/static/viewer/web/viewer.html?file=${pdfPath}?ts=${timestamp}`;
-                            openPdfViewer(pdfPathWithTimestamp);
-                            return;
-                        }
+            // 2중 중첩 구조 순회: { "KB규정": { "1편...": { regulations: [...] } } }
+            let foundReg = null;
+            for (const category of Object.values(hospitalRegulations)) {
+                if (!category || typeof category !== 'object') continue;
+                for (const chapterData of Object.values(category)) {
+                    if (!chapterData || !Array.isArray(chapterData.regulations)) continue;
+                    foundReg = chapterData.regulations.find(r => r.wzRuleSeq === wzRuleSeq || r.wzRuleSeq === String(wzRuleSeq));
+                    if (foundReg) break;
+                }
+                if (foundReg) break;
+            }
 
-                        // 폴백: 기존 방식 (wzRuleId + 날짜 기반)
-                        const jsonFileName = reg.detail?.documentInfo?.파일명;
-                        const revisionDate = reg.detail?.documentInfo?.최종개정일;
+            if (foundReg) {
+                // JSON 파일에 명시된 신구대비표PDF가 있으면 바로 사용
+                const comparisonPdfFromJson = foundReg.detail?.documentInfo?.신구대비표PDF;
+                if (comparisonPdfFromJson) {
+                    pdfPath = `/static/pdf/comparisonTable/${comparisonPdfFromJson}`;
+                    console.log('[JSON] 신구대비표PDF 사용:', pdfPath);
+                    const pdfPathWithTimestamp = `/static/viewer/web/viewer.html?file=${pdfPath}?ts=${timestamp}`;
+                    openPdfViewer(pdfPathWithTimestamp);
+                    return;
+                }
 
-                        if (jsonFileName && revisionDate) {
-                            const wzRuleId = jsonFileName.replace('.json', '');
-                            const dateStr = revisionDate.replace(/[.\-]/g, '').slice(0, 8);
-                            const newStylePath = `/static/pdf/comparisonTable/${wzRuleId}_${wzRuleSeq}_${dateStr}.pdf`;
+                // 폴백: DB wzFileComparison 경로로 시도
+                const jsonFileName = foundReg.detail?.documentInfo?.파일명;
+                const revisionDate = foundReg.detail?.documentInfo?.최종개정일;
 
-                            console.log('[Auto] 신구대비표 시도:', newStylePath);
+                if (revisionDate) {
+                    // wzRuleId 추출 시도
+                    const wzRuleId = foundReg.wzRuleId || foundReg.detail?.documentInfo?.wzRuleId || '';
+                    if (wzRuleId) {
+                        const dateStr = revisionDate.replace(/[.\-\s]/g, '').slice(0, 8);
+                        const newStylePath = `/static/pdf/comparisonTable/${wzRuleId}_${wzRuleSeq}_${dateStr}.pdf`;
+                        console.log('[Auto] 신구대비표 시도:', newStylePath);
 
-                            try {
-                                const testResponse = await fetch(newStylePath, { method: 'HEAD' });
-                                if (testResponse.ok) {
-                                    console.log('[Auto] 신구대비표 파일 발견:', newStylePath);
-                                    pdfPath = newStylePath;
-                                    const pdfPathWithTimestamp = `/static/viewer/web/viewer.html?file=${pdfPath}?ts=${timestamp}`;
-                                    openPdfViewer(pdfPathWithTimestamp);
-                                    return;
-                                }
-                            } catch (e) {
-                                console.log('신규 방식 파일 없음, 레거시 방식 시도');
+                        try {
+                            const testResponse = await fetch(newStylePath, { method: 'HEAD' });
+                            if (testResponse.ok) {
+                                pdfPath = newStylePath;
+                                const pdfPathWithTimestamp = `/static/viewer/web/viewer.html?file=${pdfPath}?ts=${timestamp}`;
+                                openPdfViewer(pdfPathWithTimestamp);
+                                return;
                             }
+                        } catch (e) {
+                            console.log('신규 방식 파일 없음, 레거시 방식 시도');
                         }
-                        break;
                     }
                 }
             }
