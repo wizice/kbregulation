@@ -3250,32 +3250,25 @@ def sync_json_to_static_file(
         new_json_path = Path(new_merged_json_path)
 
         if mode == "revision":
-            # Step 1: 기존 JSON 파일 찾기 (wzpubno 기반)
-            # 예: wzpubno가 "1.1.1"이면 "merged_1.1.1.*" 패턴의 파일 검색
-            # 공백 포함하여 정확한 매칭 (예: "merged_1.1.1. 정확한...")
-            pattern = f"merged_{wzpubno} *.json"
-            old_json_files = list(static_file_dir.glob(pattern))
-
-            # 패턴 매칭 실패 시 더 넓은 패턴 시도
+            # Step 1: 기존 JSON 파일 찾기
+            # KB형식: (6-5)_인사규정.json / 세브란스형식: merged_1.1.1.*.json
+            old_json_files = list(static_file_dir.glob(f"({wzpubno})_*.json"))
             if not old_json_files:
-                pattern = f"merged_{wzpubno}*.json"
-                old_json_files = list(static_file_dir.glob(pattern))
+                old_json_files = list(static_file_dir.glob(f"merged_{wzpubno}*.json"))
+            if not old_json_files:
+                old_json_files = list(static_file_dir.glob(f"merged_{wzpubno} *.json"))
 
             if old_json_files:
-                # 가장 최근 파일 선택 (여러 개 있을 경우)
                 old_json_file = sorted(old_json_files, key=lambda f: f.stat().st_mtime)[-1]
 
-                # 타임스탬프 추가하여 file_old로 복사
+                # 타임스탬프 추가하여 file_old로 백업
                 timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
                 old_filename = f"{old_json_file.stem}_backup_{timestamp}.json"
                 old_dest_path = static_file_old_dir / old_filename
 
                 shutil.copy2(old_json_file, old_dest_path)
-                logger.info(f"✅ Moved old JSON to file_old: {old_json_file.name} -> {old_dest_path.name}")
-
-                # 기존 파일 삭제 (static/file에서 제거)
-                old_json_file.unlink()
-                logger.info(f"✅ Removed old JSON from static/file: {old_json_file.name}")
+                logger.info(f"✅ Backed up old JSON: {old_json_file.name} -> {old_dest_path.name}")
+                # 기존 파일은 삭제하지 않음 (덮어쓰기로 갱신)
             else:
                 logger.warning(f"⚠️ No existing JSON found in static/file for wzpubno: {wzpubno}")
 
@@ -3287,11 +3280,28 @@ def sync_json_to_static_file(
         # mode == "new": 신규 제정은 기존 파일 체크 불필요
 
         # Step 2: 새 병합 JSON을 static/file/로 복사
-        new_filename = new_json_path.name
-        dest_path = static_file_dir / new_filename
+        # 사용자화면용 파일명으로 복사: (pubno)_name.json
+        # DB에서 규정명 조회
+        try:
+            from .timescaledb_manager_v2 import DatabaseConnectionManager
+            _db_cfg = {
+                'host': settings.DB_HOST, 'port': settings.DB_PORT,
+                'database': settings.DB_NAME, 'user': settings.DB_USER,
+                'password': settings.DB_PASSWORD,
+            }
+            _db = DatabaseConnectionManager(**_db_cfg)
+            with _db.get_connection() as _conn:
+                with _conn.cursor() as _cur:
+                    _cur.execute("SELECT wzname FROM wz_rule WHERE wzruleseq = %s", (rule_id,))
+                    _row = _cur.fetchone()
+                    rule_name = _row[0] if _row else ""
+            static_filename = f"({wzpubno})_{rule_name}.json" if rule_name else new_json_path.name
+        except Exception:
+            static_filename = new_json_path.name
 
+        dest_path = static_file_dir / static_filename
         shutil.copy2(new_json_path, dest_path)
-        logger.info(f"✅ Copied new JSON to static/file: {new_filename}")
+        logger.info(f"✅ Copied new JSON to static/file: {static_filename}")
 
         # Step 3: 이미지 동기화 (wzruleid 기반)
         # wzruleid 추출 (파일명에서 또는 DB에서)
