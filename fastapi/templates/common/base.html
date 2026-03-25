@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ page_title }}{% endblock %}</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
 
     <!-- 공통 CSS -->
     <link rel="stylesheet" href="/static/css/common.css">
@@ -18,7 +21,7 @@
         <nav class="navbar">
             <div class="nav-brand">
                 <img src="/static/img/kb-logo.png" alt="KB신용정보" />
-                <h1>내규편집기</h1>
+                <h1>사규편집기</h1>
             </div>
             <div class="nav-menu">
                 <a href="/regulations/current" class="nav-item {% if '/current' in request.url.path %}active{% endif %}">현행 내규 목록</a>
