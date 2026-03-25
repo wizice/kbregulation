@@ -275,6 +275,18 @@ def highlight_diff(old_text: str, new_text: str, font_name: str = 'KoreanFont') 
     return old_html, new_html
 
 
+def _filter_buchik(articles: List[Dict]) -> List[Dict]:
+    """부칙 이후 섹션을 제외한 본칙만 반환"""
+    filtered = []
+    for art in articles:
+        content = re.sub(r'<[^>]+>', '', art.get('내용', '')).strip()
+        # '부 칙' 또는 '부칙' 패턴 감지 (공백 허용)
+        if re.match(r'^부\s*칙', content):
+            break
+        filtered.append(art)
+    return filtered
+
+
 def compare_articles(old_articles: List[Dict], new_articles: List[Dict]) -> List[Dict]:
     """
     두 조문 목록을 비교하여 변경 사항 추출
@@ -282,6 +294,10 @@ def compare_articles(old_articles: List[Dict], new_articles: List[Dict]) -> List
     Returns:
         변경 사항 리스트
     """
+    # 부칙 제외
+    old_articles = _filter_buchik(old_articles)
+    new_articles = _filter_buchik(new_articles)
+
     changes = []
 
     # 레벨 1 기준으로 매칭
@@ -519,6 +535,10 @@ def compare_articles_with_hierarchy(old_articles: List[Dict], new_articles: List
     """
     경로 기반 매칭 + 내용 유사도 보정을 사용한 신구대비표용 비교 함수
     """
+    # 부칙 제외
+    old_articles = _filter_buchik(old_articles)
+    new_articles = _filter_buchik(new_articles)
+
     old_map = build_path_map(old_articles)
     new_map = build_path_map(new_articles)
 
