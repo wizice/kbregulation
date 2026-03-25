@@ -625,24 +625,24 @@
         </div>
 
         <div class="file-upload-area">
-            <div class="file-upload-box" id="pdfUploadBox">
-                <label for="pdfFile">
-                    <div class="file-upload-icon">📄</div>
-                    <div class="file-upload-text">PDF 파일 선택</div>
-                    <div class="file-upload-hint">드래그 앤 드롭 또는 클릭</div>
-                    <input type="file" id="pdfFile" accept=".pdf">
-                </label>
-                <div class="file-name" id="pdfFileName" style="display: none;"></div>
-            </div>
-
             <div class="file-upload-box" id="docxUploadBox">
                 <label for="docxFile">
                     <div class="file-upload-icon">📝</div>
-                    <div class="file-upload-text">DOCX 파일 선택</div>
+                    <div class="file-upload-text">DOCX 파일 선택 <span style="color: #dc3545; font-size: 0.8em;">*필수</span></div>
                     <div class="file-upload-hint">드래그 앤 드롭 또는 클릭</div>
                     <input type="file" id="docxFile" accept=".docx">
                 </label>
                 <div class="file-name" id="docxFileName" style="display: none;"></div>
+            </div>
+
+            <div class="file-upload-box" id="pdfUploadBox">
+                <label for="pdfFile">
+                    <div class="file-upload-icon">📄</div>
+                    <div class="file-upload-text">PDF 파일 선택 <span style="color: #999; font-size: 0.8em;">(선택)</span></div>
+                    <div class="file-upload-hint">드래그 앤 드롭 또는 클릭 (있으면 정확도 향상)</div>
+                    <input type="file" id="pdfFile" accept=".pdf">
+                </label>
+                <div class="file-name" id="pdfFileName" style="display: none;"></div>
             </div>
         </div>
     </div>
@@ -990,7 +990,8 @@ const ComparisonGenerator = {
 
     updateGenerateButton() {
         const btn = document.getElementById('btnGenerate');
-        const isValid = this.selectedRegulation && this.pdfFile && this.docxFile;
+        // DOCX 필수, PDF 선택
+        const isValid = this.selectedRegulation && this.docxFile;
         btn.disabled = !isValid;
     },
 
@@ -1011,50 +1012,50 @@ const ComparisonGenerator = {
         return pattern.test(nameWithoutExt);
     },
 
-    // 파일 검증
+    // 파일 검증 (DOCX 필수, PDF 선택)
     validateFiles() {
         const warnings = [];
-        const selectedPubno = this.selectedRegulation.pubno.replace(/\.$/, ''); // 끝의 점 제거
-
-        // PDF 파일 검증
-        const pdfPubno = this.extractPubnoFromFilename(this.pdfFile.name);
-        const pdfFormatValid = this.validateFilenameFormat(this.pdfFile.name);
+        const selectedPubno = this.selectedRegulation.pubno.replace(/\.$/, '');
 
         // DOCX 파일 검증
         const docxPubno = this.extractPubnoFromFilename(this.docxFile.name);
         const docxFormatValid = this.validateFilenameFormat(this.docxFile.name);
 
-        // 분류번호 불일치 검사
-        if (pdfPubno && pdfPubno !== selectedPubno) {
-            warnings.push(`PDF 파일의 분류번호(${pdfPubno})가 선택한 규정(${selectedPubno})과 다릅니다.`);
-        }
         if (docxPubno && docxPubno !== selectedPubno) {
             warnings.push(`DOCX 파일의 분류번호(${docxPubno})가 선택한 규정(${selectedPubno})과 다릅니다.`);
         }
-
-        // 파일명 형식 검사
-        if (!pdfFormatValid) {
-            warnings.push(`PDF 파일명이 권장 형식이 아닙니다.\n현재: ${this.pdfFile.name}\n권장: "${selectedPubno}. 규정명_YYYYMM개정.pdf"`);
-        }
         if (!docxFormatValid) {
             warnings.push(`DOCX 파일명이 권장 형식이 아닙니다.\n현재: ${this.docxFile.name}\n권장: "${selectedPubno}. 규정명_YYYYMM개정.docx"`);
+        }
+
+        // PDF 파일 검증 (있는 경우만)
+        if (this.pdfFile) {
+            const pdfPubno = this.extractPubnoFromFilename(this.pdfFile.name);
+            const pdfFormatValid = this.validateFilenameFormat(this.pdfFile.name);
+
+            if (pdfPubno && pdfPubno !== selectedPubno) {
+                warnings.push(`PDF 파일의 분류번호(${pdfPubno})가 선택한 규정(${selectedPubno})과 다릅니다.`);
+            }
+            if (!pdfFormatValid) {
+                warnings.push(`PDF 파일명이 권장 형식이 아닙니다.\n현재: ${this.pdfFile.name}\n권장: "${selectedPubno}. 규정명_YYYYMM개정.pdf"`);
+            }
         }
 
         return warnings;
     },
 
     async generate() {
-        if (!this.selectedRegulation || !this.pdfFile || !this.docxFile) {
-            alert('규정과 파일을 모두 선택해주세요.');
+        if (!this.selectedRegulation || !this.docxFile) {
+            alert('규정을 선택하고 DOCX 파일을 업로드해주세요.');
             return;
         }
 
-        // 파일 검증
+        // 파일 검증 (DOCX 필수, PDF 선택)
         const warnings = this.validateFiles();
         if (warnings.length > 0) {
             const message = "⚠️ 파일 검증 경고:\n\n" + warnings.join('\n\n') + "\n\n정말 이 파일로 신구대비표를 생성하시겠습니까?";
             if (!confirm(message)) {
-                return; // 사용자가 취소하면 중단
+                return;
             }
         }
 
@@ -1073,7 +1074,9 @@ const ComparisonGenerator = {
             formData.append('rule_id', this.selectedRegulation.id);
             formData.append('remarks', document.getElementById('remarks').value);
             formData.append('output_format', outputFormat);
-            formData.append('pdf_file', this.pdfFile);
+            if (this.pdfFile) {
+                formData.append('pdf_file', this.pdfFile);
+            }
             formData.append('docx_file', this.docxFile);
 
             statusText.textContent = '신구대비표를 생성하는 중입니다...';

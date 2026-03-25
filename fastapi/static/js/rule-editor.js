@@ -2170,17 +2170,17 @@ const RuleEditor = {
                             📊 또는 신구대비표 자동 생성
                         </div>
                         <p style="color: #6c757d; font-size: 12px; margin-bottom: 12px;">
-                            새 버전의 PDF와 DOCX 파일을 모두 업로드하면 현행 규정과 비교하여 신구대비표를 자동 생성합니다.
+                            새 버전의 DOCX 파일을 업로드하면 현행 규정과 비교하여 신구대비표를 자동 생성합니다. (PDF는 선택사항)
                         </p>
                         <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                             <div style="flex: 1;">
-                                <label style="font-size: 12px; color: #555; display: block; margin-bottom: 4px;">새 버전 PDF</label>
-                                <input type="file" id="autoGenPdfFile" accept=".pdf"
+                                <label style="font-size: 12px; color: #555; display: block; margin-bottom: 4px;">새 버전 DOCX <span style="color: #dc3545;">*필수</span></label>
+                                <input type="file" id="autoGenDocxFile" accept=".docx"
                                        style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px;" />
                             </div>
                             <div style="flex: 1;">
-                                <label style="font-size: 12px; color: #555; display: block; margin-bottom: 4px;">새 버전 DOCX</label>
-                                <input type="file" id="autoGenDocxFile" accept=".docx"
+                                <label style="font-size: 12px; color: #555; display: block; margin-bottom: 4px;">새 버전 PDF <span style="color: #999;">(선택)</span></label>
+                                <input type="file" id="autoGenPdfFile" accept=".pdf"
                                        style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px;" />
                             </div>
                         </div>
@@ -3339,8 +3339,8 @@ ${mergeResult.text_content || ''}
         const pdfFile = document.getElementById('autoGenPdfFile')?.files[0];
         const docxFile = document.getElementById('autoGenDocxFile')?.files[0];
 
-        if (!pdfFile || !docxFile) {
-            alert('신구대비표 자동 생성에는 새 버전의 PDF와 DOCX 파일이 모두 필요합니다.');
+        if (!docxFile) {
+            alert('신구대비표 자동 생성에는 새 버전의 DOCX 파일이 필요합니다.');
             return;
         }
 

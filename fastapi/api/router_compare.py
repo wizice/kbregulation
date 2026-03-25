@@ -1389,17 +1389,20 @@ def parse_docx_to_json(file_content: bytes, filename: str, wzruleid: int) -> Dic
 @router.post("/upload-compare")
 async def upload_and_compare(
     rule_id: int = Form(..., description="현행 규정 시퀀스 (wzruleseq)"),
-    pdf_file: UploadFile = File(..., description="비교할 PDF 파일 (필수)"),
+    pdf_file: UploadFile = File(default=None, description="비교할 PDF 파일 (선택)"),
     docx_file: UploadFile = File(..., description="비교할 DOCX 파일 (필수)"),
     user: Dict[str, Any] = Depends(get_current_user)
 ):
-    """현행 규정과 업로드된 파일 비교 (PDF+DOCX 병합)"""
+    """현행 규정과 업로드된 파일 비교 (DOCX 필수, PDF 선택)"""
     try:
-        if not pdf_file.filename.lower().endswith('.pdf'):
-            raise HTTPException(status_code=400, detail="PDF 파일만 업로드 가능합니다.")
+        if not docx_file or not docx_file.filename:
+            raise HTTPException(status_code=400, detail="DOCX 파일을 업로드해주세요.")
 
         if not docx_file.filename.lower().endswith('.docx'):
             raise HTTPException(status_code=400, detail="DOCX 파일만 업로드 가능합니다.")
+
+        if pdf_file and pdf_file.filename and not pdf_file.filename.lower().endswith('.pdf'):
+            raise HTTPException(status_code=400, detail="PDF 파일은 .pdf 형식만 가능합니다.")
 
         current_rule = get_regulation_info(rule_id)
         if not current_rule:
@@ -1409,6 +1412,7 @@ async def upload_and_compare(
         if not current_json:
             raise HTTPException(status_code=404, detail="현행 규정의 JSON 파일을 찾을 수 없습니다.")
 
+        # DOCX 파싱 (필수)
         docx_content = await docx_file.read()
         docx_result = parse_docx_to_json(
             file_content=docx_content,
@@ -1422,28 +1426,32 @@ async def upload_and_compare(
                 detail=f"DOCX 파싱 실패: {docx_result.get('error')}"
             )
 
-        pdf_content = await pdf_file.read()
-        pdf_result = parse_pdf_to_json(
-            file_content=pdf_content,
-            filename=pdf_file.filename
-        )
-
-        if not pdf_result.get('success'):
-            raise HTTPException(
-                status_code=400,
-                detail=f"PDF 파싱 실패: {pdf_result.get('error')}"
+        # PDF가 있으면 병합, 없으면 DOCX만 사용
+        if pdf_file and pdf_file.filename:
+            pdf_content = await pdf_file.read()
+            pdf_result = parse_pdf_to_json(
+                file_content=pdf_content,
+                filename=pdf_file.filename
             )
 
-        merged_result = merge_pdf_docx_data(pdf_result, docx_result)
-        if not merged_result.get('success'):
-            raise HTTPException(
-                status_code=400,
-                detail=f"PDF+DOCX 병합 실패: {merged_result.get('error')}"
-            )
+            if pdf_result.get('success'):
+                merged_result = merge_pdf_docx_data(pdf_result, docx_result)
+                if merged_result.get('success'):
+                    new_articles = merged_result.get('articles', [])
+                    parse_mode = "PDF+DOCX 병합"
+                else:
+                    logger.warning(f"PDF+DOCX 병합 실패, DOCX만 사용: {merged_result.get('error')}")
+                    new_articles = docx_result.get('articles', [])
+                    parse_mode = "DOCX 단독 (병합 실패)"
+            else:
+                logger.warning(f"PDF 파싱 실패, DOCX만 사용: {pdf_result.get('error')}")
+                new_articles = docx_result.get('articles', [])
+                parse_mode = "DOCX 단독 (PDF 파싱 실패)"
+        else:
+            new_articles = docx_result.get('articles', [])
+            parse_mode = "DOCX 단독"
 
-        new_articles = merged_result.get('articles', [])
-        parse_mode = "PDF+DOCX 병합"
-        logger.info(f"[COMPARE] Merged PDF+DOCX: {len(new_articles)} articles")
+        logger.info(f"[COMPARE] {parse_mode}: {len(new_articles)} articles")
 
         old_articles = current_json.get('조문내용', [])
         changes = compare_articles(old_articles, new_articles)
@@ -2321,17 +2329,20 @@ async def generate_and_download_comparison(
     rule_id: int = Form(..., description="현행 규정 시퀀스 (wzruleseq)"),
     remarks: str = Form(default="", description="비고 (개정 사유)"),
     output_format: str = Form(default="pdf", description="출력 형식 (pdf 또는 docx)"),
-    pdf_file: UploadFile = File(..., description="비교할 PDF 파일 (필수)"),
+    pdf_file: UploadFile = File(default=None, description="비교할 PDF 파일 (선택)"),
     docx_file: UploadFile = File(..., description="비교할 DOCX 파일 (필수)"),
     user: Dict[str, Any] = Depends(get_current_user)
 ):
-    """신구대비표 PDF/DOCX 생성 후 바로 다운로드 (DB 저장 안함)"""
+    """신구대비표 PDF/DOCX 생성 후 바로 다운로드 (DB 저장 안함). DOCX 필수, PDF 선택."""
     try:
-        if not pdf_file.filename.lower().endswith('.pdf'):
-            raise HTTPException(status_code=400, detail="PDF 파일만 업로드 가능합니다.")
+        if not docx_file or not docx_file.filename:
+            raise HTTPException(status_code=400, detail="DOCX 파일을 업로드해주세요.")
 
         if not docx_file.filename.lower().endswith('.docx'):
             raise HTTPException(status_code=400, detail="DOCX 파일만 업로드 가능합니다.")
+
+        if pdf_file and pdf_file.filename and not pdf_file.filename.lower().endswith('.pdf'):
+            raise HTTPException(status_code=400, detail="PDF 파일은 .pdf 형식만 가능합니다.")
 
         current_rule = get_regulation_info(rule_id)
         if not current_rule:
@@ -2341,6 +2352,7 @@ async def generate_and_download_comparison(
         if not current_json:
             raise HTTPException(status_code=404, detail="현행 규정의 JSON 파일을 찾을 수 없습니다.")
 
+        # DOCX 파싱 (필수)
         docx_content = await docx_file.read()
         docx_result = parse_docx_to_json(
             file_content=docx_content,
@@ -2354,26 +2366,26 @@ async def generate_and_download_comparison(
                 detail=f"DOCX 파싱 실패: {docx_result.get('error')}"
             )
 
-        pdf_content = await pdf_file.read()
-        pdf_result = parse_pdf_to_json(
-            file_content=pdf_content,
-            filename=pdf_file.filename
-        )
-
-        if not pdf_result.get('success'):
-            raise HTTPException(
-                status_code=400,
-                detail=f"PDF 파싱 실패: {pdf_result.get('error')}"
+        # PDF가 있으면 파싱 후 병합, 없으면 DOCX 결과만 사용
+        if pdf_file and pdf_file.filename:
+            pdf_content = await pdf_file.read()
+            pdf_result = parse_pdf_to_json(
+                file_content=pdf_content,
+                filename=pdf_file.filename
             )
 
-        merged_result = merge_pdf_docx_data(pdf_result, docx_result)
-        if not merged_result.get('success'):
-            raise HTTPException(
-                status_code=400,
-                detail=f"PDF+DOCX 병합 실패: {merged_result.get('error')}"
-            )
-
-        new_articles = merged_result.get('articles', [])
+            if pdf_result.get('success'):
+                merged_result = merge_pdf_docx_data(pdf_result, docx_result)
+                if merged_result.get('success'):
+                    new_articles = merged_result.get('articles', [])
+                else:
+                    logger.warning(f"PDF+DOCX 병합 실패, DOCX만 사용: {merged_result.get('error')}")
+                    new_articles = docx_result.get('articles', [])
+            else:
+                logger.warning(f"PDF 파싱 실패, DOCX만 사용: {pdf_result.get('error')}")
+                new_articles = docx_result.get('articles', [])
+        else:
+            new_articles = docx_result.get('articles', [])
         old_articles = current_json.get('조문내용', [])
 
         new_rule = {
