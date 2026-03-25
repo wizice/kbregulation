@@ -174,6 +174,27 @@ def load_json_content(rule_info: Dict) -> Optional[Dict]:
                 with open(merge_path, 'r', encoding='utf-8') as f:
                     return json.load(f)
 
+        # 5. www/static/file/ 에서 pubno+name 패턴으로 검색
+        wzpubno = rule_info.get('wzpubno', '')
+        wzname = rule_info.get('wzname', '')
+        if wzpubno and wzname:
+            www_pattern = WWW_JSON_DIR / f"({wzpubno})_{wzname}.json"
+            if www_pattern.exists():
+                logger.info(f"Loading JSON from www by pubno+name: {www_pattern}")
+                with open(www_pattern, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+
+        # 6. www/static/file/ 에서 pubno로 시작하는 파일 검색
+        if wzpubno:
+            import glob
+            pattern = str(WWW_JSON_DIR / f"({wzpubno})_*.json")
+            matches = glob.glob(pattern)
+            if matches:
+                match_path = matches[0]
+                logger.info(f"Loading JSON from www by pubno glob: {match_path}")
+                with open(match_path, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+
         return None
     except Exception as e:
         logger.error(f"Error loading JSON content: {e}")
