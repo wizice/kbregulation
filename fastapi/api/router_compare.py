@@ -799,8 +799,8 @@ async def compare_two_versions(
         if not new_json:
             raise HTTPException(status_code=404, detail="신 규정의 JSON 파일을 찾을 수 없습니다.")
 
-        old_articles = old_json.get('조문내용', [])
-        new_articles = new_json.get('조문내용', [])
+        old_articles = old_json.get('조문내용', []) or old_json.get('sections', [])
+        new_articles = new_json.get('조문내용', []) or new_json.get('sections', [])
 
         changes = compare_articles(old_articles, new_articles)
 
@@ -858,8 +858,8 @@ async def generate_comparison_html(
         if not old_json or not new_json:
             raise HTTPException(status_code=404, detail="JSON 파일을 찾을 수 없습니다.")
 
-        old_articles = old_json.get('조문내용', [])
-        new_articles = new_json.get('조문내용', [])
+        old_articles = old_json.get('조문내용', []) or old_json.get('sections', [])
+        new_articles = new_json.get('조문내용', []) or new_json.get('sections', [])
         changes = compare_articles(old_articles, new_articles)
 
         html = generate_comparison_table_html(old_rule, new_rule, changes)
@@ -1181,8 +1181,8 @@ async def compare_with_parsed_json(
         with open(json_path, 'r', encoding='utf-8') as f:
             new_json = json.load(f)
 
-        old_articles = current_json.get('조문내용', [])
-        new_articles = new_json.get('조문내용', [])
+        old_articles = current_json.get('조문내용', []) or current_json.get('sections', [])
+        new_articles = new_json.get('조문내용', []) or new_json.get('sections', [])
 
         changes = compare_articles(old_articles, new_articles)
 
@@ -1474,7 +1474,7 @@ async def upload_and_compare(
 
         logger.info(f"[COMPARE] {parse_mode}: {len(new_articles)} articles")
 
-        old_articles = current_json.get('조문내용', [])
+        old_articles = current_json.get('조문내용', []) or current_json.get('sections', [])
         changes = compare_articles(old_articles, new_articles)
 
         stats = {
@@ -2162,7 +2162,7 @@ async def save_comparison_table(
         new_articles = merged_result.get('articles', [])
         logger.info(f"[SAVE-COMPARE] Merged PDF+DOCX: {len(new_articles)} articles")
 
-        old_articles = current_json.get('조문내용', [])
+        old_articles = current_json.get('조문내용', []) or current_json.get('sections', [])
         changes = compare_articles(old_articles, new_articles)
 
         new_rule = {
@@ -2407,7 +2407,7 @@ async def generate_and_download_comparison(
                 new_articles = docx_result.get('articles', [])
         else:
             new_articles = docx_result.get('articles', [])
-        old_articles = current_json.get('조문내용', [])
+        old_articles = current_json.get('조문내용', []) or current_json.get('sections', [])
 
         new_rule = {
             'wzruleseq': None,

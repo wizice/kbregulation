@@ -1176,8 +1176,8 @@ const RuleEditor = {
             statusElement.innerHTML = '<span style="color: green;">✓ 파일 선택됨</span>';
         }
 
-        // 두 파일이 모두 선택되면 업로드 버튼 활성화
-        if (this.uploadedFiles.pdf && this.uploadedFiles.docx) {
+        // DOCX 파일이 선택되면 업로드 버튼 활성화
+        if (this.uploadedFiles.docx) {
             const uploadBtn = document.getElementById('uploadBtn');
             if (uploadBtn) {
                 uploadBtn.disabled = false;
@@ -2278,7 +2278,7 @@ const RuleEditor = {
         if (comparisonFile) {
             this.pendingComparisonFile = comparisonFile;
         }
-        console.log('[RuleEditor] 신구대비표 파일 준비됨:', comparisonFile.name);
+        console.log('[RuleEditor] 신구대비표 파일 준비됨:', this.pendingComparisonFile?.name || 'auto-generated');
 
         // 날짜 정보 저장 (DB 형식으로 변환: YYYY-MM-DD -> YYYY.MM.DD)
         this.revisionInfo = {
