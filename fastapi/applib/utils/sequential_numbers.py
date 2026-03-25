@@ -98,22 +98,65 @@ def extract_numbers_from_docx(file_path: str) -> List[Dict[str, Any]]:
     current_level = 0
     found_content_start = False
     parsing_revision_history = False
-    
-    for i, paragraph in enumerate(doc.paragraphs):
-        # 윗첨자/아랫첨자를 포함한 텍스트 추출
-        raw_text = extract_formatted_text_from_paragraph(paragraph)
-        raw_indent = len(raw_text) - len(raw_text.lstrip())
-        text = raw_text.strip()
-        if not text:
-            continue
 
-        # 원본 텍스트 저장
-        original_text = text
+    # ── 테이블 1x1 셀의 장/절 제목을 paragraph 목록에 삽입 ──
+    # body 요소를 순서대로 순회하여 table → paragraph 순서 유지
+    from docx.oxml.ns import qn as _qn2
+    from docx.table import Table as _Table
+    from docx.text.paragraph import Paragraph as _Paragraph
+
+    _ordered_elements = []  # (type, element) 리스트
+    for _elem in doc.element.body:
+        _tag = _elem.tag.split('}')[-1] if '}' in _elem.tag else _elem.tag
+        if _tag == 'p':
+            _ordered_elements.append(('para', _Paragraph(_elem, doc)))
+        elif _tag == 'tbl':
+            _tbl = _Table(_elem, doc)
+            # 1x1 테이블이고 장/절/서문 제목인 경우만 추출
+            if len(_tbl.rows) == 1 and len(_tbl.columns) == 1:
+                _cell_text = _tbl.cell(0, 0).text.strip()
+                if _cell_text and (re.match(r'^제\s*\d+\s*(장|절)', _cell_text) or
+                                   re.match(r'^(서\s*문|전\s*문|총\s*칙|부\s*칙)', _cell_text) or
+                                   len(_cell_text) < 30):
+                    _ordered_elements.append(('table_title', _cell_text))
+
+    # paragraph 인덱스 매핑 (기존 _after_table_indices와 호환)
+    _para_counter = 0
+    _all_paragraphs = []  # (index_for_compat, paragraph_or_text, is_table_title)
+    for etype, elem in _ordered_elements:
+        if etype == 'para':
+            _all_paragraphs.append((_para_counter, elem, False))
+            _para_counter += 1
+        elif etype == 'table_title':
+            _all_paragraphs.append((-1, elem, True))
+
+    for i, (orig_idx, para_or_text, is_table_title) in enumerate(_all_paragraphs):
+        if is_table_title:
+            # 테이블 제목 → 가상 paragraph로 처리
+            text = para_or_text.strip()
+            raw_indent = 0
+            original_text = text
+            paragraph = None  # alignment 등 없음
+        else:
+            paragraph = para_or_text
+            # 윗첨자/아랫첨자를 포함한 텍스트 추출
+            raw_text = extract_formatted_text_from_paragraph(paragraph)
+            raw_indent = len(raw_text) - len(raw_text.lstrip())
+            text = raw_text.strip()
+            if not text:
+                continue
+            original_text = text
         
         # 문서 시작 지점 감지 - KB신용정보 사규는 제1장 또는 제1조로 시작
         if not found_content_start:
             # 제1장 또는 제1조 패턴 확인 (공백 허용: "제 1 장", "제 1 조")
             if re.match(r'^제\s*1\s*장|^제\s*1\s*조', text):
+                found_content_start = True
+            # 비정형 문서: 제X장/제X조 없이 "총칙", "1. xxx" 등으로 시작하는 경우
+            elif re.match(r'^(총\s*칙|서\s*문|전\s*문)', text):
+                found_content_start = True
+            elif i > 5 and re.match(r'^\d+\.\s+\S', text):
+                # 6번째 paragraph 이후에 "1. xxx" 패턴이 나오면 시작으로 간주
                 found_content_start = True
             # 시행일, 제정일 등의 메타데이터를 건너뜀
             if not found_content_start:
@@ -124,7 +167,16 @@ def extract_numbers_from_docx(file_path: str) -> List[Dict[str, Any]]:
             parsing_revision_history = True
 
         # 번호 형식 추출
-        number_info = extract_numbering(paragraph, text)
+        if paragraph is not None:
+            number_info = extract_numbering(paragraph, text)
+        else:
+            # 테이블 제목: 텍스트 기반으로 장/절 감지
+            number_info = None
+            m = re.match(r'^제\s*(\d+)\s*(장|절)', text)
+            if m:
+                number_info = {"level": 0, "number": f"제{m.group(1)}{m.group(2)}", "type": "chapter"}
+            elif re.match(r'^(서\s*문|전\s*문)', text):
+                number_info = {"level": 0, "number": "", "type": "chapter"}
 
         # 번호 형식이 추출된 경우 레벨별 카운터 관리
         if number_info:
@@ -331,44 +383,49 @@ def extract_numbers_from_docx(file_path: str) -> List[Dict[str, Any]]:
                 full_text = f"{generated_number} {text}"  # 번호 추가
 
             # rich_content 계산 (bold 서식 보존)
-            # 번호가 원본 텍스트에 포함된 경우, 번호 접두어 길이만큼 건너뛰기
-            plain_from_runs = ''.join(run.text for run in paragraph.runs if run.text)
-            _leading_ws = len(plain_from_runs) - len(plain_from_runs.lstrip())
-            _prefix_len = 0
-            if has_numbering:
-                _stripped = plain_from_runs.strip()
-                for _p in NUMBER_PREFIX_PATTERNS:
-                    _m = re.match(_p, _stripped)
-                    if _m:
-                        _prefix_len = len(_m.group(0))
-                        break
-            rich_content = extract_rich_text_from_paragraph(
-                paragraph, skip_prefix_len=_leading_ws + _prefix_len)
+            if paragraph is not None:
+                plain_from_runs = ''.join(run.text for run in paragraph.runs if run.text)
+                _leading_ws = len(plain_from_runs) - len(plain_from_runs.lstrip())
+                _prefix_len = 0
+                if has_numbering:
+                    _stripped = plain_from_runs.strip()
+                    for _p in NUMBER_PREFIX_PATTERNS:
+                        _m = re.match(_p, _stripped)
+                        if _m:
+                            _prefix_len = len(_m.group(0))
+                            break
+                rich_content = extract_rich_text_from_paragraph(
+                    paragraph, skip_prefix_len=_leading_ws + _prefix_len)
 
-            # 정렬 정보 추출
-            try:
-                _align_val = paragraph.paragraph_format.alignment
-            except ValueError:
-                _align_val = None
-            _alignment = None
-            if _align_val == WD_ALIGN_PARAGRAPH.CENTER:
+                # 정렬 정보 추출
+                try:
+                    _align_val = paragraph.paragraph_format.alignment
+                except ValueError:
+                    _align_val = None
+                _alignment = None
+                if _align_val == WD_ALIGN_PARAGRAPH.CENTER:
+                    _alignment = 'center'
+                elif _align_val == WD_ALIGN_PARAGRAPH.RIGHT:
+                    _alignment = 'right'
+
+                # 폰트 크기/패밀리 추출
+                _size_counter = Counter()
+                for _run in paragraph.runs:
+                    if _run.font.size and _run.text.strip():
+                        _size_counter[_run.font.size / 12700] += len(_run.text.strip())
+                _font_size_pt = _size_counter.most_common(1)[0][0] if _size_counter else None
+
+                _font_counter = Counter()
+                for _run in paragraph.runs:
+                    if _run.font.name and _run.text.strip():
+                        _font_counter[_run.font.name] += len(_run.text.strip())
+                _font_family = _font_counter.most_common(1)[0][0] if _font_counter else None
+            else:
+                # 테이블 제목: 서식 정보 없음
+                rich_content = f"<b>{text}</b>"
                 _alignment = 'center'
-            elif _align_val == WD_ALIGN_PARAGRAPH.RIGHT:
-                _alignment = 'right'
-
-            # 폰트 크기 추출 (단락 내 가장 많이 사용된 크기, pt 단위)
-            _size_counter = Counter()
-            for _run in paragraph.runs:
-                if _run.font.size and _run.text.strip():
-                    _size_counter[_run.font.size / 12700] += len(_run.text.strip())
-            _font_size_pt = _size_counter.most_common(1)[0][0] if _size_counter else None
-
-            # 폰트 패밀리 추출 (단락 내 가장 많이 사용된 폰트)
-            _font_counter = Counter()
-            for _run in paragraph.runs:
-                if _run.font.name and _run.text.strip():
-                    _font_counter[_run.font.name] += len(_run.text.strip())
-            _font_family = _font_counter.most_common(1)[0][0] if _font_counter else None
+                _font_size_pt = None
+                _font_family = None
 
             # 결과 저장
             results.append({
@@ -385,7 +442,7 @@ def extract_numbers_from_docx(file_path: str) -> List[Dict[str, Any]]:
                 "alignment": _alignment,
                 "font_size_pt": _font_size_pt,
                 "font_family": _font_family,
-                "after_table": i in _after_table_indices,
+                "after_table": is_table_title or (orig_idx in _after_table_indices),
             })
 
             current_level = level
@@ -409,36 +466,39 @@ def extract_numbers_from_docx(file_path: str) -> List[Dict[str, Any]]:
             elif indent_level >= 4:
                 level = 2
                 
-            # rich_content 계산 (번호 없는 텍스트 - leading whitespace만 건너뛰기)
-            plain_from_runs = ''.join(run.text for run in paragraph.runs if run.text)
-            _leading_ws = len(plain_from_runs) - len(plain_from_runs.lstrip())
-            rich_content = extract_rich_text_from_paragraph(
-                paragraph, skip_prefix_len=_leading_ws)
+            # rich_content 계산
+            if paragraph is not None:
+                plain_from_runs = ''.join(run.text for run in paragraph.runs if run.text)
+                _leading_ws = len(plain_from_runs) - len(plain_from_runs.lstrip())
+                rich_content = extract_rich_text_from_paragraph(
+                    paragraph, skip_prefix_len=_leading_ws)
 
-            # 정렬 정보 추출
-            try:
-                _align_val = paragraph.paragraph_format.alignment
-            except ValueError:
-                _align_val = None
-            _alignment = None
-            if _align_val == WD_ALIGN_PARAGRAPH.CENTER:
+                try:
+                    _align_val = paragraph.paragraph_format.alignment
+                except ValueError:
+                    _align_val = None
+                _alignment = None
+                if _align_val == WD_ALIGN_PARAGRAPH.CENTER:
+                    _alignment = 'center'
+                elif _align_val == WD_ALIGN_PARAGRAPH.RIGHT:
+                    _alignment = 'right'
+
+                _size_counter = Counter()
+                for _run in paragraph.runs:
+                    if _run.font.size and _run.text.strip():
+                        _size_counter[_run.font.size / 12700] += len(_run.text.strip())
+                _font_size_pt = _size_counter.most_common(1)[0][0] if _size_counter else None
+
+                _font_counter = Counter()
+                for _run in paragraph.runs:
+                    if _run.font.name and _run.text.strip():
+                        _font_counter[_run.font.name] += len(_run.text.strip())
+                _font_family = _font_counter.most_common(1)[0][0] if _font_counter else None
+            else:
+                rich_content = f"<b>{text}</b>"
                 _alignment = 'center'
-            elif _align_val == WD_ALIGN_PARAGRAPH.RIGHT:
-                _alignment = 'right'
-
-            # 폰트 크기 추출 (단락 내 가장 많이 사용된 크기, pt 단위)
-            _size_counter = Counter()
-            for _run in paragraph.runs:
-                if _run.font.size and _run.text.strip():
-                    _size_counter[_run.font.size / 12700] += len(_run.text.strip())
-            _font_size_pt = _size_counter.most_common(1)[0][0] if _size_counter else None
-
-            # 폰트 패밀리 추출 (단락 내 가장 많이 사용된 폰트)
-            _font_counter = Counter()
-            for _run in paragraph.runs:
-                if _run.font.name and _run.text.strip():
-                    _font_counter[_run.font.name] += len(_run.text.strip())
-            _font_family = _font_counter.most_common(1)[0][0] if _font_counter else None
+                _font_size_pt = None
+                _font_family = None
 
             results.append({
                 "paragraph_index": i,
@@ -454,7 +514,7 @@ def extract_numbers_from_docx(file_path: str) -> List[Dict[str, Any]]:
                 "alignment": _alignment,
                 "font_size_pt": _font_size_pt,
                 "font_family": _font_family,
-                "after_table": i in _after_table_indices,
+                "after_table": is_table_title or (orig_idx in _after_table_indices),
             })
     
     return results
