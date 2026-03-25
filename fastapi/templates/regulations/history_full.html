@@ -462,10 +462,12 @@ function selectClassification(cateId, cateName) {
 function displayRegulations(cateId) {
     const section = document.getElementById('regulationListSection');
 
-    // publication_no가 cateId로 시작하는 내규 필터링
+    // wzpubno가 cateId-로 시작하는 내규 필터링 (KB형식: "6-5" → cateId="6")
     const filtered = regulationsData.filter(reg => {
-        const pubNo = reg.publication_no || '';
-        return pubNo.startsWith(cateId + '.');
+        const pubNo = reg.wzpubno || reg.publication_no || '';
+        // KB형식: "6-5" → split('-')[0] === cateId
+        // 세브란스형식: "6.5.1" → startsWith(cateId + '.')
+        return pubNo.split('-')[0] === String(cateId) || pubNo.startsWith(cateId + '.');
     });
 
     if (!filtered || filtered.length === 0) {
@@ -481,18 +483,23 @@ function displayRegulations(cateId) {
     section.innerHTML = `
         <div class="regulation-list">
             ${filtered.map(reg => {
-                // 해당 내규의 연혁 개수 계산
+                const pubno = reg.wzpubno || reg.publication_no || '';
+                const name = reg.wzname || reg.name || '제목 없음';
+                const ruleId = reg.wzruleseq || reg.rule_id;
+                const wzruleid = reg.wzruleid;
+
+                // 해당 내규의 연혁 개수 계산 (wzruleid 또는 wzname으로 매칭)
                 const historyCount = historyData.filter(h =>
-                    h.wzruleid === reg.publication_no || h.wzname === reg.name
+                    h.wzruleid === wzruleid || h.wzname === name
                 ).length;
 
                 return `
-                    <div class="regulation-item" onclick="selectRegulation(${reg.rule_id})" id="reg-${reg.rule_id}">
+                    <div class="regulation-item" onclick="selectRegulation(${ruleId})" id="reg-${ruleId}">
                         <div class="regulation-title">
-                            ${reg.publication_no || '-'} ${reg.name || '제목 없음'}
+                            ${pubno} ${name}
                             ${historyCount > 0 ? `<span class="tree-item-badge" style="margin-left: 8px;">${historyCount}개</span>` : ''}
                         </div>
-                        <div class="regulation-info"><span style="color: #9ca3af;">제정일:</span> ${formatDate(reg.established_date)}</div>
+                        <div class="regulation-info"><span style="color: #9ca3af;">제정일:</span> ${formatDate(reg.wzestabdate || reg.established_date)}</div>
                     </div>
                 `;
             }).join('')}
@@ -522,8 +529,8 @@ async function loadHistoryForRegulation(ruleId) {
         const data = await response.json();
 
         if (data.success) {
-            // 선택한 내규와 같은 wzRuleId를 가진 연혁만 필터링
-            const selectedReg = regulationsData.find(r => r.rule_id === ruleId);
+            // 선택한 내규와 같은 wzruleid를 가진 연혁만 필터링
+            const selectedReg = regulationsData.find(r => (r.wzruleseq || r.rule_id) === ruleId);
             if (!selectedReg) {
                 historySection.innerHTML = `
                     <div class="empty-state">
@@ -534,8 +541,13 @@ async function loadHistoryForRegulation(ruleId) {
                 return;
             }
 
-            // wzruleid로 연혁 필터링
-            const histories = data.data.filter(h => h.wzruleid === selectedReg.publication_no || h.wzname === selectedReg.name);
+            const regName = selectedReg.wzname || selectedReg.name;
+            const regRuleId = selectedReg.wzruleid;
+
+            // wzruleid(숫자)로 연혁 필터링, fallback으로 wzname 비교
+            const histories = data.data.filter(h =>
+                (regRuleId && h.wzruleid === regRuleId) || h.wzname === regName
+            );
 
             if (!histories || histories.length === 0) {
                 historySection.innerHTML = `
