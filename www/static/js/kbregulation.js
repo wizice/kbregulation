@@ -6243,20 +6243,35 @@ async function openComparisonTablePdf(regulationCode, regulationName, wzRuleSeq)
             }
         }
 
-        // 신규 방식으로 파일을 못 찾으면 레거시 방식 시도
+        // 2순위: API로 DB에서 비교표 경로 조회
+        if (wzRuleSeq) {
+            try {
+                const apiResp = await fetch(`/api/v1/rule-public/comparison-table/${wzRuleSeq}`, { credentials: 'include' });
+                if (apiResp.ok) {
+                    const apiData = await apiResp.json();
+                    if (apiData.success && apiData.file_path) {
+                        pdfPath = `/static/pdf/${apiData.file_path}`;
+                        console.log('[API] 신구대비표 경로:', pdfPath);
+                        const pdfPathWithTimestamp = `/static/viewer/web/viewer.html?file=${pdfPath}?ts=${timestamp}`;
+                        openPdfViewer(pdfPathWithTimestamp);
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.log('API 조회 실패, 레거시 방식 시도');
+            }
+        }
+
+        // 3순위: 레거시 방식 시도
         pdfPath = `/static/pdf/comparisonTable/comparisonTable_${regulationCode}.pdf`;
         console.log('신구대비표 파일 경로 (레거시):', pdfPath);
 
-        // 파일 존재 여부 확인
         const response = await fetch(pdfPath, { method: 'HEAD' });
-
         if (!response.ok) {
-            // 파일이 없으면 한글 메시지 표시
             showToast('신구대비표가 존재하지 않습니다.', 'error');
             return;
         }
 
-        // ✅ 레거시 파일이 존재하면 PDF 열기
         const pdfPathWithTimestamp = `/static/viewer/web/viewer.html?file=${pdfPath}?ts=${timestamp}`;
         openPdfViewer(pdfPathWithTimestamp);
 
