@@ -3305,6 +3305,7 @@ def sync_json_to_static_file(
 
         # Step 3: 이미지 동기화 (wzruleid 기반)
         # wzruleid 추출 (파일명에서 또는 DB에서)
+        new_filename = static_filename  # Step 2에서 결정된 파일명
         try:
             # 파일명이 wzruleid.json 형식인 경우
             if new_filename.replace('.json', '').isdigit():
@@ -3312,7 +3313,6 @@ def sync_json_to_static_file(
             else:
                 # DB에서 wzruleid 조회
                 from .timescaledb_manager_v2 import DatabaseConnectionManager
-                from settings import settings
                 db_config = {
                     'host': settings.DB_HOST,
                     'database': settings.DB_NAME,
