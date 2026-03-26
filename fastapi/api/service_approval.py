@@ -302,7 +302,7 @@ def publish_rule(rule_seq: int, workflow_id: int):
 async def submit_approval(
     request_data: SubmitApprovalRequest,
     request: Request,
-    user: Dict[str, Any] = Depends(get_current_user)
+    user: Dict[str, Any] = Depends(require_role('drafter'))
 ):
     """
     결재 상신 (기안)
@@ -346,9 +346,9 @@ async def submit_approval(
                     request_data.rule_name,
                     request_data.rule_pubno,
                     request_data.total_steps,
-                    user.get('users_id', user.get('username', '')),
-                    user.get('full_name', user.get('username', '')),
-                    user.get('departments', user.get('dept_name', '')),
+                    user.get('username', ''),
+                    user.get('full_name', ''),
+                    user.get('departments', ''),
                     request_data.comment
                 ))
                 workflow_id = cur.fetchone()[0]
@@ -382,8 +382,8 @@ async def submit_approval(
                 log_approval_history(
                     workflow_id=workflow_id,
                     action='SUBMIT',
-                    actor_id=user.get('users_id', user.get('username', '')),
-                    actor_name=user.get('full_name', user.get('username', '')),
+                    actor_id=user.get('username', ''),
+                    actor_name=user.get('full_name', ''),
                     actor_dept=user.get('departments', ''),
                     from_status='DRAFT',
                     to_status='PENDING',
@@ -397,7 +397,7 @@ async def submit_approval(
                 # 5. 다음 결재자에게 알림 발송
                 notify_next_approver(
                     workflow_id=workflow_id,
-                    drafter_name=user.get('full_name', user.get('username', ''))
+                    drafter_name=user.get('full_name', '')
                 )
 
                 return {
@@ -424,7 +424,7 @@ async def get_pending_approvals(
     현재 로그인한 사용자가 결재해야 할 항목들을 반환합니다.
     """
     try:
-        user_id = user.get('users_id', user.get('username', ''))
+        user_id = user.get('username', '')
 
         db_manager = get_db_manager()
         with db_manager.get_connection() as conn:
@@ -461,9 +461,13 @@ async def get_pending_approvals(
 
                 pending_list = []
                 for row in rows:
-                    item = dict(zip(columns, row))
-                    item['drafted_at'] = item['drafted_at'].isoformat() if item['drafted_at'] else None
-                    pending_list.append(item)
+                    try:
+                        item = dict(zip(columns, row))
+                        item['drafted_at'] = item['drafted_at'].isoformat() if item.get('drafted_at') else None
+                        pending_list.append(item)
+                    except (TypeError, ValueError, AttributeError) as e:
+                        logger.warning(f"[Approval] 대기 목록 행 처리 오류 (건너뜀): {e}")
+                        continue
 
                 return {
                     "success": True,
@@ -484,7 +488,7 @@ async def get_my_drafts(
     내가 기안한 결재 목록 조회
     """
     try:
-        user_id = user.get('users_id', user.get('username', ''))
+        user_id = user.get('username', '')
 
         db_manager = get_db_manager()
         with db_manager.get_connection() as conn:
@@ -533,12 +537,83 @@ async def get_my_drafts(
         raise HTTPException(status_code=500, detail="기안 목록 조회 실패")
 
 
+@router.get("/my-requests")
+async def get_my_requests(
+    user: Dict[str, Any] = Depends(get_current_user)
+):
+    """
+    내 결재 관련 요청 전체 조회
+
+    기안자로서 상신한 건 + 결재자로서 배정된 건을 모두 반환합니다.
+    """
+    try:
+        username = user.get('username', '')
+
+        db_manager = get_db_manager()
+        with db_manager.get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT DISTINCT
+                        w.workflow_id,
+                        w.rule_seq,
+                        w.rule_name,
+                        w.rule_pubno,
+                        w.total_steps,
+                        w.current_step,
+                        w.status,
+                        w.drafter_id,
+                        w.drafter_name,
+                        w.drafted_at,
+                        w.completed_at,
+                        CASE
+                            WHEN w.drafter_id = %s THEN 'drafter'
+                            ELSE 'approver'
+                        END AS my_role
+                    FROM wz_approval_workflow w
+                    LEFT JOIN wz_approval_step s ON w.workflow_id = s.workflow_id
+                    WHERE w.drafter_id = %s
+                       OR s.approver_id = %s
+                    ORDER BY w.drafted_at DESC
+                    LIMIT 100
+                """, (username, username, username))
+
+                rows = cur.fetchall()
+                columns = [
+                    'workflow_id', 'rule_seq', 'rule_name', 'rule_pubno',
+                    'total_steps', 'current_step', 'status',
+                    'drafter_id', 'drafter_name', 'drafted_at',
+                    'completed_at', 'my_role'
+                ]
+
+                requests_list = []
+                for row in rows:
+                    try:
+                        item = dict(zip(columns, row))
+                        for date_field in ['drafted_at', 'completed_at']:
+                            if item.get(date_field):
+                                item[date_field] = item[date_field].isoformat()
+                        requests_list.append(item)
+                    except (TypeError, ValueError, AttributeError) as e:
+                        logger.warning(f"[Approval] my-requests 행 처리 오류 (건너뜀): {e}")
+                        continue
+
+                return {
+                    "success": True,
+                    "data": requests_list,
+                    "count": len(requests_list)
+                }
+
+    except Exception as e:
+        logger.error(f"[Approval] 내 결재 요청 조회 실패: {e}")
+        raise HTTPException(status_code=500, detail="내 결재 요청 조회 실패")
+
+
 @router.post("/approve/{workflow_id}")
 async def approve_workflow(
     workflow_id: int,
     request_data: ApproveRequest,
     request: Request,
-    user: Dict[str, Any] = Depends(get_current_user)
+    user: Dict[str, Any] = Depends(require_any_role('approver1', 'approver2', 'admin'))
 ):
     """
     결재 승인
@@ -547,7 +622,7 @@ async def approve_workflow(
     최종 단계인 경우 자동으로 발행 처리됩니다.
     """
     try:
-        user_id = user.get('users_id', user.get('username', ''))
+        user_id = user.get('username', '')
 
         db_manager = get_db_manager()
         with db_manager.get_connection() as conn:
@@ -595,18 +670,17 @@ async def approve_workflow(
                 is_final = (step_order == total_steps)
 
                 if is_final:
-                    # 최종 결재 → 승인 완료 및 자동 발행
+                    # 최종 결재 → 완료 처리 후 자동 발행 (publish_rule이 PUBLISHED로 설정)
                     cur.execute("""
                         UPDATE wz_approval_workflow
                         SET current_step = %s,
-                            status = 'APPROVED',
                             completed_at = NOW(),
                             updated_at = NOW()
                         WHERE workflow_id = %s
                     """, (step_order, workflow_id))
                     conn.commit()
 
-                    # 자동 발행
+                    # 자동 발행 (status를 PUBLISHED로 설정)
                     publish_rule(rule_seq, workflow_id)
 
                     message = "최종 결재가 완료되어 규정이 발행되었습니다."
@@ -629,7 +703,7 @@ async def approve_workflow(
                     step_id=step_id,
                     action='APPROVE',
                     actor_id=user_id,
-                    actor_name=user.get('full_name', user.get('username', '')),
+                    actor_name=user.get('full_name', ''),
                     actor_dept=user.get('departments', ''),
                     from_status=wf_status,
                     to_status='APPROVED' if is_final else 'IN_PROGRESS',
@@ -641,7 +715,7 @@ async def approve_workflow(
                 logger.info(f"[Approval] 결재 승인: workflow_id={workflow_id}, step={step_order}, final={is_final}")
 
                 # 6. 알림 발송
-                approver_name = user.get('full_name', user.get('username', ''))
+                approver_name = user.get('full_name', '')
                 notify_drafter_approved(
                     workflow_id=workflow_id,
                     approver_name=approver_name,
@@ -675,7 +749,7 @@ async def reject_workflow(
     workflow_id: int,
     request_data: RejectRequest,
     request: Request,
-    user: Dict[str, Any] = Depends(get_current_user)
+    user: Dict[str, Any] = Depends(require_any_role('approver1', 'approver2', 'admin'))
 ):
     """
     결재 반려
@@ -683,7 +757,7 @@ async def reject_workflow(
     현재 단계에서 반려하면 워크플로우 전체가 반려됩니다.
     """
     try:
-        user_id = user.get('users_id', user.get('username', ''))
+        user_id = user.get('username', '')
 
         db_manager = get_db_manager()
         with db_manager.get_connection() as conn:
@@ -740,7 +814,7 @@ async def reject_workflow(
                     step_id=step_id,
                     action='REJECT',
                     actor_id=user_id,
-                    actor_name=user.get('full_name', user.get('username', '')),
+                    actor_name=user.get('full_name', ''),
                     actor_dept=user.get('departments', ''),
                     from_status=wf_status,
                     to_status='REJECTED',
@@ -754,7 +828,7 @@ async def reject_workflow(
                 # 6. 기안자에게 반려 알림 발송
                 notify_drafter_rejected(
                     workflow_id=workflow_id,
-                    rejector_name=user.get('full_name', user.get('username', '')),
+                    rejector_name=user.get('full_name', ''),
                     reject_reason=request_data.comment
                 )
 
@@ -970,7 +1044,7 @@ async def get_notifications(
     현재 로그인한 사용자의 알림 목록을 반환합니다.
     """
     try:
-        user_id = user.get('users_id', user.get('username', ''))
+        user_id = user.get('username', '')
 
         db_manager = get_db_manager()
         with db_manager.get_connection() as conn:
@@ -1044,7 +1118,7 @@ async def mark_notification_read(
     알림 읽음 처리
     """
     try:
-        user_id = user.get('users_id', user.get('username', ''))
+        user_id = user.get('username', '')
 
         db_manager = get_db_manager()
         with db_manager.get_connection() as conn:
@@ -1082,7 +1156,7 @@ async def mark_all_notifications_read(
     모든 알림 읽음 처리
     """
     try:
-        user_id = user.get('users_id', user.get('username', ''))
+        user_id = user.get('username', '')
 
         db_manager = get_db_manager()
         with db_manager.get_connection() as conn:
@@ -1115,7 +1189,7 @@ async def get_unread_notification_count(
     읽지 않은 알림 수 조회
     """
     try:
-        user_id = user.get('users_id', user.get('username', ''))
+        user_id = user.get('username', '')
 
         db_manager = get_db_manager()
         with db_manager.get_connection() as conn:
