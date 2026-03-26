@@ -1634,7 +1634,6 @@ def generate_comparison_pdf(old_rule: Dict, new_rule: Dict, changes: List[Dict],
             Paragraph("<b>사규명</b>", header_style),
             Paragraph("<b>현행</b>", header_style),
             Paragraph("<b>개정</b>", header_style),
-            Paragraph("<b>비고</b>", header_style)
         ])
 
         rule_name = f"{new_rule.get('wzpubno', '')} {new_rule.get('wzname', '')}"
@@ -1671,12 +1670,6 @@ def generate_comparison_pdf(old_rule: Dict, new_rule: Dict, changes: List[Dict],
                 old_text = old_clean
                 new_text = new_clean
 
-            if first_row and remarks:
-                remark_text = remarks
-                first_row = False
-            else:
-                remark_text = ""
-
             if len(table_data) == 1:
                 rule_cell = Paragraph(rule_name, cell_style)
             else:
@@ -1686,7 +1679,6 @@ def generate_comparison_pdf(old_rule: Dict, new_rule: Dict, changes: List[Dict],
                 rule_cell,
                 Paragraph(old_text, cell_style),
                 Paragraph(new_text, cell_style),
-                Paragraph(remark_text, cell_style)
             ])
 
         if len(table_data) == 1:
@@ -1694,15 +1686,13 @@ def generate_comparison_pdf(old_rule: Dict, new_rule: Dict, changes: List[Dict],
                 Paragraph(rule_name, cell_style),
                 Paragraph("변경 사항 없음", cell_style),
                 Paragraph("변경 사항 없음", cell_style),
-                Paragraph("", cell_style)
             ])
 
         available_width = page_width - 30*mm
         col_widths = [
             available_width * 0.12,
-            available_width * 0.38,
-            available_width * 0.38,
-            available_width * 0.12
+            available_width * 0.44,
+            available_width * 0.44,
         ]
 
         table = Table(table_data, colWidths=col_widths, repeatRows=1)
@@ -1721,9 +1711,6 @@ def generate_comparison_pdf(old_rule: Dict, new_rule: Dict, changes: List[Dict],
 
         if len(table_data) > 2:
             table_style.add('SPAN', (0, 1), (0, len(table_data) - 1))
-
-        if remarks and len(table_data) > 2:
-            table_style.add('SPAN', (3, 1), (3, len(table_data) - 1))
 
         table.setStyle(table_style)
         elements.append(table)
@@ -1933,7 +1920,7 @@ def generate_comparison_docx(old_rule: Dict, new_rule: Dict, old_articles: List[
                 synchronized_rows.append((old_data, new_data))
 
         # 테이블 생성 (5열)
-        table = doc.add_table(rows=1, cols=5)
+        table = doc.add_table(rows=1, cols=4)
         table.alignment = WD_TABLE_ALIGNMENT.CENTER
         table.style = 'Table Grid'
 
@@ -1960,13 +1947,13 @@ def generate_comparison_docx(old_rule: Dict, new_rule: Dict, old_articles: List[
 
         # 열 너비 설정 (가로 A4 = 29.7cm - 3cm 마진 = 26.7cm)
         available_cm = 26.7
-        widths = [available_cm * 0.07, available_cm * 0.09, available_cm * 0.355, available_cm * 0.355, available_cm * 0.13]
+        widths = [available_cm * 0.08, available_cm * 0.10, available_cm * 0.41, available_cm * 0.41]
         for i, width in enumerate(widths):
             table.columns[i].width = Cm(width)
 
         # 헤더 행
         header_cells = table.rows[0].cells
-        headers = ['사규번호', '사규제목', '현행', '개정', '비고']
+        headers = ['사규번호', '사규제목', '현행', '개정']
         for i, header_text in enumerate(headers):
             cell = header_cells[i]
             cell.text = ''
@@ -2031,10 +2018,6 @@ def generate_comparison_docx(old_rule: Dict, new_rule: Dict, old_articles: List[
                     run = p.add_run(rule_name)
                     set_run_font(run, Pt(9))
 
-                    p = cells[4].paragraphs[0]
-                    run = p.add_run(remarks if remarks else "")
-                    set_run_font(run, Pt(9))
-
                     first_data_row = False
 
                 add_segments_to_cell(cells[2], old_data)
@@ -2046,7 +2029,7 @@ def generate_comparison_docx(old_rule: Dict, new_rule: Dict, old_articles: List[
 
                 total_rows = len(table.rows)
                 for row_idx in range(1, total_rows):
-                    for col_idx in [0, 1, 2, 3, 4]:
+                    for col_idx in [0, 1, 2, 3]:
                         cell = table.rows[row_idx].cells[col_idx]
                         tc = cell._tc
                         tcPr = tc.get_or_add_tcPr()
@@ -2073,7 +2056,7 @@ def generate_comparison_docx(old_rule: Dict, new_rule: Dict, old_articles: List[
                             tcPr.append(borders)
 
                 for row_idx in range(1, total_rows):
-                    for col_idx in [0, 1, 2, 3, 4]:
+                    for col_idx in [0, 1, 2, 3]:
                         cell = table.rows[row_idx].cells[col_idx]
                         tc = cell._tc
                         tcPr = tc.get_or_add_tcPr()

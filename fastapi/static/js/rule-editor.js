@@ -3353,7 +3353,7 @@ ${mergeResult.text_content || ''}
             const formData = new FormData();
             formData.append('rule_id', ruleId);
             formData.append('output_format', 'pdf');
-            formData.append('remarks', '개정 시 자동 생성');
+            formData.append('remarks', '');
             if (pdfFile) formData.append('pdf_file', pdfFile);
             if (docxFile) formData.append('docx_file', docxFile);
 
