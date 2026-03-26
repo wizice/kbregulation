@@ -153,6 +153,8 @@ class AuthService:
                 'email': user['email'],
                 'full_name': user['full_name'],
                 'phone': user.get('phone'),
+                'departments': user.get('departments', ''),
+                'position': user.get('position', ''),
                 'role': user.get('role'),
                 'is_email_verified': user.get('is_email_verified', False)
             }
@@ -384,27 +386,67 @@ async def get_optional_user(
     except HTTPException:
         return None
 
+# 역할 계층 (숫자가 높을수록 상위 권한)
+ROLE_HIERARCHY = {
+    'admin': 99,
+    'approver2': 4,
+    'approver1': 3,
+    'drafter': 2,
+    'user': 1
+}
+
 # 권한 확인 의존성
 def require_role(required_role: str):
     """
-    특정 역할 요구 의존성 생성
-    
+    특정 역할 요구 의존성 생성 (계층 기반)
+
+    상위 역할은 하위 역할의 엔드포인트에 접근할 수 있다.
+    예: approver2(4)는 drafter(2) 이상을 요구하는 엔드포인트에 접근 가능.
+
     Args:
-        required_role: 필요한 역할
-    
+        required_role: 필요한 최소 역할
+
     Returns:
         의존성 함수
     """
     async def role_checker(current_user: Dict[str, Any] = Depends(get_current_active_user)):
         user_role = current_user.get("role", "")
         logger.debug(f"current_user:{current_user}")
-        if user_role != required_role and user_role != "admin":
+        required_level = ROLE_HIERARCHY.get(required_role, 0)
+        user_level = ROLE_HIERARCHY.get(user_role, 0)
+        if user_level < required_level:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Insufficient permissions"
             )
         return current_user
-    
+
+    return role_checker
+
+
+def require_any_role(*roles):
+    """
+    지정된 역할 중 하나를 요구하는 의존성 생성 (정확한 매칭)
+
+    계층 기반이 아닌, 명시된 역할만 허용한다.
+    admin은 항상 허용된다.
+    예: require_any_role('approver1', 'approver2') → 해당 역할만 가능
+
+    Args:
+        *roles: 허용할 역할 목록
+
+    Returns:
+        의존성 함수
+    """
+    async def role_checker(current_user: Dict[str, Any] = Depends(get_current_active_user)):
+        user_role = current_user.get("role", "")
+        if user_role not in roles and user_role != "admin":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Insufficient permissions"
+            )
+        return current_user
+
     return role_checker
 
 # 미들웨어 클래스

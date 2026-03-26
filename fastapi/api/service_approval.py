@@ -22,7 +22,7 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime
 import logging
 
-from .auth_middleware import get_current_user, require_role
+from .auth_middleware import get_current_user, require_role, require_any_role
 from .timescaledb_manager_v2 import DatabaseConnectionManager
 from settings import settings
 
@@ -346,9 +346,9 @@ async def submit_approval(
                     request_data.rule_name,
                     request_data.rule_pubno,
                     request_data.total_steps,
-                    user.get('id', user.get('username', '')),
-                    user.get('name', user.get('username', '')),
-                    user.get('department', user.get('dept_name', '')),
+                    user.get('users_id', user.get('username', '')),
+                    user.get('full_name', user.get('username', '')),
+                    user.get('departments', user.get('dept_name', '')),
                     request_data.comment
                 ))
                 workflow_id = cur.fetchone()[0]
@@ -382,9 +382,9 @@ async def submit_approval(
                 log_approval_history(
                     workflow_id=workflow_id,
                     action='SUBMIT',
-                    actor_id=user.get('id', user.get('username', '')),
-                    actor_name=user.get('name', user.get('username', '')),
-                    actor_dept=user.get('department', ''),
+                    actor_id=user.get('users_id', user.get('username', '')),
+                    actor_name=user.get('full_name', user.get('username', '')),
+                    actor_dept=user.get('departments', ''),
                     from_status='DRAFT',
                     to_status='PENDING',
                     comment=request_data.comment,
@@ -397,7 +397,7 @@ async def submit_approval(
                 # 5. 다음 결재자에게 알림 발송
                 notify_next_approver(
                     workflow_id=workflow_id,
-                    drafter_name=user.get('name', user.get('username', ''))
+                    drafter_name=user.get('full_name', user.get('username', ''))
                 )
 
                 return {
@@ -424,7 +424,7 @@ async def get_pending_approvals(
     현재 로그인한 사용자가 결재해야 할 항목들을 반환합니다.
     """
     try:
-        user_id = user.get('id', user.get('username', ''))
+        user_id = user.get('users_id', user.get('username', ''))
 
         db_manager = get_db_manager()
         with db_manager.get_connection() as conn:
@@ -484,7 +484,7 @@ async def get_my_drafts(
     내가 기안한 결재 목록 조회
     """
     try:
-        user_id = user.get('id', user.get('username', ''))
+        user_id = user.get('users_id', user.get('username', ''))
 
         db_manager = get_db_manager()
         with db_manager.get_connection() as conn:
@@ -547,7 +547,7 @@ async def approve_workflow(
     최종 단계인 경우 자동으로 발행 처리됩니다.
     """
     try:
-        user_id = user.get('id', user.get('username', ''))
+        user_id = user.get('users_id', user.get('username', ''))
 
         db_manager = get_db_manager()
         with db_manager.get_connection() as conn:
@@ -629,8 +629,8 @@ async def approve_workflow(
                     step_id=step_id,
                     action='APPROVE',
                     actor_id=user_id,
-                    actor_name=user.get('name', user.get('username', '')),
-                    actor_dept=user.get('department', ''),
+                    actor_name=user.get('full_name', user.get('username', '')),
+                    actor_dept=user.get('departments', ''),
                     from_status=wf_status,
                     to_status='APPROVED' if is_final else 'IN_PROGRESS',
                     comment=request_data.comment,
@@ -641,7 +641,7 @@ async def approve_workflow(
                 logger.info(f"[Approval] 결재 승인: workflow_id={workflow_id}, step={step_order}, final={is_final}")
 
                 # 6. 알림 발송
-                approver_name = user.get('name', user.get('username', ''))
+                approver_name = user.get('full_name', user.get('username', ''))
                 notify_drafter_approved(
                     workflow_id=workflow_id,
                     approver_name=approver_name,
@@ -683,7 +683,7 @@ async def reject_workflow(
     현재 단계에서 반려하면 워크플로우 전체가 반려됩니다.
     """
     try:
-        user_id = user.get('id', user.get('username', ''))
+        user_id = user.get('users_id', user.get('username', ''))
 
         db_manager = get_db_manager()
         with db_manager.get_connection() as conn:
@@ -740,8 +740,8 @@ async def reject_workflow(
                     step_id=step_id,
                     action='REJECT',
                     actor_id=user_id,
-                    actor_name=user.get('name', user.get('username', '')),
-                    actor_dept=user.get('department', ''),
+                    actor_name=user.get('full_name', user.get('username', '')),
+                    actor_dept=user.get('departments', ''),
                     from_status=wf_status,
                     to_status='REJECTED',
                     comment=request_data.comment,
@@ -754,7 +754,7 @@ async def reject_workflow(
                 # 6. 기안자에게 반려 알림 발송
                 notify_drafter_rejected(
                     workflow_id=workflow_id,
-                    rejector_name=user.get('name', user.get('username', '')),
+                    rejector_name=user.get('full_name', user.get('username', '')),
                     reject_reason=request_data.comment
                 )
 
@@ -925,20 +925,22 @@ async def search_approvers(
         db_manager = get_db_manager()
         with db_manager.get_connection() as conn:
             with conn.cursor() as cur:
-                # users 테이블에서 검색
+                # users 테이블에서 결재 가능 역할만 검색
                 cur.execute("""
                     SELECT
                         username as id,
-                        name,
-                        department,
-                        position
+                        full_name as name,
+                        COALESCE(departments, '') as department,
+                        role
                     FROM users
-                    WHERE name LIKE %s OR username LIKE %s
-                    ORDER BY name
+                    WHERE (full_name LIKE %s OR username LIKE %s)
+                      AND role IN ('approver1', 'approver2', 'admin')
+                      AND is_active = TRUE
+                    ORDER BY full_name
                     LIMIT 20
                 """, (f'%{q}%', f'%{q}%'))
 
-                columns = ['id', 'name', 'department', 'position']
+                columns = ['id', 'name', 'department', 'role']
                 users = []
                 for row in cur.fetchall():
                     users.append(dict(zip(columns, row)))
@@ -968,7 +970,7 @@ async def get_notifications(
     현재 로그인한 사용자의 알림 목록을 반환합니다.
     """
     try:
-        user_id = user.get('id', user.get('username', ''))
+        user_id = user.get('users_id', user.get('username', ''))
 
         db_manager = get_db_manager()
         with db_manager.get_connection() as conn:
@@ -1042,7 +1044,7 @@ async def mark_notification_read(
     알림 읽음 처리
     """
     try:
-        user_id = user.get('id', user.get('username', ''))
+        user_id = user.get('users_id', user.get('username', ''))
 
         db_manager = get_db_manager()
         with db_manager.get_connection() as conn:
@@ -1080,7 +1082,7 @@ async def mark_all_notifications_read(
     모든 알림 읽음 처리
     """
     try:
-        user_id = user.get('id', user.get('username', ''))
+        user_id = user.get('users_id', user.get('username', ''))
 
         db_manager = get_db_manager()
         with db_manager.get_connection() as conn:
@@ -1113,7 +1115,7 @@ async def get_unread_notification_count(
     읽지 않은 알림 수 조회
     """
     try:
-        user_id = user.get('id', user.get('username', ''))
+        user_id = user.get('users_id', user.get('username', ''))
 
         db_manager = get_db_manager()
         with db_manager.get_connection() as conn:

@@ -29,6 +29,28 @@ const UserManager = {
         }
     },
 
+    roleLabels: {
+        admin: '관리자',
+        approver2: '2차 결재자',
+        approver1: '1차 결재자',
+        drafter: '입안자',
+        user: '사용자'
+    },
+
+    roleColors: {
+        admin: '#dc3545',
+        approver2: '#fd7e14',
+        approver1: '#28a745',
+        drafter: '#6f42c1',
+        user: '#6c757d'
+    },
+
+    getRoleBadge(role) {
+        const label = this.roleLabels[role] || role || '사용자';
+        const color = this.roleColors[role] || '#6c757d';
+        return `<span style="background:${color}15;color:${color};padding:2px 8px;border-radius:10px;font-size:12px;font-weight:500;border:1px solid ${color}33;">${label}</span>`;
+    },
+
     renderUsers(users) {
         const tbody = document.getElementById('usersList');
         if (!tbody) return;
@@ -45,7 +67,7 @@ const UserManager = {
                 <td>${this.escapeHtml(u.username || '')}</td>
                 <td>${this.escapeHtml(u.email || '')}</td>
                 <td>${this.escapeHtml(u.departments || '')}</td>
-                <td><span style="background:${u.role === 'admin' ? '#e3f2fd' : '#f5f5f5'};padding:2px 8px;border-radius:10px;font-size:12px;">${u.role === 'admin' ? '관리자' : '일반'}</span></td>
+                <td>${this.getRoleBadge(u.role)}</td>
                 <td><span style="color:${u.is_active ? '#28a745' : '#dc3545'};font-weight:500;">${u.is_active ? '활성' : '비활성'}</span></td>
                 <td>
                     <button class="btn btn-primary btn-sm" onclick="UserManager.openEditModal(${u.users_id})" style="padding:4px 10px;font-size:12px;">수정</button>
@@ -69,7 +91,7 @@ const UserManager = {
         document.getElementById('userEmail').value = '';
         document.getElementById('userPhone').value = '';
         document.getElementById('userDepartments').value = '';
-        document.getElementById('userRole').value = 'admin';
+        document.getElementById('userRole').value = 'user';
         document.getElementById('userIsActive').checked = true;
         modal.style.display = 'flex';
     },
