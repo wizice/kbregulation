@@ -94,25 +94,39 @@ def get_file_info(file_path: str, wzruleseq: int = None, file_type: str = None) 
     if not file_path:
         return {'exists': False, 'path': None, 'filename': None, 'size': 0}
 
-    # 절대 경로로 변환
+    # 절대 경로로 변환 (다양한 경로 형식 지원)
+    candidates = []
     if file_path.startswith('/'):
-        full_path = Path(file_path)
+        candidates.append(Path(file_path))
     elif file_path.startswith('applib/'):
-        # applib/pdf_old/7421_342.pdf -> /home/wizice/regulation/fastapi/applib/pdf_old/7421_342.pdf
-        full_path = APPLIB_DIR.parent / file_path
+        candidates.append(APPLIB_DIR.parent / file_path)
     else:
-        full_path = Path(file_path)
+        # KB형식 파일명: (6-5)_인사규정_251224.docx
+        # 여러 위치에서 검색
+        ext = Path(file_path).suffix.lstrip('.')
+        if ext == 'docx' or ext == 'doc':
+            candidates.append(APPLIB_DIR / 'docx' / file_path)
+            candidates.append(APPLIB_DIR / 'docx_old' / file_path)
+        elif ext == 'pdf':
+            candidates.append(APPLIB_DIR / 'pdf' / file_path)
+            candidates.append(APPLIB_DIR / 'pdf_old' / file_path)
+        elif ext == 'json':
+            candidates.append(Path(settings.WWW_STATIC_FILE_DIR) / file_path)
+            candidates.append(APPLIB_DIR / 'merge_json' / file_path)
+            candidates.append(APPLIB_DIR / 'docx_json' / file_path)
+        candidates.append(Path(file_path))
 
-    # 파일 존재 확인
-    if full_path.exists():
-        stat = full_path.stat()
-        return {
-            'exists': True,
-            'path': str(full_path),
-            'filename': full_path.name,
-            'size': stat.st_size,
-            'modified': datetime.fromtimestamp(stat.st_mtime).isoformat()
-        }
+    # 후보 경로 중 존재하는 파일 반환
+    for full_path in candidates:
+        if full_path.exists():
+            stat = full_path.stat()
+            return {
+                'exists': True,
+                'path': str(full_path),
+                'filename': full_path.name,
+                'size': stat.st_size,
+                'modified': datetime.fromtimestamp(stat.st_mtime).isoformat()
+            }
 
     return {'exists': False, 'path': file_path, 'filename': None, 'size': 0}
 

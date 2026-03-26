@@ -1908,28 +1908,28 @@ async def create_revision(
                     wzruleid = original_wzruleid
                     logger.info(f"Using original wzruleid={wzruleid}")
 
-                # 2. 기존 파일들을 _old 폴더로 이동 (개정일 기준으로 파일 찾기)
+                # 2. 기존 파일 경로 보존 (파일 이동 시도, 실패해도 원본 경로 유지)
                 from api.file_utils import move_file_to_old
 
-                wzruleseq = rule_id  # 현재 규정의 시퀀스
-                # 원본 규정의 개정일 (이 날짜의 파일을 _old로 이동)
+                wzruleseq = rule_id
                 original_revision_date = original.get('wzlastrevdate', '')
-                logger.info(f"Original revision date: {original_revision_date}")
+                original_json = original.get('wzfilejson', '')
+                original_pdf = original.get('wzfilepdf', '')
+                original_docx = original.get('wzfiledocx', '')
+                logger.info(f"Original files - json={original_json}, pdf={original_pdf}, docx={original_docx}")
 
-                # JSON 파일 이동: JSON은 이동하지 않음 (사용자 요청)
+                # 파일 이동 시도 (실패해도 원본 경로 유지)
                 new_json_old_path = move_file_to_old(wzruleseq, wzruleid, 'json', original_revision_date)
-                logger.info(f"JSON moved: wzruleseq={wzruleseq} -> {new_json_old_path}")
-
-                # PDF 파일 이동: 개정일과 매칭되는 파일을 _old로 이동
                 new_pdf_old_path = move_file_to_old(wzruleseq, wzruleid, 'pdf', original_revision_date)
-                logger.info(f"PDF moved: wzruleseq={wzruleseq}, date={original_revision_date} -> {new_pdf_old_path}")
-
-                # DOCX 파일 이동: 개정일과 매칭되는 파일을 _old로 이동
                 new_docx_old_path = move_file_to_old(wzruleseq, wzruleid, 'docx', original_revision_date)
-                logger.info(f"DOCX moved: wzruleseq={wzruleseq}, date={original_revision_date} -> {new_docx_old_path}")
 
-                # 3. 기존 규정을 연혁으로 변경 (이동된 파일 경로로 업데이트)
-                # DB에 NOT NULL 제약조건이 있으므로 None 대신 빈 문자열 사용
+                # 이동 성공하면 _old 경로, 실패하면 원본 경로 유지
+                hist_json = new_json_old_path or original_json or ''
+                hist_pdf = new_pdf_old_path or original_pdf or ''
+                hist_docx = new_docx_old_path or original_docx or ''
+                logger.info(f"History files - json={hist_json}, pdf={hist_pdf}, docx={hist_docx}")
+
+                # 3. 기존 규정을 연혁으로 변경 (파일 경로 보존)
                 cur.execute("""
                     UPDATE wz_rule
                     SET wzNewFlag = '연혁',
@@ -1942,9 +1942,9 @@ async def create_revision(
                 """, (
                     revision_data.get('revision_date', datetime.now().strftime('%Y-%m-%d')),
                     user.get('username'),
-                    new_json_old_path or '',  # applib/merge_json_old/{wzruleid}_{wzruleseq}.json
-                    new_pdf_old_path or '',   # applib/pdf_old/{wzruleid}_{wzruleseq}.pdf
-                    new_docx_old_path or '',  # applib/docx_old/{wzruleid}_{wzruleseq}.docx
+                    hist_json,
+                    hist_pdf,
+                    hist_docx,
                     rule_id
                 ))
 
